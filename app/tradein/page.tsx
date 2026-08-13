@@ -315,11 +315,9 @@ export default function TradeInPage() {
   };
 
   const handleModelSelected = () => {
-    if (isStep1Valid) {
-      setTimeout(() => {
-        setStep(2);
-      }, 300);
-    }
+    // This callback runs in the same event as setFormData, so checking
+    // isStep1Valid here can read the previous (empty) model value.
+    setTimeout(() => setStep(2), 300);
   };
 
   const handleConditionSelected = (field: string, value: string) => {
@@ -439,6 +437,12 @@ export default function TradeInPage() {
               setFormData={setTradeInFormData}
               onSelect={handleModelSelected}
             />
+          </div>
+        )}
+
+        {step >= 2 && step < newPhoneCategoryStep && loadingGroups && (
+          <div className="apple-card max-w-2xl mx-auto text-center text-gray-500">
+            Loading the next question...
           </div>
         )}
 
@@ -735,4 +739,3 @@ export default function TradeInPage() {
     </div>
   );
 }
-

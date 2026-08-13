@@ -72,6 +72,81 @@
   }
 }
 
+/* Home hero */
+.hero-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.8fr);
+  align-items: center;
+  gap: 3rem;
+}
+
+.hero-copy {
+  max-width: 42rem;
+}
+
+.hero-phones {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 1.5vw, 1.5rem);
+  padding-top: 2rem;
+}
+
+.hero-phone {
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 1.5rem 1.25rem rgba(0, 0, 0, 0.18));
+  animation: hero-phone-float 4.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-phone-standing {
+  width: clamp(20rem, 34vw, 30rem);
+}
+
+.hero-phone-lying {
+  width: clamp(24rem, 42vw, 38rem);
+  /* The source artwork has generous transparent canvas space; this brings the
+     visible phones together for a subtle, layered overlap. */
+  margin-left: clamp(-22rem, -18vw, -15rem);
+  animation-delay: -2.4s;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes hero-phone-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@media (max-width: 767px) {
+  .hero-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-block: 8rem 3rem;
+  }
+
+  .hero-phones {
+    padding-top: 0;
+  }
+
+  .hero-phone-standing {
+    width: 16rem;
+  }
+
+  .hero-phone-lying {
+    width: 20rem;
+    margin-left: -7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-phone {
+    animation: none;
+  }
+}
+
 /* Apple Design System Colors */
 :root {
   --apple-blue: #007aff;

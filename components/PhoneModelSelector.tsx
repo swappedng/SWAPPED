@@ -2,11 +2,7 @@
 
 import Select from 'react-select';
 import { useState, useEffect } from 'react';
-
-interface ModelOption {
-    value: string;
-    label: string;
-}
+import { loadPhoneModels, type PhoneModelOption } from '../lib/phone-models';
 
 const customStyles = {
     control: (provided: any, state: any) => ({
@@ -80,14 +76,13 @@ interface PhoneModelSelectorProps {
 }
 
 export default function PhoneModelSelector({ formData, setFormData, onSelect }: PhoneModelSelectorProps) {
-    const [modelOptions, setModelOptions] = useState<ModelOption[]>([]);
+    const [modelOptions, setModelOptions] = useState<PhoneModelOption[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchModels = async () => {
             try {
-                const res = await fetch('/api/admin/phone-models');
-                const models = await res.json();
+                const models = await loadPhoneModels();
                 setModelOptions(models);
             } catch (error) {
                 console.error('Failed to fetch phone models:', error);

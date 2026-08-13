@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BarChart3, RefreshCw, Shield } from 'lucide-react';
-import Spline from '@splinetool/react-spline';
+import { loadPhoneModels } from '../lib/phone-models';
+// import Spline from '@splinetool/react-spline';
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
+    // Begin loading the form's model list while the visitor is still on home.
+    loadPhoneModels().catch(() => undefined);
   }, []);
 
   return (
@@ -24,25 +27,15 @@ export default function Home() {
          <img src="/swapped-logo.png" width={32} height={32} alt="" />
           <span className="text-2xl font-black text-black tracking-tight">Swapped</span>
         </div>
-
-        {/* Spline Background */}
-        <div className="absolute inset-0 z-0">
-          <Spline
-            scene="https://prod.spline.design/Fy1QPp0ZKCtDjtXk/scene.splinecode"
-            className="w-full h-full"
-            key={Date.now()} // Force re-render
-          />
-        </div>
-        
-        {/* Content Overlay */}
+        {/* Content and device imagery */}
         <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <div className="flex items-center h-screen">
+          <div className="hero-layout">
             {/* Left Content */}
-            <div className="flex-1">
+            <div className="hero-copy">
               <div className={`transition-all duration-1000 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}>
-                <h1 className="text-5xl lg:text-5xl xl:text-6xl font-bold text-black mb-8 w-3/5">
+                <h1 className="text-5xl lg:text-5xl xl:text-6xl font-bold text-black mb-8">
                   Upgrade your iPhone
                   <br />
                   <span className="font-light italic">without the hassle</span>
@@ -69,6 +62,12 @@ export default function Home() {
 
              
               </div>
+            </div>
+
+            {/* Right visual */}
+            <div className="hero-phones" aria-hidden="true">
+              <img src="/standing-iphone.png" alt="" className="hero-phone hero-phone-standing" />
+              <img src="/lying-iphone.png" alt="" className="hero-phone hero-phone-lying" />
             </div>
           </div>
         </div>
@@ -217,7 +216,7 @@ export default function Home() {
           </div>
           
           <div className="border-t border-white/20 pt-12 flex flex-col md:flex-row justify-between items-center text-white/60 font-medium">
-            <p className="text-lg">&copy; 2025 SWAPPED. All rights reserved.</p>
+            <p className="text-lg">&copy; 2026 SWAPPED. All rights reserved.</p>
             <div className="flex gap-8 mt-6 md:mt-0">
               <Link href="#" className="hover:text-white transition-colors text-lg">Privacy Policy</Link>
               <Link href="#" className="hover:text-white transition-colors text-lg">Terms of Service</Link>
