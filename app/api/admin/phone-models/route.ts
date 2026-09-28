@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
+    const includeInactive = new URL(request.url).searchParams.get('admin') === '1';
     const models = await prisma.phoneModel.findMany({
-      where: { isActive: true },
+      where: includeInactive ? undefined : { isActive: true },
       orderBy: { order: 'asc' },
     });
     return NextResponse.json(models);

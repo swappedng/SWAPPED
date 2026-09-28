@@ -1,101 +1,206 @@
-"use client";
+'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { ConditionOption } from '@/types/tradein';
+import { OptionCardList } from './tradein/OptionCardList';
+import { StepCard } from './tradein/StepCard';
+import { Smartphone, Battery, ShieldCheck, Sparkles } from 'lucide-react';
 
-interface ConditionOption {
-    value: string;
-    label: string;
-    priceModifier: number;
+interface Props {
+  question: string;
+  description?: string;
+  fieldKey: string;
+  options: ConditionOption[];
+  value: string;
+  onSelect: (value: string) => void;
+  showBatteryInfo?: boolean;
+  onContinue?: () => void;
+  onScreenOriginChange?: (origin: 'original' | 'replaced') => void;
+  onBatteryOriginChange?: (origin: 'original' | 'replaced') => void;
+  onBack?: () => void;
 }
 
-interface SingleConditionQuestionProps {
-    question: string;
-    description?: string;
-    fieldKey: string;
-    options: ConditionOption[];
-    value: string;
-    onSelect: (value: string) => void;
-    showBatteryInfo?: boolean;
-}
+const screenCopy = (option: ConditionOption) => {
+  const label = option.label.toLowerCase();
+  if (label.includes('mint')) return ['Flawless', 'No marks when the screen is on'];
+  if (label.includes('light')) return ['Light scratches', 'Only visible at an angle'];
+  if (label.includes('deep')) return ['Deep scratches', 'You can feel them with a fingernail'];
+  if (label.includes('crack')) return ['Cracked', 'Any crack or chip in the glass'];
+  return [option.label, option.description];
+};
+
+const backCopy = (option: ConditionOption) => {
+  if (option.value === 'mint') return ['Flawless', 'No marks, scuffs or dents'];
+  if (option.value === 'minor') return ['Light scratches', 'Small scuffs, no dents'];
+  if (option.value === 'dents') return ['Dents or chips', 'Visible dents or chipped edges'];
+  if (option.value === 'broken') return ['Cracked or broken', 'Any crack in the back panel'];
+  return [option.label, option.description];
+};
 
 export default function SingleConditionQuestion({
-    question,
-    description,
-    fieldKey,
-    options,
-    value,
-    onSelect,
-    showBatteryInfo = false
-}: SingleConditionQuestionProps) {
-    const [showAllOptions, setShowAllOptions] = useState(false);
-    const MAX_VISIBLE_OPTIONS = 7;
-    const hasMoreOptions = options.length > MAX_VISIBLE_OPTIONS;
-    const visibleOptions = showAllOptions ? options : options.slice(0, MAX_VISIBLE_OPTIONS);
+  question,
+  description,
+  fieldKey,
+  options,
+  value,
+  onSelect,
+  showBatteryInfo = false,
+  onContinue,
+  onScreenOriginChange,
+  onBatteryOriginChange,
+  onBack,
+}: Props) {
+  const [screenStage, setScreenStage] = useState<'origin' | 'condition'>(value ? 'condition' : 'origin');
+  const [screenOrigin, setScreenOrigin] = useState('');
+  const [batteryStage, setBatteryStage] = useState<'origin' | 'condition'>(value ? 'condition' : 'origin');
+  const [batteryOrigin, setBatteryOrigin] = useState('');
 
-    const handleSelect = (selectedValue: string) => {
-        onSelect(selectedValue);
-    };
+  const isScreen = fieldKey === 'screen';
+  const isBattery = fieldKey === 'battery' || showBatteryInfo;
+  const isFaceId = fieldKey === 'faceid';
+  const isBackGlass = fieldKey === 'backglass';
 
+  const title = showBatteryInfo
+    ? 'What’s your battery health?'
+    : isFaceId
+      ? 'Does Face ID work?'
+      : isScreen
+        ? 'How does your screen look?'
+        : isBackGlass
+          ? 'How does the back of your phone look?'
+          : question;
+
+  const helper = showBatteryInfo
+    ? "Choose the range that matches your phone's maximum capacity."
+    : isFaceId
+      ? 'Choose the option that matches your phone right now.'
+      : isScreen || isBackGlass
+        ? 'Pick the closest match. Your inspector will confirm it.'
+        : description;
+
+  const notice = showBatteryInfo ? (
+    <>Open Settings → Battery → Battery Health &amp; Charging and look for “Maximum Capacity”.</>
+  ) : isFaceId ? (
+    <>Lock your phone and try unlocking it with your face. If it fails, choose “doesn’t work.”</>
+  ) : undefined;
+
+  const conditionOptions = useMemo(
+    () =>
+      ((isScreen || isBattery)
+        ? options.filter((option) => !option.value.includes('changed') && !option.label.toLowerCase().includes('changed'))
+        : options
+      ).map((option) => {
+        const [label, optionDescription] = isScreen
+          ? screenCopy(option)
+          : isBackGlass
+            ? backCopy(option)
+            : [option.label, option.description];
+        
+        let icon = undefined;
+        if (showBatteryInfo) icon = <Battery className="h-4 w-4" />;
+        else if (isFaceId) icon = <ShieldCheck className="h-4 w-4" />;
+        else if (isScreen || isBackGlass) icon = <Smartphone className="h-4 w-4" />;
+
+        return {
+          value: option.value,
+          label: label || option.label,
+          description: optionDescription,
+          image: icon,
+        };
+      }),
+    [options, isScreen, isBackGlass, showBatteryInfo, isFaceId, isBattery]
+  );
+
+  if (isScreen && screenStage === 'origin') {
     return (
-        <div className="apple-card max-w-2xl mx-auto">
-            <div className="text-center mb-8">
-                <h1 className="apple-title mb-4">{question}</h1>
-                {description && (
-                    <p className="apple-body text-gray-600">{description}</p>
-                )}
-            </div>
-
-            <div className="space-y-2">
-                {visibleOptions.map((option) => (
-                    <div key={option.value} className="relative">
-                        <input
-                            type="radio"
-                            id={`${fieldKey}-${option.value}`}
-                            name={fieldKey}
-                            value={option.value}
-                            checked={value === option.value}
-                            onChange={(e) => handleSelect(e.target.value)}
-                            className="sr-only peer"
-                        />
-                        <label
-                            htmlFor={`${fieldKey}-${option.value}`}
-                            className="flex items-center w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 hover:border-gray-300 peer-checked:border-black peer-checked:bg-gray-50 transition-all"
-                        >
-                            <span className="font-medium text-gray-900">{option.label}</span>
-                        </label>
-                    </div>
-                ))}
-            </div>
-
-            {hasMoreOptions && !showAllOptions && (
-                <div className="mt-4">
-                    <button
-                        type="button"
-                        onClick={() => setShowAllOptions(true)}
-                        className="text-green-700 font-semibold underline hover:text-green-800 transition-colors"
-                    >
-                        More options
-                    </button>
-                </div>
-            )}
-
-            {showBatteryInfo && (
-                <div className="mt-6 bg-green-50 rounded-lg p-4 flex gap-3">
-                    <div className="flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <svg className="w-5 h-5 text-green-700" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div className="flex-1">
-                        <p className="text-sm text-gray-700">
-                            <span className="font-semibold">How to check battery health:</span><br />
-                            Go to Settings → Battery → Battery Health & Charging
-                        </p>
-                    </div>
-                </div>
-            )}
-        </div>
+      <StepCard
+        title="Has your screen ever been replaced?"
+        description="Choose the option that matches your phone."
+        noticeTitle="Check first"
+        notice={
+          <>On many newer iPhones, Settings → General → About → Parts and Service History lists any replaced parts.</>
+        }
+        showBackButton
+        onBack={onBack}
+        onContinue={() => setScreenStage('condition')}
+        continueDisabled={!screenOrigin}
+      >
+        <OptionCardList
+          value={screenOrigin}
+          onChange={(origin) => {
+            setScreenOrigin(origin);
+            onScreenOriginChange?.(origin as 'original' | 'replaced');
+          }}
+          options={[
+            {
+              value: 'original',
+              label: 'Original screen',
+              description: 'Factory installed screen that has never been replaced.',
+              image: <Sparkles className="h-4 w-4" />,
+            },
+            {
+              value: 'replaced',
+              label: 'Replaced screen',
+              description: 'Choose this if it was ever changed by Apple or any repair shop.',
+              image: <Smartphone className="h-4 w-4" />,
+            },
+          ]}
+        />
+      </StepCard>
     );
+  }
+
+  if (isBattery && batteryStage === 'origin') {
+    return (
+      <StepCard
+        title="Has your battery ever been replaced?"
+        description="Choose the option that matches your phone."
+        noticeTitle="Check first"
+        notice={
+          <>On many newer iPhones, Settings → General → About → Parts and Service History lists if the battery was replaced.</>
+        }
+        showBackButton
+        onBack={onBack}
+        onContinue={() => setBatteryStage('condition')}
+        continueDisabled={!batteryOrigin}
+      >
+        <OptionCardList
+          value={batteryOrigin}
+          onChange={(origin) => {
+            setBatteryOrigin(origin);
+            onBatteryOriginChange?.(origin as 'original' | 'replaced');
+          }}
+          options={[
+            {
+              value: 'original',
+              label: 'Original battery',
+              description: 'Factory installed battery that has never been replaced.',
+              image: <Sparkles className="h-4 w-4" />,
+            },
+            {
+              value: 'replaced',
+              label: 'Replaced battery',
+              description: 'Choose this if your battery was changed by Apple or any repair shop.',
+              image: <Battery className="h-4 w-4" />,
+            },
+          ]}
+        />
+      </StepCard>
+    );
+  }
+
+  return (
+    <StepCard
+      title={title}
+      description={helper}
+      notice={notice}
+      noticeTitle={notice ? 'Check first' : undefined}
+      showBackButton
+      onBack={isScreen ? () => setScreenStage('origin') : isBattery ? () => setBatteryStage('origin') : onBack}
+      onContinue={onContinue}
+      continueDisabled={!value}
+    >
+      <OptionCardList options={conditionOptions} value={value} onChange={onSelect} />
+    </StepCard>
+  );
 }

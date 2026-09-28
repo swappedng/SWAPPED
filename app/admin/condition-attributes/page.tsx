@@ -2,10 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import {
+  Sliders,
+  Plus,
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Trash2,
+  Info,
+  Layers,
+  Percent,
+} from 'lucide-react';
 
 export default function ConditionAttributesPage() {
   const [groups, setGroups] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,7 +28,12 @@ export default function ConditionAttributesPage() {
     try {
       const res = await fetch('/api/admin/condition-attributes/groups');
       const data = await res.json();
+      if (!res.ok || !Array.isArray(data)) throw new Error(data?.error || 'Failed to fetch question groups');
       setGroups(data);
+      // Auto expand first group if available
+      if (data.length > 0 && !expandedGroup) {
+        setExpandedGroup(data[0].key);
+      }
     } catch (error) {
       console.error('Failed to fetch groups:', error);
     }
@@ -25,7 +41,7 @@ export default function ConditionAttributesPage() {
   };
 
   const deleteGroup = async (id: string) => {
-    if (!confirm('Delete this attribute group?')) return;
+    if (!confirm('Are you sure you want to delete this attribute group? This will affect valuation calculations.')) return;
     try {
       await fetch(`/api/admin/condition-attributes/groups/${id}`, { method: 'DELETE' });
       fetchGroups();
@@ -35,7 +51,7 @@ export default function ConditionAttributesPage() {
   };
 
   const deleteOption = async (id: string) => {
-    if (!confirm('Delete this option?')) return;
+    if (!confirm('Are you sure you want to delete this condition option?')) return;
     try {
       await fetch(`/api/admin/condition-attributes/options/${id}`, { method: 'DELETE' });
       fetchGroups();
@@ -45,102 +61,215 @@ export default function ConditionAttributesPage() {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-8 flex justify-between items-center">
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Top Header */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Condition Attributes</h1>
-          <p className="text-gray-600 mt-2">Manage attribute groups and options for multi-factor pricing</p>
+          <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider">
+            <Sliders className="w-4 h-4" />
+            <span>Valuation Config</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-950 mt-1 tracking-tight">Condition questions</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Manage the questions customers answer and how each answer changes their quote.
+          </p>
         </div>
         <Link
           href="/admin/condition-attributes/new"
-          className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+          className="inline-flex items-center justify-center gap-2 bg-gray-950 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors shadow-sm self-start sm:self-auto"
         >
-          + Add Group
+          <Plus className="w-4 h-4" />
+          <span>Add question group</span>
         </Link>
-      </div>
+      </header>
 
-      {/* Groups List */}
+      {/* Explanatory Banner for New Admins */}
+      <section className="bg-gradient-to-r from-violet-50 to-indigo-50/60 border border-violet-100 rounded-xl p-4 sm:p-5 flex gap-3 text-xs leading-relaxed text-violet-950">
+        <Info className="w-5 h-5 text-violet-600 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <span className="font-bold text-violet-900 block text-sm">How Condition Deductions Work</span>
+          <p className="text-violet-800">
+            Each attribute group represents a physical or functional factor (e.g., <span className="font-semibold">Battery Health</span>, <span className="font-semibold">Screen Condition</span>, <span className="font-semibold">Body Condition</span>). When customers choose an option during their phone assessment, the configured <span className="font-semibold">price modifier (%)</span> reduces the device's Base Trade-in Value.
+          </p>
+        </div>
+      </section>
+
+      {/* Attribute Groups List */}
       <div className="space-y-4">
-        {groups.map((group) => (
-          <div key={group.key} className="bg-white border border-gray-200 rounded-lg">
-            {/* Group Header */}
-            <div
-              className="px-6 py-4 flex justify-between items-center cursor-pointer hover:bg-gray-50"
-              onClick={() => setExpandedGroup(expandedGroup === group.key ? null : group.key)}
-            >
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-900">{group.label}</h2>
-                <p className="text-sm text-gray-600">{group.options.length} options</p>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-2xl">{expandedGroup === group.key ? '▼' : '▶'}</span>
-                <div className="space-x-2">
-                  <Link
-                    href={`/admin/condition-attributes/${group.key}`}
-                    className="text-gray-600 hover:text-gray-900 text-sm"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteGroup(group.key);
-                    }}
-                    className="text-gray-600 hover:text-gray-900 text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Expanded Options */}
-            {expandedGroup === group.key && (
-              <div className="border-t border-gray-200 px-6 py-4 bg-gray-50">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-medium text-gray-900">Options</h3>
-                  <Link
-                    href={`/admin/condition-attributes/${group.key}/option/new`}
-                    className="text-black text-sm font-medium hover:underline"
-                  >
-                    + Add Option
-                  </Link>
-                </div>
-
-                <div className="space-y-2">
-                  {group.options.map((option: any) => (
-                    <div key={option.value} className="flex justify-between items-center bg-white p-3 rounded border border-gray-200">
-                      <div>
-                        <div className="font-medium text-gray-900">{option.label}</div>
-                        <div className="text-sm text-gray-600">{option.value} • {(option.priceModifier * 100).toFixed(0)}% modifier</div>
-                      </div>
-                      <div className="space-x-3 text-sm">
-                        <Link
-                          href={`/admin/condition-attributes/${group.key}/option/${option.value}`}
-                          className="text-gray-600 hover:text-gray-900"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => deleteOption(option.value)}
-                          className="text-gray-600 hover:text-gray-900"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+        {loading ? (
+          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-sm text-gray-500">
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mb-2"></div>
+            <p>Loading attribute groups...</p>
           </div>
-        ))}
+        ) : (
+          groups.map((group) => {
+            const isExpanded = expandedGroup === group.key;
+            return (
+              <div
+                key={group.key}
+                className={`bg-white border transition-all rounded-xl overflow-hidden shadow-sm ${
+                  isExpanded ? 'border-gray-300 ring-1 ring-gray-200' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                {/* Group Header Row */}
+                <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div
+                    onClick={() => setExpandedGroup(isExpanded ? null : group.key)}
+                    className="flex items-center gap-3 cursor-pointer flex-1 min-w-0 select-none"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-700 flex items-center justify-center shrink-0">
+                      <Layers className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-base font-bold text-gray-900 leading-snug">{group.label}</h2>
+                        <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                          key: {group.key}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {group.options.length} {group.options.length === 1 ? 'option' : 'options'} configured
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions & Expand Chevron */}
+                  <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                    <Link
+                      href={`/admin/condition-attributes/${group.key}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>Edit Group</span>
+                    </Link>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteGroup(group.key);
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
+                      title="Delete Group"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      onClick={() => setExpandedGroup(isExpanded ? null : group.key)}
+                      className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                      aria-label="Toggle options"
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="w-5 h-5 text-gray-700" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Expanded Options Drawer */}
+                {isExpanded && (
+                  <div className="border-t border-gray-100 bg-gray-50/70 p-4 sm:p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-600">
+                        <Percent className="w-3.5 h-3.5 text-gray-500" />
+                        <span>Configured Options & Deductions</span>
+                      </div>
+                      <Link
+                        href={`/admin/condition-attributes/${group.key}/option/new`}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 hover:text-violet-900 bg-violet-100/80 px-2.5 py-1 rounded-md transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Option</span>
+                      </Link>
+                    </div>
+
+                    <div className="grid gap-2.5">
+                      {group.options.length === 0 ? (
+                        <div className="p-4 text-center text-xs text-gray-500 bg-white rounded-lg border border-dashed border-gray-200">
+                          No options added to this group yet. Click "+ Add Option" above.
+                        </div>
+                      ) : (
+                        group.options.map((option: any) => {
+                          const modifierPercent = Number(option.priceModifier) * 100;
+                          const isZero = modifierPercent === 0;
+
+                          return (
+                            <div
+                              key={option.value}
+                              className="flex items-center justify-between bg-white p-3.5 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors gap-3"
+                            >
+                              <div className="min-w-0">
+                                <div className="font-semibold text-gray-900 text-xs sm:text-sm">
+                                  {option.label}
+                                </div>
+                                <div className="text-xs text-gray-500 font-mono mt-0.5">
+                                  value: {option.value}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4 shrink-0">
+                                {/* Modifier Badge */}
+                                <div
+                                  className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 ${
+                                    isZero
+                                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  }`}
+                                >
+                                  {isZero ? (
+                                    <span>0% deduction (Full Value)</span>
+                                  ) : (
+                                    <span>-{Math.abs(modifierPercent).toFixed(0)}% deduction</span>
+                                  )}
+                                </div>
+
+                                {/* Option Actions */}
+                                <div className="flex items-center gap-2">
+                                  <Link
+                                    href={`/admin/condition-attributes/${group.key}/option/${option.value}`}
+                                    className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                                    title="Edit Option"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </Link>
+                                  <button
+                                    onClick={() => deleteOption(option.value)}
+                                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    title="Delete Option"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
 
-      {groups.length === 0 && !loading && (
-        <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
-          <p className="text-gray-600">No attribute groups found</p>
+      {!loading && groups.length === 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-gray-600 space-y-3">
+          <Sliders className="w-8 h-8 text-gray-400 mx-auto" />
+          <p className="font-semibold text-gray-900">No condition attribute groups found</p>
+          <p className="text-xs text-gray-500 max-w-sm mx-auto">
+            Attribute groups define questions during customer device trade-in assessments.
+          </p>
+          <Link
+            href="/admin/condition-attributes/new"
+            className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-gray-800"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Create First Group</span>
+          </Link>
         </div>
       )}
     </div>

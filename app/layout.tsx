@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Image from "next/image";
-import Link from "next/link";
 import { AuthProvider } from "./providers";
-import { Inter } from 'next/font/google';
+import { Inter, Fira_Sans } from 'next/font/google';
 
 const inter = Inter({ 
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter'
+});
+
+const firaSans = Fira_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-fira-sans'
 });
 
 export const metadata: Metadata = {
@@ -25,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className={inter.className}>
+    <html lang="en" className={firaSans.variable}>
+      <body className={firaSans.className}>
         <AuthProvider>
         {/* <header className="py-6 px-6 bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto flex justify-between items-center">

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const boosts = await prisma.priceBoost.findMany({
+    const boosts = await prisma.pricingRule.findMany({
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(boosts);
@@ -15,20 +15,20 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, amount, type, appliesTo, startDate, endDate, isActive } = body;
+    const { name, description, baseModel, condition, priceAdjustment, isPercentage, isActive } = body;
 
-    if (!name || amount === undefined || !type) {
+    if (!name || priceAdjustment === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const boost = await prisma.priceBoost.create({
+    const boost = await prisma.pricingRule.create({
       data: {
         name,
-        amount,
-        type,
-        appliesTo: appliesTo || 'ALL',
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
+        description,
+        baseModel: baseModel || 'ALL',
+        condition,
+        priceAdjustment,
+        isPercentage: isPercentage !== undefined ? isPercentage : false,
         isActive: isActive !== undefined ? isActive : true,
       },
     });
@@ -38,3 +38,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create promotion' }, { status: 500 });
   }
 }
+

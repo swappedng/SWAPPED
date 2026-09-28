@@ -15,6 +15,8 @@ model Swap {
   tradeInValue  Float
   newPhonePrice Float
   amountToPay   Float
+  contactEmail  String?
+  contactPhone  String?
   createdAt     DateTime     @default(now())
   appointment   Appointment?
 }
@@ -89,6 +91,35 @@ model PhoneModel {
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Customer-facing upgrade catalogue. Categories and their descriptions are
+// deliberately configurable so the wording in the trade-in flow is managed
+// from the admin portal.
+model PhoneSaleCategory {
+  id          String              @id @default(cuid())
+  key         String              @unique
+  label       String
+  description String?
+  isActive    Boolean             @default(true)
+  order       Int                 @default(0)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  prices      PhoneSellingPrice[]
+}
+
+model PhoneSellingPrice {
+  id         String            @id @default(cuid())
+  categoryId String
+  category   PhoneSaleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  model      String
+  storage    String
+  price      Float
+  isActive   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([categoryId, model, storage])
 }
 
 model PhoneCondition {

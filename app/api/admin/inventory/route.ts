@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const items = await prisma.tradeInCatalog.findMany({
+    const items = await prisma.phoneModel.findMany({
       orderBy: { order: 'asc' },
     });
     return NextResponse.json(items);
@@ -15,19 +15,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { displayName, brand, modelName, storage, baseValue, isActive, order } = body;
+    const { label, model, storage, basePrice, value, isActive, order } = body;
 
-    if (!displayName || !modelName || !storage || baseValue === undefined) {
+    if (!label || !model || !storage || basePrice === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const item = await prisma.tradeInCatalog.create({
+    const item = await prisma.phoneModel.create({
       data: {
-        displayName,
-        brand: brand || 'Apple',
-        modelName,
+        label,
+        value: value || `${model}-${storage}`.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        model,
         storage,
-        baseValue,
+        basePrice,
         isActive: isActive !== undefined ? isActive : true,
         order: order || 0,
       },
@@ -38,3 +38,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create inventory item' }, { status: 500 });
   }
 }
+

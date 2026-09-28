@@ -1,6 +1,9 @@
 export interface PhoneModelOption {
   value: string;
   label: string;
+  model?: string;
+  storage?: string;
+  basePrice?: number;
 }
 
 let phoneModelsRequest: Promise<PhoneModelOption[]> | undefined;

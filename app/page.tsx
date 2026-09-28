@@ -11,16 +11,12 @@ export default function Home() {
 
   useEffect(() => {
     setIsVisible(true);
-    // Begin loading the form's model list while the visitor is still on home.
     loadPhoneModels().catch(() => undefined);
   }, []);
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-
-
-      {/* Hero Section */}
+  
       <section className="relative overflow-hidden h-screen">
         {/* Logo at top left */}
         <div className="absolute top-6 left-6 z-20 flex items-center gap-2">

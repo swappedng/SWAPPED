@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const steps = await prisma.assessmentStep.findMany({
+    const steps = await prisma.conditionAttributeGroup.findMany({
       orderBy: { order: 'asc' },
       include: {
         options: {
@@ -13,30 +13,32 @@ export async function GET(request: NextRequest) {
     });
     return NextResponse.json(steps);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch assessment steps' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch assessment groups' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { question, internalNote, order, isActive } = body;
+    const { label, key, description, order, isActive } = body;
 
-    if (!question) {
-      return NextResponse.json({ error: 'Question is required' }, { status: 400 });
+    if (!label || !key) {
+      return NextResponse.json({ error: 'Label and key are required' }, { status: 400 });
     }
 
-    const step = await prisma.assessmentStep.create({
+    const group = await prisma.conditionAttributeGroup.create({
       data: {
-        question,
-        internalNote,
+        label,
+        key,
+        description,
         order: order || 0,
         isActive: isActive !== undefined ? isActive : true,
       },
     });
 
-    return NextResponse.json(step, { status: 201 });
+    return NextResponse.json(group, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create assessment step' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create assessment group' }, { status: 500 });
   }
 }
+

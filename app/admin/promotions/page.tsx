@@ -12,7 +12,12 @@ export default function PromotionsPage() {
     fetch("/api/admin/promotions")
       .then((res) => res.json())
       .then((data) => {
-        setPromotions(data);
+        setPromotions(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Failed to load promotions:', error);
+        setPromotions([]);
         setLoading(false);
       });
   }, []);

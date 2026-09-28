@@ -7,7 +7,17 @@ export async function GET(req: Request) {
   const swapId = searchParams.get('swapId');
 
   if (!swapId) {
-    return NextResponse.json({ error: 'swapId is required' }, { status: 400 });
+    try {
+      const swaps = await prisma.swap.findMany({
+        include: { appointment: true },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return NextResponse.json(swaps);
+    } catch (error) {
+      console.error('Error fetching swaps:', error);
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
   }
 
   try {
@@ -34,6 +44,7 @@ export async function POST(req: Request) {
       tradeInPhone,
       newPhone,
       contactEmail,
+      contactPhone,
       swapMethod,
       tradeInValue,
       newPhonePrice,
@@ -44,10 +55,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Store contactEmail and swapMethod in the tradeInPhone JSON for now
+    // Keep legacy JSON fields for existing records, and persist contacts in
+    // dedicated columns for admin reporting.
     const tradeInPhoneWithExtras = {
       ...tradeInPhone,
       contactEmail,
+      contactPhone,
       swapMethod,
     };
 
@@ -58,6 +71,8 @@ export async function POST(req: Request) {
         tradeInValue,
         newPhonePrice,
         amountToPay,
+        contactEmail,
+        contactPhone,
       },
     });
 

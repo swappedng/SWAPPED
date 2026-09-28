@@ -9,7 +9,7 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const option = await prisma.assessmentOption.update({
+    const option = await prisma.conditionAttributeOption.update({
       where: { id },
       data: body,
     });
@@ -26,7 +26,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.assessmentOption.delete({
+    await prisma.conditionAttributeOption.delete({
       where: { id },
     });
     return NextResponse.json({ success: true });
@@ -34,3 +34,4 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to delete option' }, { status: 500 });
   }
 }
+

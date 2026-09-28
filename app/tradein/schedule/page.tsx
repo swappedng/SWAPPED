@@ -7,6 +7,8 @@ import { AppointmentScheduler, AppointmentDetails, AppointmentFormData } from '.
 function SchedulePageContent() {
     const [isStepValid, setIsStepValid] = useState(false);
     const [appointmentData, setAppointmentData] = useState<AppointmentDetails | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState('');
     const [appointmentFormData, setAppointmentFormData] = useState<AppointmentFormData>({
         appointmentType: { value: 'house_call', label: 'Certified Expert House Call' },
         date: null,
@@ -17,8 +19,14 @@ function SchedulePageContent() {
     const swapId = searchParams.get('swapId');
 
     const handleNext = async () => {
-    if (!swapId || !appointmentData) return;
+    if (!swapId) {
+        setError('Your swap details are missing. Please start the trade-in again.');
+        return;
+    }
+    if (!appointmentData) return;
 
+        setIsSaving(true);
+        setError('');
         try {
             const response = await fetch('/api/appointments', {
                 method: 'POST',
@@ -34,12 +42,16 @@ function SchedulePageContent() {
             });
 
             if (response.ok) {
-                router.push('/tradein/confirm');
+                router.push(`/tradein/confirm?swapId=${encodeURIComponent(swapId)}`);
             } else {
-                console.error('Failed to save appointment');
+                const result = await response.json().catch(() => null);
+                setError(result?.error || 'We could not save your appointment. Please try again.');
             }
         } catch (error) {
             console.error('Error saving appointment:', error);
+            setError('We could not save your appointment. Please try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -104,6 +116,10 @@ function SchedulePageContent() {
                 onValidationChange={setIsStepValid} 
             />
 
+            {error && (
+              <p role="alert" className="mt-4 text-sm font-medium text-red-600">{error}</p>
+            )}
+
             <div className="flex gap-3 mt-8">
               <button 
                 onClick={handleBack}
@@ -118,7 +134,7 @@ function SchedulePageContent() {
               </button>
               <button 
                 onClick={handleNext}
-                disabled={!isStepValid}
+                disabled={!isStepValid || isSaving}
                 className="
                   relative flex items-center justify-center px-8 py-4 flex-1
                   bg-gradient-to-b from-[#1D1B1C] via-[#191718] to-[#252120]
@@ -128,7 +144,7 @@ function SchedulePageContent() {
                   shadow-[inset_0px_0px_0.25px_1.25px_#262524,inset_3px_5px_2px_-4.75px_#FFFFFF,inset_1.25px_1.5px_0px_rgba(0,0,0,0.75),inset_0px_4.75px_0.25px_-2.5px_#FBFBFB,inset_1px_1px_3px_3px_#1A1818,inset_0px_-3px_1px_rgba(0,0,0,0.5),inset_2.5px_-2px_3px_rgba(124,108,94,0.75),inset_0px_-3px_3px_1px_rgba(255,245,221,0.1)]
                 "
               >
-                Confirm & Finish
+                {isSaving ? 'Saving...' : 'Confirm & Finish'}
               </button>
             </div>
           </div>

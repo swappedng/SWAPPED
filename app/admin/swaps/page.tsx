@@ -1,111 +1,104 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, Calendar, Phone, Mail, ArrowRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, Mail, Phone, Search, Smartphone, Users } from "lucide-react";
+
+type Swap = {
+  id: string;
+  tradeInPhone?: { model?: string; storage?: string; contactEmail?: string; contactPhone?: string };
+  newPhone?: { model?: string; storage?: string };
+  contactEmail?: string;
+  contactPhone?: string;
+  tradeInValue: number;
+  newPhonePrice: number;
+  amountToPay: number;
+  createdAt: string;
+  appointment?: { date: string; time: string; appointmentType?: string } | null;
+};
 
 export default function SwapsPage() {
-  const [swaps, setSwaps] = useState<any[]>([]);
+  const [swaps, setSwaps] = useState<Swap[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/api/swaps")
-      .then((res) => res.json())
-      .then((data) => {
-        setSwaps(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching swaps:', error);
-        setSwaps([]);
-        setLoading(false);
-      });
+    const loadSwaps = async () => {
+      try {
+        const response = await fetch("/api/swaps");
+        const data = await response.json();
+        if (!response.ok || !Array.isArray(data)) throw new Error(data?.error || "Could not load customer requests");
+        setSwaps(data);
+      } catch (loadError) {
+        console.error("Error fetching swaps:", loadError);
+        setError(loadError instanceof Error ? loadError.message : "Could not load customer requests");
+      } finally { setLoading(false); }
+    };
+    loadSwaps();
   }, []);
 
-  const filteredSwaps = swaps.filter((swap) => {
-    const email = swap.tradeInPhone?.contactEmail || "";
-    const searchLower = search.toLowerCase();
-    return email.toLowerCase().includes(searchLower);
-  });
+  const filteredSwaps = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return swaps;
+    return swaps.filter((swap) => [
+      swap.contactEmail, swap.tradeInPhone?.contactEmail,
+      swap.contactPhone, swap.tradeInPhone?.contactPhone,
+      swap.tradeInPhone?.model, swap.newPhone?.model,
+    ].some((value) => value?.toLowerCase().includes(term)));
+  }, [search, swaps]);
 
-  return (
-    <div style={{ padding: "24px" }}>
-      <div style={{ marginBottom: "32px" }}>
-        <h1 style={{ fontSize: "24px", fontWeight: 600, color: "#111827", marginBottom: "4px" }}>Swap Deals</h1>
-        <p style={{ fontSize: "14px", color: "#6b7280" }}>View all current trade-in swap deals.</p>
+  const getEmail = (swap: Swap) => swap.contactEmail || swap.tradeInPhone?.contactEmail || "No email";
+  const getPhone = (swap: Swap) => swap.contactPhone || swap.tradeInPhone?.contactPhone || "No phone";
+
+  return <div className="mx-auto max-w-5xl space-y-8">
+    <header className="flex flex-col gap-2 pb-4 border-b border-slate-100">
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900">Customer requests</h1>
+      <p className="text-sm text-slate-500">Every trade-in request submitted through the website appears here.</p>
+    </header>
+
+    <section className="grid gap-6 sm:grid-cols-3">
+      <div className="flex flex-col gap-1 p-2"><p className="text-sm font-medium text-slate-500">All requests</p><p className="text-3xl font-semibold text-slate-900">{loading ? "—" : swaps.length}</p></div>
+      <div className="flex flex-col gap-1 p-2"><p className="text-sm font-medium text-slate-500">Booked</p><p className="text-3xl font-semibold text-slate-900">{loading ? "—" : swaps.filter((swap) => swap.appointment).length}</p></div>
+      <div className="flex flex-col gap-1 p-2"><p className="text-sm font-medium text-slate-500">Awaiting booking</p><p className="text-3xl font-semibold text-slate-900">{loading ? "—" : swaps.filter((swap) => !swap.appointment).length}</p></div>
+    </section>
+
+    <section className="space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:w-80"><Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search requests..." className="w-full rounded-md bg-black/5 py-1.5 pl-8 pr-3 text-sm outline-none transition focus:bg-black/10 placeholder:text-slate-500" /></div>
       </div>
 
-      <div style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #e5e7eb", overflow: "hidden" }}>
-        <div style={{ padding: "16px", borderBottom: "1px solid #e5e7eb", display: "flex", gap: "12px" }}>
-          <div style={{ position: "relative", flex: 1 }}>
-            <Search className="h-4 w-4" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
-            <input
-              type="text"
-              placeholder="Search by email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 12px 8px 36px",
-                borderRadius: "6px",
-                border: "1px solid #d1d5db",
-                fontSize: "14px",
-                outline: "none",
-              }}
-            />
+      {error && <div className="rounded-md bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</div>}
+      {loading && <div className="py-12 text-center text-sm text-slate-500">Loading requests…</div>}
+      {!loading && !error && filteredSwaps.length === 0 && <div className="py-12 text-center"><p className="text-sm font-medium text-slate-800">{search ? "No matching requests" : "No customer requests yet"}</p></div>}
+
+      {!loading && filteredSwaps.length > 0 && <div className="flex flex-col gap-2 -mx-3">
+        {filteredSwaps.map((swap) => <article key={swap.id} className="p-3 rounded-md transition hover:bg-black/5 group cursor-default">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3 w-full sm:w-1/3">
+              <div className="h-8 w-8 shrink-0 rounded flex items-center justify-center bg-black/5 text-slate-500 mt-0.5"><Smartphone className="h-4 w-4" /></div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2"><h3 className="text-sm font-semibold text-slate-900 truncate ">{swap.tradeInPhone?.model || "Unknown trade-in"}{swap.tradeInPhone?.storage ? ` · ${swap.tradeInPhone.storage}` : ""}</h3></div>
+                <p className="text-xs text-slate-500 truncate">Upgrading to {swap.newPhone?.model || "unspecified"}</p>
+                <p className="text-xs text-slate-400 mt-1">{new Date(swap.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-4 w-full sm:w-2/3 text-sm">
+              <div className="min-w-0">
+                <a href={`mailto:${getEmail(swap)}`} className="truncate block font-medium text-slate-700 hover:text-slate-900">{getEmail(swap)}</a>
+                <a href={`tel:${getPhone(swap)}`} className="text-xs text-slate-500 hover:text-slate-900 block truncate mt-0.5">{getPhone(swap)}</a>
+              </div>
+              <div>
+                <p className="font-semibold text-slate-900">₦{Number(swap.amountToPay || 0).toLocaleString()}</p>
+                <p className="text-xs text-slate-500">Trade-in: ₦{Number(swap.tradeInValue || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                {swap.appointment ? <div><p className="font-medium text-slate-900">{new Date(swap.appointment.date).toLocaleDateString()}</p><p className="text-xs text-slate-500">{swap.appointment.time}</p></div> : <p className="text-sm text-amber-600">Awaiting booking</p>}
+              </div>
+            </div>
           </div>
-        </div>
-
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ background: "#f9fafb", textAlign: "left" }}>
-              <th style={{ padding: "12px 16px", fontSize: "12px", fontWeight: 600, color: "#6b7280", textTransform: "uppercase" }}>Customer</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", fontWeight: 600, color: "#6b7280", textTransform: "uppercase" }}>Trade-In Value</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", fontWeight: 600, color: "#6b7280", textTransform: "uppercase" }}>New Phone Price</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", fontWeight: 600, color: "#6b7280", textTransform: "uppercase" }}>Amount to Pay</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", fontWeight: 600, color: "#6b7280", textTransform: "uppercase" }}>Appointment</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", fontWeight: 600, color: "#6b7280", textTransform: "uppercase" }}>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={6} style={{ padding: "32px", textAlign: "center", color: "#9ca3af" }}>Loading swaps...</td></tr>
-            ) : filteredSwaps.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: "32px", textAlign: "center", color: "#9ca3af" }}>No swaps found.</td></tr>
-            ) : (
-              filteredSwaps.map((swap) => (
-                <tr key={swap.id} style={{ borderTop: "1px solid #e5e7eb" }}>
-                  <td style={{ padding: "16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <Mail className="h-4 w-4" style={{ color: "#9ca3af" }} />
-                      <div>
-                        <div style={{ fontWeight: 500, color: "#111827" }}>{swap.tradeInPhone?.contactEmail || 'No email'}</div>
-                        <div style={{ fontSize: "12px", color: "#9ca3af" }}>ID: {swap.id.slice(0, 8)}...</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ padding: "16px", fontSize: "14px", fontWeight: 500, color: "#059669" }}>₦{swap.tradeInValue?.toLocaleString() || 0}</td>
-                  <td style={{ padding: "16px", fontSize: "14px", fontWeight: 500, color: "#111827" }}>₦{swap.newPhonePrice?.toLocaleString() || 0}</td>
-                  <td style={{ padding: "16px", fontSize: "14px", fontWeight: 600, color: "#6366f1" }}>₦{swap.amountToPay?.toLocaleString() || 0}</td>
-                  <td style={{ padding: "16px" }}>
-                    {swap.appointment ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "13px", color: "#059669" }}>
-                        <Calendar className="h-3 w-3" />
-                        {new Date(swap.appointment.date).toLocaleDateString()} at {swap.appointment.time}
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: "13px", color: "#9ca3af" }}>Not scheduled</span>
-                    )}
-                  </td>
-                  <td style={{ padding: "16px", fontSize: "13px", color: "#6b7280" }}>
-                    {new Date(swap.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+        </article>)}
+      </div>}
+    </section>
+  </div>;
 }

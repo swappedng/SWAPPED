@@ -4,18 +4,18 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { stepId, label, impactType, impactValue, order, isActive } = body;
+    const { groupId, label, value, priceModifier, order, isActive } = body;
 
-    if (!stepId || !label || !impactType || impactValue === undefined) {
+    if (!groupId || !label || !value) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const option = await prisma.assessmentOption.create({
+    const option = await prisma.conditionAttributeOption.create({
       data: {
-        stepId,
+        groupId,
         label,
-        impactType,
-        impactValue,
+        value,
+        priceModifier: priceModifier ?? 1.0,
         order: order || 0,
         isActive: isActive !== undefined ? isActive : true,
       },
@@ -26,3 +26,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create option' }, { status: 500 });
   }
 }
+

@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const item = await prisma.tradeInCatalog.findUnique({
+    const item = await prisma.phoneModel.findUnique({
       where: { id },
     });
 
@@ -29,7 +29,7 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const item = await prisma.tradeInCatalog.update({
+    const item = await prisma.phoneModel.update({
       where: { id },
       data: body,
     });
@@ -46,7 +46,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.tradeInCatalog.delete({
+    await prisma.phoneModel.delete({
       where: { id },
     });
     return NextResponse.json({ success: true });
@@ -54,3 +54,4 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 });
   }
 }
+

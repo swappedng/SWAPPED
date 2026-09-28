@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Apple San Francisco Font System */
 @layer base {
   html {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
@@ -107,8 +106,6 @@
 
 .hero-phone-lying {
   width: clamp(24rem, 42vw, 38rem);
-  /* The source artwork has generous transparent canvas space; this brings the
-     visible phones together for a subtle, layered overlap. */
   margin-left: clamp(-22rem, -18vw, -15rem);
   animation-delay: -2.4s;
   position: relative;

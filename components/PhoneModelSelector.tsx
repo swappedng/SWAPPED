@@ -99,7 +99,7 @@ export default function PhoneModelSelector({ formData, setFormData, onSelect }: 
             // Extract storage from model value (e.g., "15pro-256" -> "256")
             const modelValue = option.value;
             const parts = modelValue.split('-');
-            const storage = parts.length > 1 ? parts[parts.length - 1] : '';
+            const storage = option.storage || (parts.length > 1 ? parts[parts.length - 1] : '');
             
             setFormData({ 
                 ...formData, 
@@ -110,7 +110,6 @@ export default function PhoneModelSelector({ formData, setFormData, onSelect }: 
             setFormData({ ...formData, [field]: option ? option.value : '' });
         }
         
-        setFormData({ ...formData, [field]: option ? option.value : '' });
         if (option && onSelect) {
             onSelect();
         }

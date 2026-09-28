@@ -13,7 +13,12 @@ export default function InventoryPage() {
     fetch("/api/admin/inventory")
       .then((res) => res.json())
       .then((data) => {
-        setItems(data);
+        setItems(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Failed to load inventory:', error);
+        setItems([]);
         setLoading(false);
       });
   }, []);

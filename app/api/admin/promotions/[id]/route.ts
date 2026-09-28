@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const boost = await prisma.priceBoost.findUnique({
+    const boost = await prisma.pricingRule.findUnique({
       where: { id },
     });
 
@@ -29,7 +29,7 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const boost = await prisma.priceBoost.update({
+    const boost = await prisma.pricingRule.update({
       where: { id },
       data: body,
     });
@@ -46,7 +46,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.priceBoost.delete({
+    await prisma.pricingRule.delete({
       where: { id },
     });
     return NextResponse.json({ success: true });
@@ -54,3 +54,4 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to delete promotion' }, { status: 500 });
   }
 }
+
