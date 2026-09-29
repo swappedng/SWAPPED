@@ -41,8 +41,8 @@ export function PillSelector({
               "relative inline-flex items-center justify-center font-semibold transition-all outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 active:scale-[0.98]",
               sizeClasses[size],
               isSelected
-                ? "bg-stone-900 text-white shadow-xs"
-                : "bg-stone-100 text-zinc-700 hover:border-stone-300 hover:bg-stone-200 hover:text-stone-900"
+                ? "bg-zinc-800 text-white shadow-xs"
+                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900"
             )}
           >
             <span>{option.label}</span>

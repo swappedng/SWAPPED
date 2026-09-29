@@ -43,10 +43,10 @@ export function OptionCardList({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "group relative flex min-h-[56px] w-full items-center justify-between rounded-xl border p-3 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 active:scale-[0.99]",
+              "group relative flex min-h-[56px] w-full items-center justify-between rounded-xl border p-3 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-zinc-800/20 active:scale-[0.99]",
               isSelected
-                ? "border-[#18181b] bg-zinc-50/80 text-zinc-900 shadow-xs ring-1 ring-[#18181b]"
-                : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50/50"
+                ? "border-zinc-800 bg-zinc-800 text-white shadow-xs"
+                : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50/80"
             )}
           >
             <span className="flex items-center gap-3.5 pr-2">
@@ -55,8 +55,8 @@ export function OptionCardList({
                   className={cn(
                     "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold transition-colors",
                     isSelected
-                      ? "border-zinc-900 bg-zinc-900 text-white"
-                      : "border-zinc-200 bg-zinc-50 text-zinc-600 group-hover:border-zinc-300"
+                      ? "border-zinc-700 bg-zinc-800 text-white"
+                      : "border-zinc-200 bg-zinc-50 text-zinc-500 group-hover:border-zinc-300"
                   )}
                 >
                   {option.image}
@@ -64,17 +64,20 @@ export function OptionCardList({
               )}
               <span className="flex flex-col">
                 <span className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-zinc-900">
+                  <span className={cn("text-sm font-semibold", isSelected ? "text-white" : "text-zinc-800")}>
                     {option.label}
                   </span>
                   {option.badge && (
-                    <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-600">
+                    <span className={cn(
+                      "rounded-md px-1.5 py-0.5 text-[10px] font-bold",
+                      isSelected ? "bg-zinc-800 text-zinc-200" : "bg-zinc-100 text-zinc-700"
+                    )}>
                       {option.badge}
                     </span>
                   )}
                 </span>
                 {option.description && (
-                  <span className="mt-0.5 text-xs text-zinc-500 leading-relaxed">
+                  <span className={cn("mt-0.5 text-xs leading-relaxed", isSelected ? "text-zinc-300" : "text-zinc-500")}>
                     {option.description}
                   </span>
                 )}
@@ -85,7 +88,7 @@ export function OptionCardList({
               className={cn(
                 "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all",
                 isSelected
-                  ? "border-[#18181b] bg-[#18181b] text-white scale-100"
+                  ? "border-white bg-white text-zinc-800 scale-100"
                   : "border-zinc-300 bg-white text-transparent group-hover:border-zinc-400"
               )}
             >
