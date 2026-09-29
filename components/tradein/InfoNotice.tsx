@@ -12,13 +12,13 @@ export function InfoNotice({ title, children, className }: InfoNoticeProps) {
   return (
     <aside
       className={cn(
-        "flex items-start gap-3 rounded-2xl bg-zinc-100/80 p-3.5 text-xs text-zinc-700 sm:text-sm border border-zinc-200/60 leading-relaxed",
+        "flex items-start gap-3 rounded-2xl border border-[#e7e2eb] bg-[#f8f6f2] p-3.5 text-xs leading-relaxed text-[#69717d] sm:text-sm",
         className
       )}
     >
-      <Info className="h-4 w-4 shrink-0 stroke-[2.2] text-zinc-500 mt-0.5" />
+      <Info className="mt-0.5 h-4 w-4 shrink-0 stroke-[2.2] text-[#4c00bd]" />
       <div>
-        {title && <span className="font-semibold text-zinc-900">{title}: </span>}
+        {title && <span className="font-semibold text-[#192331]">{title}: </span>}
         {children}
       </div>
     </aside>

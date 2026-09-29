@@ -31,16 +31,16 @@ export function StepCard({
   return (
     <section
       className={cn(
-        "rounded-3xl bg-white p-5 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-zinc-100/80 sm:p-7",
+        "rounded-[28px] border border-[#e7e2eb] bg-[#fffdfb] p-5 shadow-[0_20px_50px_rgba(25,35,49,0.05)] sm:p-7",
         className
       )}
     >
       <header className="mb-6">
-        <h1 className="text-xl font-medium tracking-tight text-zinc-900 sm:text-2xl">
+        <h1 className="text-xl font-semibold tracking-tight text-[#192331] sm:text-2xl">
           {title}
         </h1>
         {description && (
-          <p className="text-sm text-zinc-500 leading-relaxed">
+          <p className="text-sm leading-relaxed text-[#69717d]">
             {description}
           </p>
         )}
@@ -55,7 +55,7 @@ export function StepCard({
       {children}
 
       {aside && (
-        <div className="mt-6 rounded-2xl bg-zinc-50 p-4 border border-zinc-100 text-xs text-zinc-600 leading-relaxed">
+        <div className="mt-6 rounded-2xl border border-[#e7e2eb] bg-[#f8f6f2] p-4 text-xs leading-relaxed text-[#69717d]">
           {aside}
         </div>
       )}

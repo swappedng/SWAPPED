@@ -1,27 +1,95 @@
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Quote, Sparkles } from "lucide-react";
 
 const stories = [
-  { title: "A little less back-and-forth.", quote: "I could see what I needed to add before making a decision. That made planning my upgrade so much easier.", context: "The estimate experience" },
-  { title: "Same routine. New iPhone.", quote: "Pick the phone, check the estimate, arrange the swap. Exactly the kind of straightforward upgrade I was looking for.", context: "The upgrade experience" },
-  { title: "An upgrade that fits my day.", quote: "Having a choice between pickup and walking in makes the whole thing feel a lot more convenient.", context: "The pickup experience" },
+  {
+    name: "Uche O.",
+    location: "Lekki, Lagos",
+    avatar: "/memojis/memoji_1.png",
+    title: "A little less back-and-forth.",
+    quote:
+      "I could see what I needed to add before making a decision. That made planning my upgrade so much easier.",
+    context: "iPhone 13 to iPhone 15",
+  },
+  {
+    name: "Tobi A.",
+    location: "Ikeja, Lagos",
+    avatar: "/memojis/memoji_2.png",
+    title: "Same routine. New iPhone.",
+    quote:
+      "Pick the phone, check the estimate, arrange the swap. Exactly the kind of straightforward upgrade I was looking for.",
+    context: "iPhone 12 to iPhone 15 Pro",
+  },
+  {
+    name: "Teniola A.",
+    location: "Yaba, Lagos",
+    avatar: "/memojis/memoji_3.png",
+    title: "An upgrade that fits my day.",
+    quote:
+      "Having a choice between pickup and walking in makes the whole thing feel a lot more convenient.",
+    context: "iPhone 11 to iPhone 14",
+  },
 ];
 
 export function StoriesSection() {
   return (
-    <section id="stories" className="mx-auto max-w-[1240px] scroll-mt-8 px-6 pb-[60px] pt-[35px] min-[701px]:px-9 min-[701px]:pb-[85px] min-[701px]:pt-[50px]" aria-labelledby="stories-title">
-      <div className="block pb-6 min-[701px]:flex min-[701px]:items-center min-[701px]:justify-between min-[701px]:gap-6 min-[701px]:px-6 min-[701px]:pb-[26px]">
-        <div><h2 id="stories-title" className="mt-[17px] text-[clamp(30px,3.3vw,43px)] font-medium leading-[1.15] tracking-[-0.05em]">Small switch.<br /><span className="text-[#8591a2]">Good stories.</span></h2></div>
-        <div className="mt-[18px] min-[701px]:mt-0"><p className="mb-2 text-xs leading-[1.7] text-[#6e7785] min-[701px]:mb-[14px] min-[701px]:text-[13px]">Less time figuring it out.<br className="max-[700px]:hidden" />More time enjoying what’s next.</p></div>
+    <section
+      id="stories"
+      className="mx-auto max-w-[1240px] scroll-mt-8 px-6 pb-20 pt-16 min-[701px]:px-9 min-[701px]:pb-28 min-[701px]:pt-24"
+      aria-labelledby="stories-title"
+    >
+      <div className="mb-8 flex flex-col items-center text-center min-[701px]:mb-11">
+       
+        <div>
+          <h2
+            id="stories-title"
+            className="text-[clamp(32px,3.6vw,48px)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#192331]"
+          >
+            Upgrade stories from people like you.
+          </h2>
+         
+        </div>
       </div>
-      <div className="relative rounded-3xl bg-[linear-gradient(170deg,#f3f9ff,#d9efff_60%,#91d1fb)] p-[18px] min-[701px]:rounded-[28px] min-[701px]:px-6 min-[701px]:pb-[42px] min-[701px]:pt-7">
-        <Sparkles className="absolute -bottom-[15px] -left-[15px] z-[1] rotate-[10deg] fill-[#e3f4ff] text-white drop-shadow-[0_4px_5px_#6bace630]" size={46} strokeWidth={1} aria-hidden="true" />
-        <div className="grid grid-cols-1 gap-[14px] min-[701px]:grid-cols-3 min-[701px]:gap-[18px]">
+      <div className="relative overflow-hidden rounded-[28px] border border-[#4c00bd]/10 bg-[#f3effa] p-3 min-[701px]:rounded-[32px] min-[701px]:p-5">
+        <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-[#4c00bd]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-20 size-64 rounded-full bg-[#8e5ce6]/10 blur-3xl" />
+        <div className="relative grid grid-cols-1 gap-3 min-[701px]:grid-cols-3 min-[701px]:gap-5">
           {stories.map((story, index) => (
-            <article key={story.title} className={`relative flex min-h-60 flex-col rounded-[18px] border border-[#ffffffee] bg-[#ffffffdf] p-[23px] shadow-[0_8px_22px_#3878bd08] min-[701px]:min-h-[284px] min-[701px]:p-6 min-[701px]:max-[1050px]:p-5 ${index === 1 ? "bg-[radial-gradient(ellipse_at_75%_100%,#9ed8ff,transparent_85%),linear-gradient(160deg,white,#eaf6ff)] min-[701px]:-translate-y-[9px]" : ""}`}>
-              <span className="h-7 font-[Georgia,serif] text-[42px] leading-none text-[#7aa7d8]" aria-hidden="true">“</span>
-              <h3 className="mb-3 mt-[14px] text-[19px] font-medium leading-[1.25] tracking-[-0.04em] min-[701px]:max-w-[195px]">{story.title}</h3>
-              <p className="mb-7 text-[13px] leading-[1.75] text-[#65788f] min-[701px]:text-xs">{story.quote}</p>
-              <div className="mt-auto flex items-center gap-[9px]"><span className="grid h-[29px] w-[29px] place-items-center rounded-full border border-[#d9e9f9] bg-[#eef6fe] text-[9px] text-[#4d7cab]">0{index + 1}</span><div><strong className="block text-[10px] font-medium">Sample story</strong><small className="text-[8px] text-[#728398]">{story.context}</small></div><ArrowUpRight className="ml-auto text-[#7e9dbf]" size={17} aria-hidden="true" /></div>
+            <article
+              key={story.title}
+              className={`flex min-h-[276px] flex-col rounded-[22px] border border-white/80 bg-[#fffdfb] p-6 shadow-[0_12px_30px_rgba(76,0,189,0.06)] min-[701px]:min-h-[320px] min-[701px]:p-7 `}
+            >
+              <Quote
+                className="mb-5 text-[#4c00bd]"
+                size={25}
+                strokeWidth={1.6}
+                aria-hidden="true"
+              />
+              <h3 className="mb-3 text-[21px] font-semibold leading-[1.2] tracking-[-0.04em] text-[#192331]">
+                {story.title}
+              </h3>
+              <p className="mb-7 text-[14px] leading-[1.65] text-[#69717d]">
+                {story.quote}
+              </p>
+              <div className="mt-auto flex items-center gap-3 border-t border-[#4c00bd]/10 pt-5">
+                <div className="grid size-11 shrink-0 place-items-end overflow-hidden rounded-full bg-[#eee5fc]">
+                  <Image
+                    src={story.avatar}
+                    alt={`Memoji of ${story.name}`}
+                    width={44}
+                    height={44}
+                    className="size-11 object-contain"
+                  />
+                </div>
+                <div>
+                  <strong className="block text-sm font-semibold text-[#192331]">
+                    {story.name}
+                  </strong>
+                  <small className="block text-xs text-[#69717d]">
+                    {story.context}
+                  </small>
+                </div>
+              </div>
             </article>
           ))}
         </div>

@@ -54,7 +54,7 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
   return (
     <main
       ref={pageTop}
-      className="min-h-screen bg-[#faf8f5] px-4 py-6 text-stone-900 sm:px-6 sm:py-12"
+      className="min-h-screen bg-background px-4 py-6 text-[#192331] sm:px-6 sm:py-12"
     >
       <div className="mx-auto max-w-2xl">
         <TradeInHeader onBack={prevStep} canGoBack={step > 1} />

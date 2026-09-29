@@ -23,9 +23,9 @@ export function PillSelector({
   className,
 }: PillSelectorProps) {
   const sizeClasses = {
-    sm: "px-3 py-1 text-xs rounded-lg",
-    md: "px-3.5 py-1.5 text-sm rounded-2xl",
-    lg: "px-4 py-2 text-base rounded-2xl",
+    sm: "px-3 py-1.5 text-xs rounded-full",
+    md: "px-3.5 py-2 text-sm rounded-full",
+    lg: "px-4 py-2.5 text-base rounded-full",
   };
 
   return (
@@ -38,11 +38,11 @@ export function PillSelector({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "relative inline-flex items-center justify-center font-semibold transition-all outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 active:scale-[0.98]",
+              "relative inline-flex items-center justify-center border font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#4c00bd]/30 active:scale-[0.98]",
               sizeClasses[size],
               isSelected
-                ? "bg-zinc-800 text-white shadow-xs"
-                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900"
+                ? "border-[#4c00bd] bg-[#f3effa] text-[#4c00bd]"
+                : "border-[#e7e2eb] bg-[#fffdfb] text-[#192331] hover:border-[#4c00bd]/35 hover:bg-[#f8f5fc]"
             )}
           >
             <span>{option.label}</span>
@@ -51,8 +51,8 @@ export function PillSelector({
                 className={cn(
                   "ml-1.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
                   isSelected
-                    ? "bg-white/20 text-white"
-                    : "bg-zinc-100 text-zinc-600"
+                    ? "bg-[#4c00bd]/10 text-[#4c00bd]"
+                    : "bg-[#4c00bd]/8 text-[#4c00bd]"
                 )}
               >
                 {option.badge}

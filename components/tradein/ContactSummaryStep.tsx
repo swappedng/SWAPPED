@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Check, Mail } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 const money = (value: number) => `₦${Math.max(0, value).toLocaleString()}`;
 
@@ -30,6 +30,7 @@ export function ContactSummaryStep({
   onPhoneChange,
   onContinue,
 }: ContactSummaryStepProps) {
+  const [showBreakdown, setShowBreakdown] = useState(false);
   const valid =
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
     /^[+\d][\d\s()-]{6,}$/.test(phone);
@@ -44,79 +45,73 @@ export function ContactSummaryStep({
   return (
     <section
       aria-labelledby="estimate-title"
-      className="overflow-hidden rounded-3xl border border-zinc-100/80 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.04)]"
+      className="overflow-hidden rounded-[28px] border border-[#e7e2eb] bg-[#fffdfb] shadow-[0_20px_50px_rgba(25,35,49,0.05)]"
     >
-      <div className="px-5 py-6 sm:px-7">
-        {/* <header className="text-center">
-          <div className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50">
-            <Check aria-hidden="true" className="h-4 w-4 text-zinc-700" />
-          </div>
-          <h1 id="estimate-title" className="text-xl font-medium tracking-tight text-zinc-900 sm:text-2xl">
-            Your next iPhone is closer.
-          </h1>
-          <p className="mt-1.5 text-xs leading-relaxed text-zinc-500 sm:text-sm">
-            Your estimate is ready. Here’s what your upgrade looks like.
-          </p>
-        </header> */}
-
-        <div className="py-6 text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-zinc-500">
-            Estimated top-up
-          </p>
-          <p className="mt-2 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-[clamp(1.25rem,4vw,2rem)] font-medium leading-tight tracking-tight text-zinc-900 sm:gap-x-3">
+      <div className="px-5 pt-9 sm:px-9 sm:pt-11">
+        <div className="text-center">
+          {/* <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4c00bd]">
+            You pay only · Estimated top-up
+          </p> */}
+          <h1
+            id="estimate-title"
+            className="mt-4 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-3xl font-semibold text-[#192331] sm:gap-x-3"
+          >
             <span className="whitespace-nowrap">{money(lower)}</span>
-            <span className="font-normal text-zinc-300">–</span>
+            <span className="font-normal text-[#4c00bd]/25">–</span>
             <span className="whitespace-nowrap">{money(upper)}</span>
-          </p>
-          <p className="mx-auto mt-2 max-w-xs text-xs leading-relaxed text-zinc-500">
+          </h1>
+          <p className="mt-2 text-sm text-[#69717d] sm:text-base">
             Final amount confirmed after we inspect your device.
           </p>
         </div>
 
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-zinc-100 bg-zinc-50/80 p-3.5 sm:gap-4 sm:p-4">
-          <div className="min-w-0 text-right">
-            <p className="text-xs text-zinc-500">Trading in</p>
-            <p className="mt-1 break-words text-sm font-medium leading-snug text-zinc-700">
-              {tradeInPhone}
-            </p>
+        <button
+          type="button"
+          onClick={() => setShowBreakdown((current) => !current)}
+          aria-expanded={showBreakdown}
+          aria-controls="estimate-breakdown"
+          className="mx-auto mt-9 flex items-center gap-1 text-sm font-semibold text-[#4c00bd] transition-colors hover:text-[#3d0099] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#4c00bd]"
+        >
+          {showBreakdown ? "Hide breakdown" : "See breakdown"}
+          <ChevronDown
+            className={`size-4 transition-transform ${showBreakdown ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
+        </button>
+
+        {showBreakdown && (
+          <div id="estimate-breakdown" className="mt-6 border-y border-[#e7e2eb] py-3 text-sm sm:text-base">
+            <div className="flex items-center justify-between gap-5 py-3 text-[#69717d]">
+              <span>{nextPhone}{category && ` · ${category}`}</span>
+              <span className="shrink-0">Your next iPhone</span>
+            </div>
+            <div className="flex items-center justify-between gap-5 border-t border-[#e7e2eb] py-3 text-[#69717d]">
+              <span>Your trade-in estimate</span>
+              <span className="shrink-0">− {money(upper)}</span>
+            </div>
+            <div className="flex items-center justify-between gap-5 border-t border-[#e7e2eb] pt-4 font-semibold text-[#192331]">
+              <span>You pay</span>
+              <span className="shrink-0">{money(lower)} – {money(upper)}</span>
+            </div>
+            <p className="mt-4 text-xs text-[#69717d]">Trading in: {tradeInPhone}</p>
           </div>
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-white">
-            <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 text-zinc-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-xs text-zinc-500">
-              Upgrading to{category && <span className="text-zinc-400"> · {category}</span>}
-            </p>
-            <p className="mt-1 break-words text-sm font-medium leading-snug text-zinc-900">
-              {nextPhone}
-            </p>
-          </div>
-        </div>
+        )}
       </div>
 
-      <form onSubmit={submit} className="border-t border-zinc-100 bg-zinc-50/50 px-5 py-5 sm:px-7">
-        <div className="mb-4 flex items-start gap-2.5">
-          <Mail aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
-          <div>
-            <h2 className="text-sm font-medium tracking-tight text-zinc-900">
-              Keep the details handy.
-            </h2>
-            <p id="estimate-email-note" className="mt-1 text-xs leading-relaxed text-zinc-500">
-              We’ll email you the full breakdown.
-            </p>
-          </div>
-        </div>
+      <form onSubmit={submit} className="mt-9 border-t border-[#e7e2eb] px-5 py-7 sm:px-9 sm:py-8">
+        <h2 className="mb-5 text-xl font-semibold tracking-[-0.03em] text-[#192331]">
+          Where should we send your estimate?
+        </h2>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="estimate-email" className="mb-1.5 block text-xs font-medium text-zinc-700">
+            <label htmlFor="estimate-email" className="mb-1.5 block text-xs font-medium text-[#192331]">
               Email address
             </label>
             <Input
               id="estimate-email"
               name="email"
               autoComplete="email"
-              aria-describedby="estimate-email-note"
               required
               type="email"
               value={email}
@@ -126,7 +121,7 @@ export function ContactSummaryStep({
             />
           </div>
           <div>
-            <label htmlFor="estimate-phone" className="mb-1.5 block text-xs font-medium text-zinc-700">
+            <label htmlFor="estimate-phone" className="mb-1.5 block text-xs font-medium text-[#192331]">
               Phone number
             </label>
             <Input
@@ -143,11 +138,11 @@ export function ContactSummaryStep({
           </div>
         </div>
 
-        <Button type="submit" disabled={!valid} className="mt-4 h-11 w-full font-medium">
+        <Button type="submit" variant="brand" disabled={!valid} className="mt-4 h-11 w-full font-medium">
           Continue
           <ArrowRight aria-hidden="true" />
         </Button>
-        <p className="mt-2.5 text-center text-xs text-zinc-500">
+        <p className="mt-2.5 text-center text-xs text-[#69717d]">
           Next, choose how you’d like to complete your swap.
         </p>
       </form>

@@ -40,18 +40,7 @@ export function HeroSection() {
               <ArrowUpRight size={18} strokeWidth={2.5} aria-hidden="true" />
             </span>
           </Link>
-          {/* <a
-            href="#how-it-works"
-            className="inline-flex min-h-11 items-center gap-2 text-[13px] font-medium text-[#505764] transition-colors hover:text-[#4c00bd] focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#4c00bd] motion-reduce:transition-none"
-          >
-            How it works
-            <ArrowDown size={14} aria-hidden="true" />
-          </a> */}
         </div>
-        {/* <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] tracking-normal text-[#747b84]">
-          <Check size={12} aria-hidden="true" />
-          Final value confirmed after inspection.
-        </p> */}
       </div>
 
       <SwapIllustration />

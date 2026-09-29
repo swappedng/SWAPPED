@@ -1,10 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import { StepCard } from './StepCard';
 import { PillSelector } from './PillSelector';
 import { OptionCardList } from './OptionCardList';
-import { ShieldCheck, PackageCheck, Smartphone } from 'lucide-react';
 import type { PhoneSellingPrice } from '@/types/tradein';
 
 type Option = { value: string; label: string };
@@ -44,11 +44,11 @@ export function UpgradeCategoryStep({
     return 'Choose the option that works best for you';
   };
 
-  const getCategoryIcon = (label: string) => {
+  const getCategoryImage = (label: string) => {
     const normalized = label.toLowerCase();
-    if (normalized.includes('sealed')) return <PackageCheck className="h-4 w-4" />;
-    if (normalized.includes('opened')) return <Smartphone className="h-4 w-4" />;
-    return <ShieldCheck className="h-4 w-4" />;
+    if (normalized.includes('sealed')) return '/condition/Sealed.png';
+    if (normalized.includes('opened')) return '/condition/Opened.png';
+    return '/condition/Used.png';
   };
 
   return (
@@ -64,7 +64,16 @@ export function UpgradeCategoryStep({
         options={options.map((option) => ({
           ...option,
           description: option.description || fallbackDescription(option.label),
-          image: getCategoryIcon(option.label),
+          image: (
+            <Image
+              src={getCategoryImage(option.label)}
+              alt=""
+              width={48}
+              height={64}
+              className="h-16 w-10 object-contain"
+            />
+          ),
+          imageSize: 'preview' as const,
         }))}
         value={value}
         onChange={onSelect}
@@ -157,7 +166,7 @@ export function UpgradePhoneStep({
 
       {selectedGroup && (
         <section className="mt-6">
-          <h2 className="mb-2.5 text-sm font-semibold text-zinc-500">
+          <h2 className="mb-2.5 text-sm font-semibold text-[#69717d]">
             Which model exactly?
           </h2>
           <OptionCardList
@@ -174,7 +183,7 @@ export function UpgradePhoneStep({
 
       {selectedModel && (
         <section className="mt-6">
-          <h2 className="mb-2.5 text-sm font-semibold text-zinc-500">
+          <h2 className="mb-2.5 text-sm font-semibold text-[#69717d]">
             Storage Capacity
           </h2>
           <PillSelector

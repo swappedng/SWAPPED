@@ -1,12 +1,31 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { Brand } from "./Brand";
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-[#eaf0f8] bg-[#f4f8fd] px-6 pb-[25px] pt-[34px] min-[701px]:px-[max(36px,calc((100vw-1098px)/2))] min-[701px]:pb-[26px] min-[701px]:pt-[50px]">
-      <div className="block pb-[30px] min-[701px]:flex min-[701px]:items-center min-[701px]:justify-between min-[701px]:gap-6 min-[701px]:pb-[43px]"><div><span className="text-[9px] font-medium tracking-[0.15em] text-[#768599]">YOUR NEXT CHAPTER STARTS HERE</span><h2 className="mt-3 text-[30px] font-medium leading-[1.15] tracking-[-0.05em] min-[701px]:text-[35px]">Ready when you are.</h2></div><Link href="/tradein" className="button-primary mt-[22px] gap-2 px-3 py-2 text-[13px] tracking-[0.9px] min-[701px]:mt-0">Let’s swap <ArrowUpRight size={18} aria-hidden="true" /></Link></div>
-      <div className="flex flex-wrap items-center justify-between gap-6 border-t border-[#dfe8f2] pt-[29px]"><div><Brand /><p className="mt-[9px] text-[10px] text-[#7b8798]">A simpler way to your next iPhone.</p></div><nav className="order-1 flex w-full items-center gap-[22px] text-[11px] text-[#647287] min-[701px]:order-none min-[701px]:w-auto min-[701px]:gap-6" aria-label="Footer navigation"><a className="hover:text-[#3b82f6] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-blue-400" href="#how-it-works">How it works</a><a className="hover:text-[#3b82f6] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-blue-400" href="#faqs">FAQs</a><Link className="inline-flex items-center gap-[5px] hover:text-[#3b82f6] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-blue-400" href="/tradein">Start your swap <ArrowUpRight size={13} aria-hidden="true" /></Link></nav><span className="ml-auto text-[9px] text-[#8895a5] min-[701px]:ml-0 min-[701px]:text-[10px]">© {new Date().getFullYear()} Swapped</span></div>
+    <footer className="relative isolate overflow-hidden bg-background [background-image:radial-gradient(ellipse_at_82%_145%,#c7f978_0%,transparent_22%),radial-gradient(ellipse_at_13%_150%,#8b55ec_0%,transparent_24%)] px-6 pb-5 pt-14 min-[701px]:px-9 min-[701px]:pb-7 min-[701px]:pt-20">
+     <div className="relative mx-auto max-w-[1440px]">
+        <Link
+          href="/"
+          className="group flex items-center justify-center gap-3 text-[#192331] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-[#4c00bd] focus-visible:outline-offset-[8px] min-[701px]:gap-6"
+          aria-label="Swapped home"
+        >
+          {/* <Image
+            src="/swapped-logo.png"
+            alt=""
+            width={160}
+            height={160}
+            className="size-[clamp(66px,10vw,150px)] shrink-0 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105 motion-reduce:transition-none"
+          /> */}
+          <span className="text-[clamp(64px,14.5vw,218px)] font-bold leading-none tracking-wider [mask-image:linear-gradient(to_bottom,#000_0%,rgba(0,0,0,0.22)_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,rgba(0,0,0,0.22)_100%)]">
+            swapped<span className="text-[#4c00bd]">.</span>
+          </span>
+        </Link>
+        <div className="mt-10 flex items-center justify-between border-t border-[#4c00bd]/15 pt-4 text-[10px] font-medium tracking-[0.04em] min-[701px]:mt-14">
+          <span>© {new Date().getFullYear()} Swapped</span>
+          {/* <span>Trade in. Move forward.</span> */}
+        </div>
+      </div>
     </footer>
   );
 }

@@ -24,14 +24,14 @@ export function StepActions({
           type="button"
           variant="outline"
           onClick={onBack}
-          className="h-11 px-6 text-sm font-semibold"
+          className="h-11 border-[#4c00bd]/20 px-6 text-sm font-semibold text-[#4c00bd] hover:bg-[#f3effa]"
         >
           Back
         </Button>
       )}
       <Button
         type="button"
-        variant="default"
+        variant="brand"
         onClick={onContinue}
         disabled={continueDisabled}
         className="h-11 flex-1 text-sm font-semibold"

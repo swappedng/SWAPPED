@@ -1,6 +1,6 @@
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { Brand } from "@/components/landing/Brand";
 
 export interface TradeInHeaderProps {
   onBack: () => void;
@@ -16,16 +16,13 @@ export function TradeInHeader({ onBack, canGoBack }: TradeInHeaderProps) {
         size="sm"
         onClick={onBack}
         disabled={!canGoBack}
-        className="gap-1.5 font-semibold text-zinc-600 disabled:invisible hover:text-zinc-900"
+        className="gap-1.5 font-semibold text-[#69717d] disabled:invisible hover:bg-[#4c00bd]/5 hover:text-[#4c00bd]"
       >
         <ArrowLeft className="h-4 w-4" />
         <span>Back</span>
       </Button>
 
-      <div className="flex items-center gap-2.5 font-bold text-zinc-900 text-lg tracking-tight">
-        <img src="/swapped-logo.png" width={26} height={26} alt="Swapped logo" />
-        <span>Swapped</span>
-      </div>
+      <Brand />
     </header>
   );
 }

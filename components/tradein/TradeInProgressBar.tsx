@@ -7,27 +7,26 @@ export function TradeInProgressBar({
   currentStep,
   totalSteps,
 }: TradeInProgressBarProps) {
+  const progress = Math.min(100, Math.max(0, (currentStep / totalSteps) * 100));
+
   return (
     <div className="mb-8">
       <div
-        className="mb-2.5 flex gap-1.5"
+        className="mb-2.5 h-3.5 overflow-hidden rounded-full bg-[#dbdad7]/70"
         aria-label={`Step ${currentStep} of ${totalSteps}`}
+        role="progressbar"
+        aria-valuemin={1}
+        aria-valuemax={totalSteps}
+        aria-valuenow={currentStep}
       >
-        {Array.from({ length: totalSteps }, (_, index) => {
-          const isCompletedOrActive = index < currentStep;
-          return (
-            <div
-              key={index}
-              className={`h-2 flex-1 rounded-full transition-all duration-300 ${
-                isCompletedOrActive ? "bg-zinc-900" : "bg-zinc-200"
-              }`}
-            />
-          );
-        })}
+        <div
+          className="h-full rounded-full bg-[#4c00bd] transition-[width] duration-300 ease-out"
+          style={{ width: `${progress}%` }}
+        />
       </div>
-      <p className="text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+      {/* <p className="text-xs font-medium tracking-[0.12em] text-[#4c00bd] uppercase">
         Step {currentStep} of {totalSteps}
-      </p>
+      </p> */}
     </div>
   );
 }

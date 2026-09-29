@@ -18,10 +18,63 @@ export function FaqSection() {
   const visibleFaqs = faqs.filter((faq) => category === "All" || faq.category === category);
 
   return (
-    <section id="faqs" className="mx-auto max-w-[850px] scroll-mt-8 px-6 pb-16 pt-[15px] min-[701px]:px-9 min-[701px]:pb-[105px] min-[701px]:pt-7" aria-labelledby="faq-title">
-      <div className="text-center"><span className="text-[9px] font-medium tracking-[0.15em] text-[#768599]">A LITTLE CLARITY</span><h2 id="faq-title" className="my-[17px] text-[clamp(30px,3.3vw,43px)] font-medium leading-[1.15] tracking-[-0.05em]">Good questions.<br className="min-[701px]:hidden" /> Straight answers.</h2><p className="mt-[14px] text-[13px] text-[#6e7785]">Everything you need to feel ready for your swap.</p></div>
-      <div className="my-6 flex flex-wrap justify-center gap-[6px] min-[701px]:mb-[34px] min-[701px]:mt-7 min-[701px]:gap-2" role="group" aria-label="Filter frequently asked questions">{categories.map((item) => <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)} className={`cursor-pointer rounded-full border px-[11px] py-2 text-[9px] transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-blue-400 min-[701px]:px-4 min-[701px]:text-[10px] ${category === item ? "border-[#3b82f6] bg-[#3b82f6] text-white" : "border-[#dce3ec] bg-white text-[#687386] hover:bg-[#f3f7fd]"}`}>{item}</button>)}</div>
-      <div className="border-t border-[#e5eaf0]">{visibleFaqs.map((faq) => <details key={faq.question} className="group border-b border-[#e5eaf0]"><summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-[18px] text-xs leading-[1.6] marker:hidden focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-blue-400 group-open:text-[#3b82f6] [&::-webkit-details-marker]:hidden min-[701px]:px-px min-[701px]:py-[21px] min-[701px]:text-[13px]"><span>{faq.question}</span><ChevronDown className="shrink-0 text-[#8b98a8] transition-transform group-open:rotate-180" size={17} aria-hidden="true" /></summary><p className="-mt-0.5 mb-[23px] mr-[30px] max-w-[660px] text-xs leading-[1.8] text-[#6e7785] min-[701px]:text-[13px]">{faq.answer}</p></details>)}</div>
+    <section
+      id="faqs"
+      className="mx-auto max-w-[1240px] scroll-mt-8 px-6 pb-24 pt-8 min-[701px]:px-9 min-[701px]:pb-28 min-[701px]:pt-32"
+      aria-labelledby="faq-title"
+    >
+      <div className="mb-8 flex flex-col items-center text-center min-[701px]:mb-11">
+        <h2
+          id="faq-title"
+          className="text-[clamp(32px,3.6vw,48px)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#192331]"
+        >
+         We are here to answer your questions.
+        </h2>
+      </div>
+
+      <div className="relative overflow-hidden p-3 min-[701px]:rounded-[32px] min-[701px]:p-5">
+        <div className="relative mx-auto max-w-[880px]">
+          <div
+            className="mb-4 flex flex-wrap justify-center gap-2 min-[701px]:mb-5"
+            role="group"
+            aria-label="Filter frequently asked questions"
+          >
+            {categories.map((item) => (
+              <button
+                key={item}
+                type="button"
+                aria-pressed={category === item}
+                onClick={() => setCategory(item)}
+                className={`cursor-pointer rounded-full border px-3.5 py-2 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[4px] focus-visible:outline-[#4c00bd] min-[701px]:px-4 ${category === item ? "border-[#4c00bd]/15 bg-[#4c00bd]/85 text-white" : "border-[#4c00bd]/15 bg-[#fffdfb] text-[#131313] hover:bg-[#ede3fb]"}`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+          <div className="overflow-hidden rounded-[22px] border border-[#e7e2eb] bg-white/55">
+            {visibleFaqs.map((faq) => (
+              <details
+                key={faq.question}
+                className="group border-b border-[#4c00bd]/10 last:border-b-0"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-5 py-5 text-sm font-medium leading-[1.5] text-[#192331] marker:hidden focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[-3px] focus-visible:outline-[#4c00bd] [&::-webkit-details-marker]:hidden min-[701px]:px-7 min-[701px]:py-5 min-[701px]:text-[15px]">
+                  <span>{faq.question}</span>
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#4c00bd]/7 text-[#4c00bd] transition-colors ">
+                    <ChevronDown
+                      className="transition-transform group-open:rotate-180"
+                      size={16}
+                      aria-hidden="true"
+                    />
+                  </span>
+                </summary>
+                <p className="-mt-1 mb-6 max-w-[720px] px-5 text-sm leading-[1.7] text-[#69717d] min-[701px]:mb-7 min-[701px]:px-7">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

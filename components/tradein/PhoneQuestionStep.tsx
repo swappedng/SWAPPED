@@ -101,7 +101,7 @@ export function PhoneQuestionStep({
 
       {selectedGroup && (
         <section className="mt-6">
-          <h2 className="mb-2.5 text-sm font-semibold text-zinc-500">
+          <h2 className="mb-2.5 text-sm font-semibold text-[#69717d]">
             Which model exactly?
           </h2>
           <OptionCardList
@@ -117,7 +117,7 @@ export function PhoneQuestionStep({
 
       {selectedModel && (
         <section className="mt-6">
-          <h2 className="mb-2.5 text-sm font-semibold text-zinc-500">
+          <h2 className="mb-2.5 text-sm font-semibold text-[#69717d]">
             Storage Capacity
           </h2>
           <PillSelector

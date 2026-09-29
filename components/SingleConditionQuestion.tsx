@@ -1,10 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import type { ConditionOption } from '@/types/tradein';
 import { OptionCardList } from './tradein/OptionCardList';
 import { StepCard } from './tradein/StepCard';
-import { Smartphone, Battery, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface Props {
   question: string;
@@ -22,7 +22,7 @@ interface Props {
 
 const screenCopy = (option: ConditionOption) => {
   const label = option.label.toLowerCase();
-  if (label.includes('mint')) return ['Flawless', 'No marks when the screen is on'];
+  if (label.includes('mint')) return ['Flawless', 'No marks when the screen'];
   if (label.includes('light')) return ['Light scratches', 'Only visible at an angle'];
   if (label.includes('deep')) return ['Deep scratches', 'You can feel them with a fingernail'];
   if (label.includes('crack')) return ['Cracked', 'Any crack or chip in the glass'];
@@ -36,6 +36,48 @@ const backCopy = (option: ConditionOption) => {
   if (option.value === 'broken') return ['Cracked or broken', 'Any crack in the back panel'];
   return [option.label, option.description];
 };
+
+const screenAsset = (option: ConditionOption) => {
+  const label = option.label.toLowerCase();
+  if (label.includes('mint')) return '/screens/screen_1.svg';
+  if (label.includes('light')) return '/screens/screen_2.svg';
+  if (label.includes('deep')) return '/screens/screen_3.png';
+  return '/screens/screen_4.png';
+};
+
+const backAsset = (option: ConditionOption) => {
+  if (option.value === 'mint') {
+    return '/phone_backs/ChatGPT Image Sep 29, 2026, 10_07_20 PM-1.png';
+  }
+  if (option.value === 'broken') {
+    return '/phone_backs/ChatGPT Image Sep 29, 2026, 10_07_23 PM-3.png';
+  }
+  return '/phone_backs/ChatGPT Image Sep 29, 2026, 10_07_21 PM-2.png';
+};
+
+function ScreenPreview({ src }: { src: string }) {
+  return (
+    <Image
+      src={src}
+      alt=""
+      width={48}
+      height={78}
+      className="h-16 w-10 object-contain"
+    />
+  );
+}
+
+function PhoneBackPreview({ src }: { src: string }) {
+  return (
+    <Image
+      src={src}
+      alt=""
+      width={48}
+      height={78}
+      className="h-16 w-10 object-contain"
+    />
+  );
+}
 
 export default function SingleConditionQuestion({
   question,
@@ -96,16 +138,18 @@ export default function SingleConditionQuestion({
             ? backCopy(option)
             : [option.label, option.description];
         
-        let icon = undefined;
-        if (showBatteryInfo) icon = <Battery className="h-4 w-4" />;
-        else if (isFaceId) icon = <ShieldCheck className="h-4 w-4" />;
-        else if (isScreen || isBackGlass) icon = <Smartphone className="h-4 w-4" />;
+        const image = isScreen ? (
+          <ScreenPreview src={screenAsset(option)} />
+        ) : isBackGlass ? (
+          <PhoneBackPreview src={backAsset(option)} />
+        ) : undefined;
 
         return {
           value: option.value,
           label: label || option.label,
           description: optionDescription,
-          image: icon,
+          image,
+          imageSize: isScreen || isBackGlass ? ('preview' as const) : undefined,
         };
       }),
     [options, isScreen, isBackGlass, showBatteryInfo, isFaceId, isBattery]
@@ -136,13 +180,11 @@ export default function SingleConditionQuestion({
               value: 'original',
               label: 'Original screen',
               description: 'Factory installed screen that has never been replaced.',
-              image: <Sparkles className="h-4 w-4" />,
             },
             {
               value: 'replaced',
               label: 'Replaced screen',
               description: 'Choose this if it was ever changed by Apple or any repair shop.',
-              image: <Smartphone className="h-4 w-4" />,
             },
           ]}
         />
@@ -175,13 +217,13 @@ export default function SingleConditionQuestion({
               value: 'original',
               label: 'Original battery',
               description: 'Factory installed battery that has never been replaced.',
-              image: <Sparkles className="h-4 w-4" />,
+            
             },
             {
               value: 'replaced',
               label: 'Replaced battery',
               description: 'Choose this if your battery was changed by Apple or any repair shop.',
-              image: <Battery className="h-4 w-4" />,
+            
             },
           ]}
         />
