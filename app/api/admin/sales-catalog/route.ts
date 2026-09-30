@@ -7,7 +7,12 @@ export async function GET(request: NextRequest) {
     const categories = await prisma.phoneSaleCategory.findMany({
       where: admin ? undefined : { isActive: true },
       orderBy: { order: 'asc' },
-      include: { prices: { where: admin ? undefined : { isActive: true }, orderBy: [{ model: 'asc' }, { storage: 'asc' }] } },
+      include: {
+        prices: {
+          where: admin ? undefined : { isActive: true },
+          orderBy: [{ model: 'asc' }, { storage: 'asc' }],
+        },
+      },
     });
     return NextResponse.json(categories);
   } catch (error) {
@@ -18,14 +23,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { categoryId, model, storage, price, isActive = true } = await request.json();
-    if (!categoryId || !model || !storage || !Number.isFinite(Number(price))) {
-      return NextResponse.json({ error: 'Category, model, storage and price are required' }, { status: 400 });
+    const { categoryId, phoneModelId, model, storage, price, isActive = true } = await request.json();
+    if (!categoryId || !phoneModelId || !model || !storage || !Number.isFinite(Number(price))) {
+      return NextResponse.json(
+        { error: 'Category, phoneModelId, model, storage and price are required' },
+        { status: 400 }
+      );
     }
     const item = await prisma.phoneSellingPrice.upsert({
       where: { categoryId_model_storage: { categoryId, model, storage } },
-      update: { price: Number(price), isActive },
-      create: { categoryId, model, storage, price: Number(price), isActive },
+      update: { price: Number(price), isActive, phoneModelId },
+      create: { categoryId, phoneModelId, model, storage, price: Number(price), isActive },
     });
     return NextResponse.json(item, { status: 201 });
   } catch (error) {

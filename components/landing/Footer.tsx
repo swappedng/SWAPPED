@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export function LandingFooter() {
+export function Footer() {
   return (
     <footer className="relative isolate overflow-hidden bg-background [background-image:radial-gradient(ellipse_at_82%_145%,#c7f978_0%,transparent_22%),radial-gradient(ellipse_at_13%_150%,#8b55ec_0%,transparent_24%)] px-6 pb-5 pt-14 min-[701px]:px-9 min-[701px]:pb-7 min-[701px]:pt-20">
      <div className="relative mx-auto max-w-[1440px]">

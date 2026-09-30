@@ -8,150 +8,125 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum SwapMethod {
+  WALK_IN
+  HOME_PICKUP
+  COURIER
+}
+
+// ─── Core swap models ─────────────────────────────────────────────────────────
+
 model Swap {
-  id            String       @id @default(cuid())
-  tradeInPhone  Json
-  newPhone      Json
-  tradeInValue  Float
-  newPhonePrice Float
-  amountToPay   Float
-  contactEmail  String?
-  contactPhone  String?
-  createdAt     DateTime     @default(now())
-  appointment   Appointment?
+  id    String @id @default(cuid())
+
+  // Trade-in phone (FK to the catalogued model)
+  tradeInModelId String
+  tradeInModel   PhoneModel @relation(fields: [tradeInModelId], references: [id])
+  tradeInValue   Float
+
+  // Upgrade phone
+  upgradeCategoryId String
+  upgradeCategory   PhoneSaleCategory @relation(fields: [upgradeCategoryId], references: [id])
+  upgradeModel      String
+  upgradeStorage    String
+  upgradePrice      Float // price snapshot at time of swap
+
+  // Financials
+  amountToPay Float
+
+  // How the swap will be completed
+  swapMethod SwapMethod
+
+  // Contact — single source of truth
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  conditions  SwapCondition[]
+  appointment Appointment?
+}
+
+// One row per condition attribute answered during the trade-in flow
+model SwapCondition {
+  id       String @id @default(cuid())
+  swapId   String
+  swap     Swap   @relation(fields: [swapId], references: [id], onDelete: Cascade)
+  groupKey String // e.g. "battery", "screen", "faceid"
+  value    String // e.g. "80-89", "good", "not-working"
+
+  @@unique([swapId, groupKey])
 }
 
 model Appointment {
   id              String   @id @default(cuid())
   swapId          String   @unique
+  swap            Swap     @relation(fields: [swapId], references: [id])
   appointmentType String
   date            DateTime
   time            String
-  contactName     String?
-  contactPhone    String?
-  contactEmail    String?
   createdAt       DateTime @default(now())
-  swap            Swap     @relation(fields: [swapId], references: [id])
+  // Contact fields removed — they live on Swap
 }
 
-model Account {
-  id                String  @id
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+// ─── Phone catalogue ──────────────────────────────────────────────────────────
 
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-  id            String    @id
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  isAdmin       Boolean   @default(false)
-  Account       Account[]
-  Session       Session[]
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-// Admin Configuration Models
 model PhoneModel {
   id        String   @id @default(cuid())
-  label     String // e.g., "iPhone 15 Pro 256GB"
-  value     String   @unique // e.g., "15pro-256"
-  model     String // e.g., "iPhone 15 Pro"
-  storage   String // e.g., "256GB"
-  basePrice Float // Base price for this model
+  label     String // e.g. "iPhone 15 Pro 256GB"
+  value     String   @unique // e.g. "15pro-256" (slug used in trade-in flow)
+  model     String // e.g. "iPhone 15 Pro"
+  storage   String // e.g. "256GB"
+  basePrice Float
   isActive  Boolean  @default(true)
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  swaps         Swap[]
+  sellingPrices PhoneSellingPrice[]
 }
 
-// Customer-facing upgrade catalogue. Categories and their descriptions are
-// deliberately configurable so the wording in the trade-in flow is managed
-// from the admin portal.
 model PhoneSaleCategory {
-  id          String              @id @default(cuid())
-  key         String              @unique
+  id          String   @id @default(cuid())
+  key         String   @unique
   label       String
   description String?
-  isActive    Boolean             @default(true)
-  order       Int                 @default(0)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  prices      PhoneSellingPrice[]
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  prices PhoneSellingPrice[]
+  swaps  Swap[]
 }
 
 model PhoneSellingPrice {
-  id         String            @id @default(cuid())
-  categoryId String
-  category   PhoneSaleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  model      String
-  storage    String
-  price      Float
-  isActive   Boolean           @default(true)
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+  id           String            @id @default(cuid())
+  categoryId   String
+  category     PhoneSaleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  phoneModelId String
+  phoneModel   PhoneModel        @relation(fields: [phoneModelId], references: [id])
+  model        String // denormalised for catalogue display
+  storage      String
+  price        Float
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@unique([categoryId, model, storage])
 }
 
-model PhoneCondition {
-  id            String   @id @default(cuid())
-  label         String // e.g., "Like New"
-  value         String   @unique // e.g., "like-new"
-  description   String? // e.g., "No visible damage"
-  priceModifier Float    @default(1.0) // 1.0 = no change, 0.8 = 20% discount
-  isActive      Boolean  @default(true)
-  order         Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
+// ─── Condition attribute system ───────────────────────────────────────────────
 
-model PricingRule {
-  id              String   @id @default(cuid())
-  name            String
-  description     String?
-  baseModel       String // which phone model(s) this applies to
-  condition       String? // which condition(s) this applies to
-  priceAdjustment Float // +/- amount or percentage
-  isPercentage    Boolean  @default(false)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-// Multi-factor condition attributes for granular pricing
 model ConditionAttributeGroup {
   id          String                     @id @default(cuid())
-  key         String                     @unique // e.g., "battery", "faceid", "screen", "backglass", "body", "sim"
-  label       String // Human-friendly label for UI sections
+  key         String                     @unique // "battery", "screen", "faceid", "backglass", "sim"
+  label       String
   description String?
   isActive    Boolean                    @default(true)
   order       Int                        @default(0)
@@ -164,8 +139,8 @@ model ConditionAttributeOption {
   id            String                  @id @default(cuid())
   groupId       String
   group         ConditionAttributeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  value         String // e.g., "90+", "not-working"
-  label         String // e.g., "90% and above", "No Face ID"
+  value         String
+  label         String
   description   String?
   priceModifier Float                   @default(1.0)
   isActive      Boolean                 @default(true)

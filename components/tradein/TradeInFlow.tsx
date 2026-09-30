@@ -6,11 +6,8 @@ import SingleConditionQuestion from "../SingleConditionQuestion";
 import { ContactSummaryStep } from "./ContactSummaryStep";
 import { PhoneQuestionStep } from "./PhoneQuestionStep";
 import { SwapMethodStep } from "./SwapMethodStep";
-import {
-  UpgradeCategoryStep,
-  UpgradePhoneStep,
-} from "./UpgradeQuestionSteps";
-import { TradeInHeader } from "./TradeInHeader";
+import { UpgradeCategoryStep, UpgradePhoneStep } from "./UpgradeQuestionSteps";
+import { Header } from "../landing/Header";
 import { TradeInProgressBar } from "./TradeInProgressBar";
 import { Catalogue, useTradeInFlow } from "./hooks/useTradeInFlow";
 
@@ -54,10 +51,10 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
   return (
     <main
       ref={pageTop}
-      className="min-h-screen bg-background px-4 py-6 text-[#192331] sm:px-6 sm:py-12"
+      className="min-h-screen bg-background px-4 py-6 text-[#192331] sm:px-6 sm:py-0"
     >
-      <div className="mx-auto max-w-2xl">
-        <TradeInHeader onBack={prevStep} canGoBack={step > 1} />
+        <Header />
+      <div className="mx-auto max-w-2xl pt-16">
         <TradeInProgressBar currentStep={step} totalSteps={totalSteps} />
 
         {step === 1 && (

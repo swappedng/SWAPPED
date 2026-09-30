@@ -2,14 +2,18 @@ import { httpClient } from '../httpClient';
 import type { ConditionGroup, PhoneModel, SaleCategory, TradeInDetails, UpgradeSelection } from '@/types/tradein';
 
 export interface CreateTradeInRequest {
-  tradeInPhone: TradeInDetails;
-  newPhone: UpgradeSelection;
-  contactEmail: string;
-  contactPhone: string;
-  swapMethod: string;
+  tradeInModelId: string;
   tradeInValue: number;
-  newPhonePrice: number;
+  conditions: { groupKey: string; value: string }[];
+  upgradeCategoryId: string;
+  upgradeModel: string;
+  upgradeStorage: string;
+  upgradePrice: number;
   amountToPay: number;
+  swapMethod: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export interface CreatedTradeInRequest { id: string; }

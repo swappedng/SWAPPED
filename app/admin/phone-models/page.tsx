@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import {
   Smartphone,
   Plus,
@@ -13,6 +13,7 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -28,6 +29,11 @@ export default function PhoneModelsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (name: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }));
+  };
 
   useEffect(() => {
     fetchModels();
@@ -100,9 +106,18 @@ export default function PhoneModelsPage() {
     });
   }, [models, search, statusFilter]);
 
-  const pageCount = Math.max(1, Math.ceil(filteredModels.length / PAGE_SIZE));
+  const groupedModels = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    filteredModels.forEach((m) => {
+      if (!groups[m.model]) groups[m.model] = [];
+      groups[m.model].push(m);
+    });
+    return Object.entries(groups).map(([name, items]) => ({ name, items }));
+  }, [filteredModels]);
+
+  const pageCount = Math.max(1, Math.ceil(groupedModels.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
-  const visibleModels = filteredModels.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const visibleGroups = groupedModels.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const updateFilters = (nextSearch: string, nextStatus = statusFilter) => {
     setSearch(nextSearch);
@@ -115,10 +130,7 @@ export default function PhoneModelsPage() {
       {/* Page Header */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider">
-            <Smartphone className="w-4 h-4" />
-            <span>Valuation Engine</span>
-          </div>
+         
           <h1 className="text-2xl font-bold text-gray-950 mt-1 tracking-tight">Trade-in values</h1>
           <p className="text-sm text-gray-600 mt-1">
             Set the highest amount offered for each phone. Customer condition answers reduce this value.
@@ -137,7 +149,7 @@ export default function PhoneModelsPage() {
       </header>
 
       {/* Explanatory Info Card */}
-      <section className="bg-gradient-to-r from-violet-50 to-indigo-50/60 border border-violet-100 rounded-xl p-4 sm:p-5 flex gap-3 text-xs leading-relaxed text-violet-950">
+      {/* <section className="bg-gradient-to-r from-violet-50 to-indigo-50/60 border border-violet-100 rounded-xl p-4 sm:p-5 flex gap-3 text-xs leading-relaxed text-violet-950">
         <Info className="w-5 h-5 text-violet-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <span className="font-bold text-violet-900 block text-sm">What is a trade-in value?</span>
@@ -145,7 +157,7 @@ export default function PhoneModelsPage() {
             This is the <span className="font-semibold">maximum trade-in value</span> assigned to a phone in 100% mint condition with zero physical defects. When customers perform an assessment, selected condition attributes (e.g. cracked glass or depleted battery) deduct percentages from this baseline price.
           </p>
         </div>
-      </section>
+      </section> */}
 
       {/* Main Table Container */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm space-y-0">
@@ -180,7 +192,7 @@ export default function PhoneModelsPage() {
           <table className="w-full text-xs">
             <thead className="bg-gray-50/80 text-gray-500 uppercase tracking-wider text-[10px] border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3.5 text-left font-semibold">Display Label</th>
+                {/* <th className="px-6 py-3.5 text-left font-semibold">Display Label</th> */}
                 <th className="px-6 py-3.5 text-left font-semibold">Model Name</th>
                 <th className="px-6 py-3.5 text-left font-semibold">Storage</th>
                 <th className="px-6 py-3.5 text-left font-semibold">Pristine Base Price</th>
@@ -192,7 +204,7 @@ export default function PhoneModelsPage() {
               {/* New Row Input Mode */}
               {isAdding && (
                 <tr className="bg-violet-50/60 border-b border-violet-100">
-                  <td className="px-6 py-3">
+                  {/* <td className="px-6 py-3">
                     <input
                       autoFocus
                       className="w-full bg-white border border-violet-300 rounded px-2.5 py-1 text-xs"
@@ -200,7 +212,7 @@ export default function PhoneModelsPage() {
                       value={newModel.label}
                       onChange={(e) => setNewModel({ ...newModel, label: e.target.value })}
                     />
-                  </td>
+                  </td> */}
                   <td className="px-6 py-3">
                     <input
                       className="w-full bg-white border border-violet-300 rounded px-2.5 py-1 text-xs"
@@ -252,100 +264,108 @@ export default function PhoneModelsPage() {
               )}
 
               {/* Rows */}
-              {visibleModels.map((model) => (
-                <tr key={model.id} className="hover:bg-gray-50/70 transition-colors">
-                  <td className="px-6 py-4 text-gray-950 font-semibold">
-                    {editing === model.id ? (
-                      <input
-                        className="w-full border rounded px-2 py-1 text-xs"
-                        value={draft.label}
-                        onChange={(e) => setDraft({ ...draft, label: e.target.value })}
-                      />
-                    ) : (
-                      model.label
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 font-mono text-xs">
-                    {editing === model.id ? (
-                      <input
-                        className="w-full border rounded px-2 py-1 text-xs"
-                        value={draft.model}
-                        onChange={(e) => setDraft({ ...draft, model: e.target.value })}
-                      />
-                    ) : (
-                      model.model
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {editing === model.id ? (
-                      <input
-                        className="w-24 border rounded px-2 py-1 text-xs"
-                        value={draft.storage}
-                        onChange={(e) => setDraft({ ...draft, storage: e.target.value })}
-                      />
-                    ) : (
-                      model.storage
-                    )}
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-gray-950">
-                    {editing === model.id ? (
-                      <input
-                        type="number"
-                        className="w-32 border rounded px-2 py-1 text-xs"
-                        value={draft.basePrice}
-                        onChange={(e) => setDraft({ ...draft, basePrice: e.target.value })}
-                      />
-                    ) : (
-                      <>₦{model.basePrice?.toLocaleString()}</>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editing === model.id ? (
-                      <label className="flex gap-1.5 items-center text-xs cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={draft.isActive}
-                          onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })}
-                        />
-                        <span>Active</span>
-                      </label>
-                    ) : (
-                      <span
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          model.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-600'
-                        }`}
-                      >
-                        {model.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-3">
-                    {editing === model.id ? (
-                      <>
-                        <button onClick={saveEdit} className="text-violet-700 font-semibold hover:underline">
-                          Save
-                        </button>
-                        <button onClick={() => setEditing(null)} className="text-gray-500 hover:underline">
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => startEdit(model)}
-                        className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-950 font-medium"
-                      >
-                        <Pencil className="w-3.5 h-3.5" /> Edit
-                      </button>
-                    )}
-                    <button
-                      onClick={() => deleteModel(model.id)}
-                      className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-medium"
+              {visibleGroups.map((group) => {
+                const isExpanded = expandedGroups[group.name];
+                return (
+                  <Fragment key={group.name}>
+                    <tr
+                      className="hover:bg-gray-50/70 transition-colors cursor-pointer bg-gray-50/30"
+                      onClick={() => toggleGroup(group.name)}
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      <td colSpan={5} className="px-6 py-3 border-b border-gray-100 text-gray-900 font-semibold text-sm">
+                        <div className="flex items-center gap-2">
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                          {group.name}
+                          <span className="text-gray-400 font-normal text-xs ml-2">({group.items.length} variants)</span>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && group.items.map((model) => (
+                      <tr key={model.id} className="hover:bg-gray-50/70 transition-colors">
+                        <td className="px-6 py-4 pl-12 text-gray-950 font-semibold font-mono text-xs">
+                          {editing === model.id ? (
+                            <input
+                              className="w-full border rounded px-2 py-1 text-xs"
+                              value={draft.model}
+                              onChange={(e) => setDraft({ ...draft, model: e.target.value })}
+                            />
+                          ) : (
+                            model.model
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-gray-600">
+                          {editing === model.id ? (
+                            <input
+                              className="w-24 border rounded px-2 py-1 text-xs"
+                              value={draft.storage}
+                              onChange={(e) => setDraft({ ...draft, storage: e.target.value })}
+                            />
+                          ) : (
+                            model.storage
+                          )}
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-gray-950">
+                          {editing === model.id ? (
+                            <input
+                              type="number"
+                              className="w-32 border rounded px-2 py-1 text-xs"
+                              value={draft.basePrice}
+                              onChange={(e) => setDraft({ ...draft, basePrice: e.target.value })}
+                            />
+                          ) : (
+                            <>₦{model.basePrice?.toLocaleString()}</>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {editing === model.id ? (
+                            <label className="flex gap-1.5 items-center text-xs cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={draft.isActive}
+                                onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })}
+                              />
+                              <span>Active</span>
+                            </label>
+                          ) : (
+                            <span
+                              className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                model.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-600'
+                              }`}
+                            >
+                              {model.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-3">
+                          {editing === model.id ? (
+                            <>
+                              <button onClick={saveEdit} className="text-violet-700 font-semibold hover:underline">
+                                Save
+                              </button>
+                              <button onClick={() => setEditing(null)} className="text-gray-500 hover:underline">
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => startEdit(model)}
+                              className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-950 font-medium"
+                            >
+                              <Pencil className="w-3.5 h-3.5" /> Edit
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteModel(model.id)}
+                            className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-medium"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

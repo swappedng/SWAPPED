@@ -65,10 +65,7 @@ export default function ConditionAttributesPage() {
       {/* Top Header */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-violet-600 text-xs font-semibold uppercase tracking-wider">
-            <Sliders className="w-4 h-4" />
-            <span>Valuation Config</span>
-          </div>
+       
           <h1 className="text-2xl font-bold text-gray-950 mt-1 tracking-tight">Condition questions</h1>
           <p className="text-sm text-gray-600 mt-1">
             Manage the questions customers answer and how each answer changes their quote.
@@ -82,17 +79,6 @@ export default function ConditionAttributesPage() {
           <span>Add question group</span>
         </Link>
       </header>
-
-      {/* Explanatory Banner for New Admins */}
-      <section className="bg-gradient-to-r from-violet-50 to-indigo-50/60 border border-violet-100 rounded-xl p-4 sm:p-5 flex gap-3 text-xs leading-relaxed text-violet-950">
-        <Info className="w-5 h-5 text-violet-600 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <span className="font-bold text-violet-900 block text-sm">How Condition Deductions Work</span>
-          <p className="text-violet-800">
-            Each attribute group represents a physical or functional factor (e.g., <span className="font-semibold">Battery Health</span>, <span className="font-semibold">Screen Condition</span>, <span className="font-semibold">Body Condition</span>). When customers choose an option during their phone assessment, the configured <span className="font-semibold">price modifier (%)</span> reduces the device's Base Trade-in Value.
-          </p>
-        </div>
-      </section>
 
       {/* Attribute Groups List */}
       <div className="space-y-4">
@@ -123,9 +109,7 @@ export default function ConditionAttributesPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h2 className="text-base font-bold text-gray-900 leading-snug">{group.label}</h2>
-                        <span className="text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                          key: {group.key}
-                        </span>
+                       
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {group.options.length} {group.options.length === 1 ? 'option' : 'options'} configured

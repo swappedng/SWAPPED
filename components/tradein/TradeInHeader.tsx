@@ -9,7 +9,9 @@ export interface TradeInHeaderProps {
 
 export function TradeInHeader({ onBack, canGoBack }: TradeInHeaderProps) {
   return (
-    <header className="mb-8 flex items-center justify-between">
+    <header className="mb-8 flex items-center justify-between gap-4">
+      <Brand />
+
       <Button
         type="button"
         variant="ghost"
@@ -22,7 +24,6 @@ export function TradeInHeader({ onBack, canGoBack }: TradeInHeaderProps) {
         <span>Back</span>
       </Button>
 
-      <Brand />
     </header>
   );
 }

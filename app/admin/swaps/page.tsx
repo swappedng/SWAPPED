@@ -1,104 +1,42 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Mail, Phone, Search, Smartphone, Users } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowUpRight, Search } from "lucide-react";
+import { AdminSwap, day, money, requestContact, requestEmail, requestPhone, shortId } from "../adminData";
 
-type Swap = {
-  id: string;
-  tradeInPhone?: { model?: string; storage?: string; contactEmail?: string; contactPhone?: string };
-  newPhone?: { model?: string; storage?: string };
-  contactEmail?: string;
-  contactPhone?: string;
-  tradeInValue: number;
-  newPhonePrice: number;
-  amountToPay: number;
-  createdAt: string;
-  appointment?: { date: string; time: string; appointmentType?: string } | null;
-};
+type Filter = "all" | "awaiting" | "booked";
+const filters: { key: Filter; label: string }[] = [{ key: "all", label: "All requests" }, { key: "awaiting", label: "Awaiting booking" }, { key: "booked", label: "Booked" }];
 
 export default function SwapsPage() {
-  const [swaps, setSwaps] = useState<Swap[]>([]);
+  const params = useSearchParams();
+  const [swaps, setSwaps] = useState<AdminSwap[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<Filter>(params.get("status") === "awaiting" ? "awaiting" : params.get("status") === "booked" ? "booked" : "all");
 
   useEffect(() => {
-    const loadSwaps = async () => {
-      try {
-        const response = await fetch("/api/swaps");
-        const data = await response.json();
-        if (!response.ok || !Array.isArray(data)) throw new Error(data?.error || "Could not load customer requests");
-        setSwaps(data);
-      } catch (loadError) {
-        console.error("Error fetching swaps:", loadError);
-        setError(loadError instanceof Error ? loadError.message : "Could not load customer requests");
-      } finally { setLoading(false); }
-    };
-    loadSwaps();
+    fetch("/api/swaps").then(async (response) => { const data: unknown = await response.json(); if (!response.ok || !Array.isArray(data)) throw new Error("Could not load customer requests"); setSwaps(data as AdminSwap[]); }).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load customer requests")).finally(() => setLoading(false));
   }, []);
 
-  const filteredSwaps = useMemo(() => {
+  const visible = useMemo(() => swaps.filter((swap) => {
+    if (filter === "awaiting" && swap.appointment) return false;
+    if (filter === "booked" && !swap.appointment) return false;
     const term = search.trim().toLowerCase();
-    if (!term) return swaps;
-    return swaps.filter((swap) => [
-      swap.contactEmail, swap.tradeInPhone?.contactEmail,
-      swap.contactPhone, swap.tradeInPhone?.contactPhone,
-      swap.tradeInPhone?.model, swap.newPhone?.model,
-    ].some((value) => value?.toLowerCase().includes(term)));
-  }, [search, swaps]);
+    return !term || [requestContact(swap), requestEmail(swap), requestPhone(swap), swap.tradeInModel?.model, swap.upgradeModel, swap.id].some((value) => value?.toLowerCase().includes(term));
+  }), [filter, search, swaps]);
 
-  const getEmail = (swap: Swap) => swap.contactEmail || swap.tradeInPhone?.contactEmail || "No email";
-  const getPhone = (swap: Swap) => swap.contactPhone || swap.tradeInPhone?.contactPhone || "No phone";
-
-  return <div className="mx-auto max-w-5xl space-y-8">
-    <header className="flex flex-col gap-2 pb-4 border-b border-slate-100">
-      <h1 className="text-3xl font-bold tracking-tight text-slate-900">Customer requests</h1>
-      <p className="text-sm text-slate-500">Every trade-in request submitted through the website appears here.</p>
-    </header>
-
-    <section className="grid gap-6 sm:grid-cols-3">
-      <div className="flex flex-col gap-1 p-2"><p className="text-sm font-medium text-slate-500">All requests</p><p className="text-3xl font-semibold text-slate-900">{loading ? "—" : swaps.length}</p></div>
-      <div className="flex flex-col gap-1 p-2"><p className="text-sm font-medium text-slate-500">Booked</p><p className="text-3xl font-semibold text-slate-900">{loading ? "—" : swaps.filter((swap) => swap.appointment).length}</p></div>
-      <div className="flex flex-col gap-1 p-2"><p className="text-sm font-medium text-slate-500">Awaiting booking</p><p className="text-3xl font-semibold text-slate-900">{loading ? "—" : swaps.filter((swap) => !swap.appointment).length}</p></div>
-    </section>
-
-    <section className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:w-80"><Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search requests..." className="w-full rounded-md bg-black/5 py-1.5 pl-8 pr-3 text-sm outline-none transition focus:bg-black/10 placeholder:text-slate-500" /></div>
-      </div>
-
-      {error && <div className="rounded-md bg-rose-50 p-3 text-sm font-medium text-rose-700">{error}</div>}
-      {loading && <div className="py-12 text-center text-sm text-slate-500">Loading requests…</div>}
-      {!loading && !error && filteredSwaps.length === 0 && <div className="py-12 text-center"><p className="text-sm font-medium text-slate-800">{search ? "No matching requests" : "No customer requests yet"}</p></div>}
-
-      {!loading && filteredSwaps.length > 0 && <div className="flex flex-col gap-2 -mx-3">
-        {filteredSwaps.map((swap) => <article key={swap.id} className="p-3 rounded-md transition hover:bg-black/5 group cursor-default">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3 w-full sm:w-1/3">
-              <div className="h-8 w-8 shrink-0 rounded flex items-center justify-center bg-black/5 text-slate-500 mt-0.5"><Smartphone className="h-4 w-4" /></div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2"><h3 className="text-sm font-semibold text-slate-900 truncate ">{swap.tradeInPhone?.model || "Unknown trade-in"}{swap.tradeInPhone?.storage ? ` · ${swap.tradeInPhone.storage}` : ""}</h3></div>
-                <p className="text-xs text-slate-500 truncate">Upgrading to {swap.newPhone?.model || "unspecified"}</p>
-                <p className="text-xs text-slate-400 mt-1">{new Date(swap.createdAt).toLocaleDateString()}</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4 w-full sm:w-2/3 text-sm">
-              <div className="min-w-0">
-                <a href={`mailto:${getEmail(swap)}`} className="truncate block font-medium text-slate-700 hover:text-slate-900">{getEmail(swap)}</a>
-                <a href={`tel:${getPhone(swap)}`} className="text-xs text-slate-500 hover:text-slate-900 block truncate mt-0.5">{getPhone(swap)}</a>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900">₦{Number(swap.amountToPay || 0).toLocaleString()}</p>
-                <p className="text-xs text-slate-500">Trade-in: ₦{Number(swap.tradeInValue || 0).toLocaleString()}</p>
-              </div>
-              <div>
-                {swap.appointment ? <div><p className="font-medium text-slate-900">{new Date(swap.appointment.date).toLocaleDateString()}</p><p className="text-xs text-slate-500">{swap.appointment.time}</p></div> : <p className="text-sm text-amber-600">Awaiting booking</p>}
-              </div>
-            </div>
-          </div>
-        </article>)}
-      </div>}
+  return <div className="space-y-7">
+    <header className="border-b border-stone-200 pb-7"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Operations / Requests</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Customer requests</h1><p className="mt-2 text-sm text-slate-500">Review estimates, customer details, and booking information.</p></header>
+    <section className="grid gap-3 sm:grid-cols-3"><Summary label="All requests" count={swaps.length} loading={loading} /><Summary label="Awaiting booking" count={swaps.filter((swap) => !swap.appointment).length} loading={loading} /><Summary label="Booked" count={swaps.filter((swap) => swap.appointment).length} loading={loading} /></section>
+    <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white"><div className="flex flex-col gap-4 border-b border-stone-200 p-4 sm:p-5 xl:flex-row xl:items-center xl:justify-between"><div role="tablist" aria-label="Request status" className="flex flex-wrap gap-1 rounded-lg bg-stone-100 p-1">{filters.map((item) => <button key={item.key} role="tab" aria-selected={filter === item.key} onClick={() => setFilter(item.key)} className={`rounded-md px-3 py-2 text-xs font-semibold transition ${filter === item.key ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>{item.label}</button>)}</div><label className="relative block w-full xl:w-72"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><span className="sr-only">Search requests</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, phone, device…" className="w-full rounded-lg border border-stone-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-700 focus:ring-2 focus:ring-slate-200" /></label></div>
+      {error && <div className="p-8 text-sm text-rose-700">{error}</div>}{loading && <div className="p-8 text-sm text-slate-500">Loading requests…</div>}{!loading && !error && visible.length === 0 && <div className="p-10 text-center"><p className="text-sm font-semibold text-slate-900">No requests found</p><p className="mt-1 text-sm text-slate-500">Try another search or status.</p></div>}
+      {!loading && visible.length > 0 && <div className="overflow-x-auto"><table className="w-full min-w-[800px] text-left"><thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500"><tr><th className="px-5 py-3.5">Customer / request</th><th className="px-5 py-3.5">Trade-in → upgrade</th><th className="px-5 py-3.5">Amount to pay</th><th className="px-5 py-3.5">Booking</th><th className="px-5 py-3.5"><span className="sr-only">Open</span></th></tr></thead><tbody className="divide-y divide-stone-100">{visible.map((swap) => <tr key={swap.id} className="hover:bg-stone-50"><td className="px-5 py-4"><Link href={`/admin/swaps/${swap.id}`} className="block font-semibold text-slate-900 hover:underline">{requestContact(swap)}</Link><p className="mt-1 text-xs text-slate-500">#{shortId(swap.id)} · {day(swap.createdAt)}</p></td><td className="px-5 py-4 text-sm text-slate-700"><p>{swap.tradeInModel?.model || "Unknown device"} {swap.tradeInModel?.storage || ""}</p><p className="mt-1 text-xs text-slate-500">To {swap.upgradeModel || "unspecified"} {swap.upgradeStorage || ""}</p></td><td className="px-5 py-4 text-sm font-semibold tabular-nums text-slate-950">{money(swap.amountToPay)}</td><td className="px-5 py-4">{swap.appointment ? <span className="inline-flex rounded-full bg-stone-100 px-2.5 py-1 text-xs font-medium text-slate-700">{day(swap.appointment.date)}</span> : <span className="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">Awaiting booking</span>}</td><td className="px-5 py-4"><Link href={`/admin/swaps/${swap.id}`} aria-label={`View request ${shortId(swap.id)}`} className="inline-flex rounded-lg p-2 text-slate-500 hover:bg-stone-100 hover:text-slate-900"><ArrowUpRight className="h-4 w-4" /></Link></td></tr>)}</tbody></table></div>}
+      {!loading && !error && <div className="border-t border-stone-100 px-5 py-3 text-xs text-slate-500">Showing {visible.length} of {swaps.length} requests</div>}
     </section>
   </div>;
 }
+
+function Summary({ label, count, loading }: { label: string; count: number; loading: boolean }) { return <div className="rounded-xl border border-stone-200 bg-white p-5"><p className="text-xs font-medium text-slate-500">{label}</p><p className="mt-2 text-3xl font-semibold tabular-nums text-slate-950">{loading ? "—" : count}</p></div>; }

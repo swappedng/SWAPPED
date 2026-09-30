@@ -9,10 +9,14 @@ export async function GET(req: Request) {
   if (!swapId) {
     try {
       const swaps = await prisma.swap.findMany({
-        include: { appointment: true },
+        include: {
+          tradeInModel: true,
+          upgradeCategory: true,
+          conditions: true,
+          appointment: true,
+        },
         orderBy: { createdAt: 'desc' },
       });
-
       return NextResponse.json(swaps);
     } catch (error) {
       console.error('Error fetching swaps:', error);
@@ -23,7 +27,12 @@ export async function GET(req: Request) {
   try {
     const swap = await prisma.swap.findUnique({
       where: { id: swapId },
-      include: { appointment: true }
+      include: {
+        tradeInModel: true,
+        upgradeCategory: true,
+        conditions: true,
+        appointment: true,
+      },
     });
 
     if (!swap) {
@@ -41,53 +50,70 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
     const {
-      tradeInPhone,
-      newPhone,
+      tradeInModelId,
+      tradeInValue,
+      conditions, // { groupKey: string; value: string }[]
+      upgradeCategoryId,
+      upgradeModel,
+      upgradeStorage,
+      upgradePrice,
+      amountToPay,
+      swapMethod,
+      contactName,
       contactEmail,
       contactPhone,
-      swapMethod,
-      tradeInValue,
-      newPhonePrice,
-      amountToPay,
     } = data;
 
-    if (!tradeInPhone || !newPhone || tradeInValue === undefined || newPhonePrice === undefined || amountToPay === undefined) {
+    if (
+      !tradeInModelId ||
+      !upgradeCategoryId ||
+      !upgradeModel ||
+      !upgradeStorage ||
+      !swapMethod ||
+      tradeInValue === undefined ||
+      upgradePrice === undefined ||
+      amountToPay === undefined
+    ) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Keep legacy JSON fields for existing records, and persist contacts in
-    // dedicated columns for admin reporting.
-    const tradeInPhoneWithExtras = {
-      ...tradeInPhone,
-      contactEmail,
-      contactPhone,
-      swapMethod,
-    };
-
     const swap = await prisma.swap.create({
       data: {
-        tradeInPhone: tradeInPhoneWithExtras,
-        newPhone,
+        tradeInModelId,
         tradeInValue,
-        newPhonePrice,
+        upgradeCategoryId,
+        upgradeModel,
+        upgradeStorage,
+        upgradePrice,
         amountToPay,
+        swapMethod,
+        contactName,
         contactEmail,
         contactPhone,
+        conditions: {
+          create: Array.isArray(conditions)
+            ? conditions.map(({ groupKey, value }: { groupKey: string; value: string }) => ({ groupKey, value }))
+            : [],
+        },
+      },
+      include: {
+        tradeInModel: true,
+        upgradeCategory: true,
+        conditions: true,
       },
     });
 
-    // Send confirmation email
     if (contactEmail) {
       try {
         await sendSwapConfirmationEmail({
           to: contactEmail,
           swapDetails: {
-            tradeInPhone,
-            newPhone,
-            tradeInValue,
-            newPhonePrice,
-            amountToPay,
-            swapMethod: swapMethod || 'online',
+            tradeInPhone: { model: swap.tradeInModel.model, storage: swap.tradeInModel.storage },
+            newPhone: { model: swap.upgradeModel, storage: swap.upgradeStorage },
+            tradeInValue: swap.tradeInValue,
+            newPhonePrice: swap.upgradePrice,
+            amountToPay: swap.amountToPay,
+            swapMethod: swap.swapMethod,
           },
         });
       } catch (emailError) {

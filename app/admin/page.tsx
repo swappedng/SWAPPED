@@ -2,93 +2,73 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, ChevronRight, CircleAlert, Clock3, ExternalLink, PackageCheck, SlidersHorizontal, Smartphone, Tag, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronRight, CircleAlert, ExternalLink, SlidersHorizontal, Smartphone, Tag, RefreshCcw } from "lucide-react";
+import { AdminSwap, day, money, requestContact, shortId } from "./adminData";
+import { revalidateTradeIn } from "./actions";
 
-type Swap = {
-  id: string;
-  tradeInPhone?: { model?: string; contactEmail?: string; contactPhone?: string };
-  contactEmail?: string;
-  contactPhone?: string;
-  amountToPay?: number;
-  createdAt: string;
-  appointment?: { date: string; time: string } | null;
-};
+type SaleCategory = { prices?: unknown[] };
 
 export default function AdminDashboard() {
-  const [phoneModels, setPhoneModels] = useState<any[]>([]);
-  const [attributeGroups, setAttributeGroups] = useState<any[]>([]);
-  const [saleCategories, setSaleCategories] = useState<any[]>([]);
-  const [swaps, setSwaps] = useState<Swap[]>([]);
+  const [swaps, setSwaps] = useState<AdminSwap[]>([]);
+  const [counts, setCounts] = useState({ models: 0, questions: 0, prices: 0 });
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const [error, setError] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    const loadDashboard = async () => {
+    const load = async () => {
       try {
-        const responses = await Promise.all([
-          fetch("/api/admin/phone-models"),
-          fetch("/api/admin/condition-attributes/groups"),
-          fetch("/api/admin/sales-catalog"),
-          fetch("/api/swaps"),
-        ]);
-        const data = await Promise.all(responses.map((response) => response.json()));
-        if (!responses.every((response, index) => response.ok && Array.isArray(data[index]))) throw new Error("One or more dashboard services failed");
-        setPhoneModels(data[0]); setAttributeGroups(data[1]); setSaleCategories(data[2]); setSwaps(data[3]);
-      } catch (error) {
-        console.error("Failed to load admin dashboard:", error);
-        setLoadError(true);
-      } finally { setLoading(false); }
+        const paths = ["/api/swaps", "/api/admin/phone-models", "/api/admin/condition-attributes/groups", "/api/admin/sales-catalog"];
+        const responses = await Promise.all(paths.map((path) => fetch(path)));
+        const data: unknown[] = await Promise.all(responses.map((response) => response.json()));
+        if (responses.some((response) => !response.ok) || data.some((item) => !Array.isArray(item))) throw new Error("Dashboard data unavailable");
+        const [requests, models, questions, categories] = data as [AdminSwap[], unknown[], unknown[], SaleCategory[]];
+        setSwaps(requests);
+        setCounts({ models: models.length, questions: questions.length, prices: categories.reduce((total, category) => total + (category.prices?.length || 0), 0) });
+      } catch { setError(true); } finally { setLoading(false); }
     };
-    loadDashboard();
+    load();
   }, []);
 
-  const setupSteps = [
-    { number: 1, title: "Set trade-in values", description: "Enter the highest amount you will offer for every iPhone and storage size.", href: "/admin/phone-models", action: phoneModels.length ? "Review values" : "Add values", ready: phoneModels.length > 0, detail: `${phoneModels.length} model${phoneModels.length === 1 ? "" : "s"} configured`, icon: Smartphone, colors: "bg-violet-100 text-violet-700" },
-    { number: 2, title: "Set condition questions", description: "Decide how screen, battery, body and other conditions affect a quote.", href: "/admin/condition-attributes", action: attributeGroups.length ? "Review questions" : "Add questions", ready: attributeGroups.length > 0, detail: `${attributeGroups.length} question group${attributeGroups.length === 1 ? "" : "s"}`, icon: SlidersHorizontal, colors: "bg-blue-100 text-blue-700" },
-    { number: 3, title: "Set phones for sale", description: "Add the phones customers can upgrade to and enter their selling prices.", href: "/admin/selling-prices", action: saleCategories.length ? "Review prices" : "Add selling prices", ready: saleCategories.some((category) => category.prices?.length), detail: `${saleCategories.reduce((total, category) => total + (category.prices?.length || 0), 0)} prices configured`, icon: Tag, colors: "bg-emerald-100 text-emerald-700" },
+  const pending = swaps.filter((swap) => !swap.appointment);
+  const booked = swaps.filter((swap) => swap.appointment);
+  const upcoming = booked.filter((swap) => new Date(swap.appointment!.date).getTime() >= new Date().setHours(0, 0, 0, 0)).sort((a, b) => new Date(a.appointment!.date).getTime() - new Date(b.appointment!.date).getTime());
+  const setup = [
+    { label: "Trade-in values", detail: `${counts.models} devices configured`, href: "/admin/phone-models", ready: counts.models > 0, icon: Smartphone },
+    { label: "Condition questions", detail: `${counts.questions} question groups`, href: "/admin/condition-attributes", ready: counts.questions > 0, icon: SlidersHorizontal },
+    { label: "Phones for sale", detail: `${counts.prices} prices configured`, href: "/admin/selling-prices", ready: counts.prices > 0, icon: Tag },
   ];
-  const configuredSteps = setupSteps.filter((step) => step.ready).length;
 
-  return <div className="mx-auto max-w-4xl space-y-12">
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-4 border-b border-slate-100">
-      <div><h1 className="text-3xl font-bold tracking-tight text-slate-900">Workspace</h1><p className="mt-1 text-sm text-slate-500">Manage your prices and handle customer requests.</p></div>
-      <Link href="/" target="_blank" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">View website <ExternalLink className="h-4 w-4" /></Link>
+  return <div className="space-y-8">
+    <header className="flex flex-col gap-5 border-b border-stone-200 pb-7 sm:flex-row sm:items-end sm:justify-between">
+      <div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Workspace / Overview</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[34px]">Good to have you here.</h1><p className="mt-2 text-sm text-slate-500">A clear view of requests, bookings, and quote setup.</p></div>
+      <button 
+        onClick={async () => {
+          setIsRefreshing(true);
+          await revalidateTradeIn();
+          setTimeout(() => setIsRefreshing(false), 800);
+        }}
+        disabled={isRefreshing}
+        className="inline-flex items-center gap-2 self-start rounded-lg border border-stone-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-stone-50 disabled:opacity-50"
+      >
+        {isRefreshing ? "Syncing..." : "Sync frontend"} <RefreshCcw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+      </button>
     </header>
-
-    {loadError && <div className="flex items-center gap-3 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900"><CircleAlert className="h-4 w-4 shrink-0" /> Some dashboard information could not be loaded.</div>}
-
-    <section className="grid gap-6 sm:grid-cols-3">
-      <Link href="/admin/swaps" className="group flex flex-col gap-1.5 p-3 rounded-md hover:bg-black/5 transition -mx-3">
-        <p className="text-sm font-medium text-slate-500 flex items-center gap-2"><Users className="h-4 w-4" /> Requests</p>
-        <p className="text-3xl font-semibold text-slate-900">{loading ? "—" : swaps.length}</p>
-      </Link>
-      <div className="flex flex-col gap-1.5 p-3"><p className="text-sm font-medium text-slate-500 flex items-center gap-2"><PackageCheck className="h-4 w-4" /> Setup complete</p><p className="text-3xl font-semibold text-slate-900">{loading ? "—" : `${configuredSteps}/3`}</p></div>
-      <div className="flex flex-col gap-1.5 p-3"><p className="text-sm font-medium text-slate-500 flex items-center gap-2"><Clock3 className="h-4 w-4" /> Awaiting booking</p><p className="text-3xl font-semibold text-slate-900">{loading ? "—" : swaps.filter((swap) => !swap.appointment).length}</p></div>
+    {error && <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><CircleAlert className="h-4 w-4 shrink-0" /> Dashboard data could not be loaded. Try refreshing.</div>}
+    <section aria-label="Overview metrics" className="grid gap-3 sm:grid-cols-3">
+      <Metric href="/admin/swaps?status=awaiting" label="Needs booking" value={loading ? "—" : pending.length.toString()} note="Requests without an appointment" prominent />
+      <Metric href="/admin/appointments" label="Upcoming appointments" value={loading ? "—" : upcoming.length.toString()} note="Booked for today or later" />
+      <Metric href="/admin/swaps" label="All requests" value={loading ? "—" : swaps.length.toString()} note="Every submitted quote" />
     </section>
-
-    <section>
-      <h2 className="text-base font-semibold text-slate-900 mb-3">Set up customer quotes</h2>
-      <div className="flex flex-col gap-1 -mx-3">{setupSteps.map((step) => { const Icon = step.icon; return <Link key={step.number} href={step.href} className="group flex items-center justify-between p-3 rounded-md hover:bg-black/5 transition">
-        <div className="flex items-center gap-4">
-          <Icon className="h-5 w-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
-          <div>
-            <p className="text-sm font-medium text-slate-900">{step.title}</p>
-            <p className="text-xs text-slate-500">{step.description}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          {step.ready ? <span className="text-slate-400 text-xs flex items-center gap-1"><Check className="h-3.5 w-3.5" /> Ready</span> : <span className="text-amber-600 text-xs">Needs setup</span>}
-          <span className="text-slate-300 group-hover:text-slate-900 transition-colors"><ChevronRight className="h-4 w-4" /></span>
-        </div>
-      </Link>; })}</div>
-    </section>
-
-    <section>
-      <div className="flex items-center justify-between mb-3"><h2 className="text-base font-semibold text-slate-900">Recent requests</h2><Link href="/admin/swaps" className="text-sm text-slate-500 hover:text-slate-900 transition-colors">View all</Link></div>
-      <div className="flex flex-col gap-1 -mx-3">{!loading && swaps.slice(0, 5).map((swap) => { const email = swap.contactEmail || swap.tradeInPhone?.contactEmail || "No email provided"; const model = swap.tradeInPhone?.model || "Phone not specified"; return <Link href="/admin/swaps" key={swap.id} className="group flex items-center justify-between p-3 rounded-md hover:bg-black/5 transition">
-        <div className="flex items-center gap-3"><div className="h-8 w-8 rounded flex items-center justify-center bg-black/5 text-xs font-medium text-slate-600">{email.charAt(0).toUpperCase()}</div><div><p className="text-sm font-medium text-slate-900">{email}</p><p className="text-xs text-slate-500">{model}</p></div></div>
-        <div className="text-right"><p className="text-sm font-medium text-slate-900">₦{Number(swap.amountToPay || 0).toLocaleString()}</p><p className={`text-xs ${swap.appointment ? "text-slate-400" : "text-amber-600"}`}>{swap.appointment ? "Booked" : "Awaiting booking"}</p></div>
-      </Link>; })}{loading && <div className="p-3 text-sm text-slate-500">Loading requests…</div>}{!loading && swaps.length === 0 && <div className="p-3 text-sm text-slate-500">No requests yet.</div>}</div>
-    </section>
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(310px,1fr)]">
+      <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white"><div className="flex items-center justify-between border-b border-stone-100 px-5 py-5 sm:px-6"><div><h2 className="text-base font-semibold text-slate-950">Recent requests</h2><p className="mt-1 text-xs text-slate-500">Latest customer quotes</p></div><Link href="/admin/swaps" className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-950">View all <ArrowRight className="h-4 w-4" /></Link></div>
+        {loading ? <p className="px-6 py-12 text-sm text-slate-500">Loading requests…</p> : swaps.length === 0 ? <p className="px-6 py-12 text-sm text-slate-500">Requests will appear here when customers submit a quote.</p> : <div className="divide-y divide-stone-100">{swaps.slice(0, 5).map((swap) => <Link key={swap.id} href={`/admin/swaps/${swap.id}`} className="flex flex-col gap-3 px-5 py-4 transition hover:bg-stone-50 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-900">{requestContact(swap)}</p><p className="mt-1 text-xs text-slate-500">{swap.tradeInModel?.model || "Unknown phone"} · #{shortId(swap.id)} · {day(swap.createdAt)}</p></div><div className="flex items-center justify-between gap-5 sm:justify-end"><span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${swap.appointment ? "bg-stone-100 text-slate-600" : "bg-amber-50 text-amber-800"}`}>{swap.appointment ? "Booked" : "Awaiting booking"}</span><span className="min-w-[100px] text-right text-sm font-semibold tabular-nums text-slate-950">{money(swap.amountToPay)}</span><ChevronRight className="hidden h-4 w-4 text-slate-400 sm:block" /></div></Link>)}</div>}
+      </section>
+      <div className="space-y-6"><section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6"><div className="flex items-center justify-between"><div><h2 className="text-base font-semibold text-slate-950">Quote setup</h2><p className="mt-1 text-xs text-slate-500">The three essentials</p></div><span className="text-xl font-semibold tabular-nums text-slate-950">{loading ? "—" : setup.filter((item) => item.ready).length}/3</span></div><div className="mt-5 divide-y divide-stone-100">{setup.map((item) => { const Icon = item.icon; return <Link key={item.href} href={item.href} className="flex items-center gap-3 py-3.5 hover:text-slate-950"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-100 text-slate-600"><Icon className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium text-slate-900">{item.label}</span><span className="block text-xs text-slate-500">{loading ? "Loading…" : item.detail}</span></span><span className={`h-2 w-2 rounded-full ${item.ready ? "bg-emerald-500" : "bg-stone-300"}`} aria-label={item.ready ? "Configured" : "Needs setup"} /><ChevronRight className="h-4 w-4 text-slate-400" /></Link>; })}</div></section><section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-slate-500" /><h2 className="text-base font-semibold text-slate-950">Next appointment</h2></div>{loading ? <p className="mt-5 text-sm text-slate-500">Loading…</p> : upcoming[0] ? <Link href={`/admin/swaps/${upcoming[0].id}`} className="mt-5 block rounded-xl bg-stone-50 p-4 hover:bg-stone-100"><p className="text-sm font-semibold text-slate-950">{requestContact(upcoming[0])}</p><p className="mt-1 text-xs text-slate-500">{day(upcoming[0].appointment!.date)} at {upcoming[0].appointment!.time} · {upcoming[0].appointment!.appointmentType}</p></Link> : <p className="mt-5 text-sm text-slate-500">No upcoming appointments booked.</p>}</section></div>
+    </div>
   </div>;
+}
+
+function Metric({ href, label, value, note, prominent = false }: { href: string; label: string; value: string; note: string; prominent?: boolean }) {
+  return <Link href={href} className={`rounded-2xl border p-5 transition hover:shadow-sm sm:p-6 ${prominent ? "border-slate-800 bg-slate-950 text-white" : "border-stone-200 bg-white text-slate-950"}`}><p className={`text-xs font-medium ${prominent ? "text-slate-300" : "text-slate-500"}`}>{label}</p><p className="mt-3 text-[34px] font-semibold leading-none tabular-nums">{value}</p><p className={`mt-3 text-xs ${prominent ? "text-slate-400" : "text-slate-500"}`}>{note}</p></Link>;
 }

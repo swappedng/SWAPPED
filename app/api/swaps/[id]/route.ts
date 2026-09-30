@@ -10,7 +10,12 @@ export async function GET(
   try {
     const swap = await prisma.swap.findUnique({
       where: { id: swapId },
-      include: { appointment: true }
+      include: {
+        tradeInModel: true,
+        upgradeCategory: true,
+        conditions: true,
+        appointment: true,
+      },
     });
 
     if (!swap) {

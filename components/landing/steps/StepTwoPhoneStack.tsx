@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-const STEP_DURATION = 320;
+const STEP_DURATION = 1000;
 
 const phones = [
   { id: "1", src: "/phones/phone_1.png", left: "25%", top: "40%" },

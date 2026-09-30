@@ -140,15 +140,26 @@ export function useTradeInFlow(catalogue: Catalogue) {
     if (!swapMethod || saving) return;
     setSaving(true);
     try {
+      // Build conditions array from the form state, filtering out empty answers
+      const conditions = visibleConditions
+        .map((group) => ({
+          groupKey: group.key,
+          value: tradeIn[group.key as keyof TradeInDetails] as string,
+        }))
+        .filter((c) => c.value !== '' && c.value !== undefined);
+
       const swap = await createTradeInRequest({
-        tradeInPhone: tradeIn,
-        newPhone: upgrade,
+        tradeInModelId: selectedTradeIn?.value || '',
+        tradeInValue,
+        conditions,
+        upgradeCategoryId: upgrade.category,
+        upgradeModel: upgrade.model,
+        upgradeStorage: upgrade.storage,
+        upgradePrice: newPhonePrice,
+        amountToPay: newPhonePrice - tradeInValue,
+        swapMethod,
         contactEmail: email,
         contactPhone: phone,
-        swapMethod,
-        tradeInValue,
-        newPhonePrice,
-        amountToPay: newPhonePrice - tradeInValue,
       });
       setSavedSwapId(swap.id);
       setShowCalendly(true);

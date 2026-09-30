@@ -15,7 +15,16 @@ const faqs = [
 
 export function FaqSection() {
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
+  const [openQuestions, setOpenQuestions] = useState<string[]>([]);
   const visibleFaqs = faqs.filter((faq) => category === "All" || faq.category === category);
+
+  function toggleQuestion(question: string) {
+    setOpenQuestions((current) =>
+      current.includes(question)
+        ? current.filter((item) => item !== question)
+        : [...current, question]
+    );
+  }
 
   return (
     <section
@@ -53,26 +62,53 @@ export function FaqSection() {
             ))}
           </div>
           <div data-landing-reveal className="overflow-hidden rounded-[22px] border border-[#e7e2eb] bg-white/55 [--reveal-delay:90ms]">
-            {visibleFaqs.map((faq) => (
-              <details
-                key={faq.question}
-                className="group border-b border-[#4c00bd]/10 last:border-b-0"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-5 py-5 text-sm font-medium leading-[1.5] text-[#192331] marker:hidden focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[-3px] focus-visible:outline-[#4c00bd] [&::-webkit-details-marker]:hidden min-[701px]:px-7 min-[701px]:py-5 min-[701px]:text-[15px]">
-                  <span>{faq.question}</span>
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#4c00bd]/7 text-[#4c00bd] transition-colors ">
-                    <ChevronDown
-                      className="transition-transform group-open:rotate-180"
-                      size={16}
-                      aria-hidden="true"
-                    />
-                  </span>
-                </summary>
-                <p className="-mt-1 mb-6 max-w-[720px] px-5 text-sm leading-[1.7] text-[#69717d] min-[701px]:mb-7 min-[701px]:px-7">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
+            {visibleFaqs.map((faq, index) => {
+              const isOpen = openQuestions.includes(faq.question);
+              const answerId = `faq-answer-${index}`;
+
+              return (
+                <article
+                  key={faq.question}
+                  className="border-b border-[#4c00bd]/10 last:border-b-0"
+                >
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    aria-controls={answerId}
+                    onClick={() => toggleQuestion(faq.question)}
+                    className="flex w-full cursor-pointer items-center justify-between gap-5 px-5 py-5 text-left text-sm font-medium leading-[1.5] text-[#192331] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[-3px] focus-visible:outline-[#4c00bd] min-[701px]:px-7 min-[701px]:py-5 min-[701px]:text-[15px]"
+                  >
+                    <span>{faq.question}</span>
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#4c00bd]/7 text-[#4c00bd] transition-colors ">
+                      <ChevronDown
+                        className={`transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}`}
+                        size={16}
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </button>
+                  <div
+                    className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+                      isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                    }`}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <p
+                        id={answerId}
+                        aria-hidden={!isOpen}
+                        className={`-mt-1 mb-6 max-w-[720px] px-5 text-sm leading-[1.7] text-[#69717d] transition-[opacity,transform] duration-200 ease-out min-[701px]:mb-7 min-[701px]:px-7 motion-reduce:transition-none ${
+                          isOpen
+                            ? "translate-y-0 opacity-100 delay-100"
+                            : "-translate-y-2 opacity-0"
+                        }`}
+                      >
+                        {faq.answer}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </div>
