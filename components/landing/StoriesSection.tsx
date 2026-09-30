@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import { Quote, Sparkles } from "lucide-react";
 
 const stories = [
@@ -38,7 +39,7 @@ export function StoriesSection() {
       className="mx-auto max-w-[1240px] scroll-mt-8 px-6 pb-20 pt-16 min-[701px]:px-9 min-[701px]:pb-28 min-[701px]:pt-24"
       aria-labelledby="stories-title"
     >
-      <div className="mb-8 flex flex-col items-center text-center min-[701px]:mb-11">
+      <div data-landing-reveal className="mb-8 flex flex-col items-center text-center min-[701px]:mb-11">
        
         <div>
           <h2
@@ -57,6 +58,8 @@ export function StoriesSection() {
           {stories.map((story, index) => (
             <article
               key={story.title}
+              data-landing-reveal
+              style={{ "--reveal-delay": `${index * 90}ms` } as CSSProperties}
               className={`flex min-h-[276px] flex-col rounded-[22px] border border-white/80 bg-[#fffdfb] p-6 shadow-[0_12px_30px_rgba(76,0,189,0.06)] min-[701px]:min-h-[320px] min-[701px]:p-7 `}
             >
               <Quote

@@ -15,7 +15,7 @@ const swapOptions = [
 
 export function StepThreeIllustration() {
   return (
-    <div className="mx-auto grid h-full w-full max-w-[600px] grid-cols-2 items-center gap-3 px-4 py-5 max-[759px]:gap-2 max-[759px]:px-3">
+    <div data-landing-reveal className="mx-auto grid h-full w-full max-w-[600px] grid-cols-2 items-center gap-3 px-4 py-5 [--reveal-delay:150ms] max-[759px]:gap-2 max-[759px]:px-3">
       {swapOptions.map((option) => (
         <figure
           key={option.src}

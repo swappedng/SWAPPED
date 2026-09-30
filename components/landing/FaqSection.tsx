@@ -23,7 +23,7 @@ export function FaqSection() {
       className="mx-auto max-w-[1240px] scroll-mt-8 px-6 pb-24 pt-8 min-[701px]:px-9 min-[701px]:pb-28 min-[701px]:pt-32"
       aria-labelledby="faq-title"
     >
-      <div className="mb-8 flex flex-col items-center text-center min-[701px]:mb-11">
+      <div data-landing-reveal className="mb-8 flex flex-col items-center text-center min-[701px]:mb-11">
         <h2
           id="faq-title"
           className="text-[clamp(32px,3.6vw,48px)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#192331]"
@@ -35,6 +35,7 @@ export function FaqSection() {
       <div className="relative overflow-hidden p-3 min-[701px]:rounded-[32px] min-[701px]:p-5">
         <div className="relative mx-auto max-w-[880px]">
           <div
+            data-landing-reveal
             className="mb-4 flex flex-wrap justify-center gap-2 min-[701px]:mb-5"
             role="group"
             aria-label="Filter frequently asked questions"
@@ -51,7 +52,7 @@ export function FaqSection() {
               </button>
             ))}
           </div>
-          <div className="overflow-hidden rounded-[22px] border border-[#e7e2eb] bg-white/55">
+          <div data-landing-reveal className="overflow-hidden rounded-[22px] border border-[#e7e2eb] bg-white/55 [--reveal-delay:90ms]">
             {visibleFaqs.map((faq) => (
               <details
                 key={faq.question}

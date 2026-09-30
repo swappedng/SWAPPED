@@ -99,7 +99,7 @@ export function ProcessSection() {
   return (
     <section
       id="how-it-works"
-      className="[--peek:96px] [--heading-height:176px] [--stack-height:min(680px,calc(100svh-40px))] [--heading-stage-height:calc(var(--stack-height)*2-var(--heading-height)-var(--peek)*3)] max-[759px]:[--peek:104px]"
+      className="[--peek:80px] [--heading-height:176px] [--stack-height:min(680px,calc(100svh-40px))] [--heading-stage-height:calc(var(--stack-height)*2-var(--heading-height)-var(--peek)*3)] max-[759px]:[--peek:104px]"
       aria-labelledby="process-title"
     >
       <div className="h-[120px] max-[759px]:h-16" aria-hidden="true" />
@@ -114,11 +114,12 @@ export function ProcessSection() {
           >
             <h2
               id="process-title"
+              data-landing-reveal
               className="m-0 text-[clamp(28px,4vw,44px)] font-semibold leading-[1.1] tracking-[-0.035em] text-[#192331]"
             >
               Effortless Steps to Upgrade
             </h2>
-            <p className="m-0 max-w-[46ch] text-base leading-[1.45] text-[#69717d] max-[759px]:text-[14px]">
+            <p data-landing-reveal className="m-0 max-w-[46ch] text-base leading-[1.45] text-[#69717d] [--reveal-delay:90ms] max-[759px]:text-[14px]">
               Three steps, two ways to swap, and a clear breakdown before you
               commit.
             </p>
@@ -129,7 +130,7 @@ export function ProcessSection() {
             <section
               key={step.number}
               data-stack-card
-              className="sticky top-[calc(16px+env(safe-area-inset-top,0px)+var(--heading-height)+var(--i)*var(--peek))] z-[calc(1+var(--i))] bg-background mx-auto grid min-h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] w-full scroll-mt-[calc(16px+var(--heading-height)+var(--i)*var(--peek))] grid-cols-[1.06fr_1fr] grid-rows-[var(--peek)_minmax(0,1fr)] overflow-hidden border-y border-[#e7e2eb] [--p:0] max-[759px]:grid-cols-1 max-[759px]:grid-rows-[var(--peek)_auto] max-[759px]:rounded-t-2xl [@media(max-height:700px)]:relative [@media(max-height:700px)]:top-auto [@media(max-height:700px)]:mb-6"
+              className="sticky top-[calc(16px+env(safe-area-inset-top,0px)+var(--heading-height)+var(--i)*var(--peek))] z-[calc(1+var(--i))] bg-background mx-auto grid h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] w-full scroll-mt-[calc(16px+var(--heading-height)+var(--i)*var(--peek))] grid-cols-[1.06fr_1fr] grid-rows-[var(--peek)_minmax(0,1fr)] overflow-hidden border-y border-[#e7e2eb] [--p:0] max-[759px]:h-auto max-[759px]:min-h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] max-[759px]:grid-cols-1 max-[759px]:grid-rows-[var(--peek)_auto] max-[759px]:rounded-t-2xl [@media(max-height:700px)]:relative [@media(max-height:700px)]:top-auto [@media(max-height:700px)]:h-auto [@media(max-height:700px)]:min-h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] [@media(max-height:700px)]:mb-6"
               style={{ "--i": index } as CSSProperties}
               aria-labelledby={`process-step-${index + 1}-title`}
             >
@@ -141,13 +142,15 @@ export function ProcessSection() {
                 </p>
                 <h2
                   id={`process-step-${index + 1}-title`}
+                  data-landing-reveal
                   className="relative z-[2] m-0 text-[clamp(22px,2.3vw,32px)] font-semibold leading-[1.2] tracking-[-0.03em] text-[#192331] max-[759px]:whitespace-normal max-[759px]:text-[22px]"
                 >
                   {step.title}
                 </h2>
               </header>
               <div
-                className={`${step.image ? "" : "col-span-full"} min-w-0 pb-10 pl-40 pr-8 pt-5 max-[759px]:px-5 max-[759px]:pb-6 max-[759px]:pt-4`}
+                data-landing-reveal
+                className={`${step.image ? "" : "col-span-full"} min-w-0 pb-10 pl-40 pr-8 pt-5 [--reveal-delay:90ms] max-[759px]:px-5 max-[759px]:pb-6 max-[759px]:pt-4`}
               >
                 <p className="m-0 max-w-[30ch] text-[18px] font-medium leading-[1.5] text-[#69717d] opacity-[calc(1-var(--p)*1.6)] max-[759px]:text-[16px] motion-reduce:opacity-100">
                   {step.copy}

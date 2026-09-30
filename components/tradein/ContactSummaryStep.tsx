@@ -79,23 +79,37 @@ export function ContactSummaryStep({
           />
         </button>
 
-        {showBreakdown && (
-          <div id="estimate-breakdown" className="mt-6 border-y border-[#e7e2eb] py-3 text-sm sm:text-base">
-            <div className="flex items-center justify-between gap-5 py-3 text-[#69717d]">
-              <span>{nextPhone}{category && ` · ${category}`}</span>
-              <span className="shrink-0">Your next iPhone</span>
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+            showBreakdown ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div
+              id="estimate-breakdown"
+              aria-hidden={!showBreakdown}
+              className={`mt-6 border-y border-[#e7e2eb] py-3 text-sm transition-[opacity,transform] duration-200 ease-out sm:text-base motion-reduce:transition-none ${
+                showBreakdown
+                  ? "translate-y-0 opacity-100 delay-100"
+                  : "-translate-y-2 opacity-0"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-5 py-3 text-[#69717d]">
+                <span>{nextPhone}{category && ` · ${category}`}</span>
+                <span className="shrink-0">Your next iPhone</span>
+              </div>
+              <div className="flex items-center justify-between gap-5 border-t border-[#e7e2eb] py-3 text-[#69717d]">
+                <span>Your trade-in estimate</span>
+                <span className="shrink-0">− {money(upper)}</span>
+              </div>
+              <div className="flex items-center justify-between gap-5 border-t border-[#e7e2eb] pt-4 font-semibold text-[#192331]">
+                <span>You pay</span>
+                <span className="shrink-0">{money(lower)} – {money(upper)}</span>
+              </div>
+              <p className="mt-4 text-xs text-[#69717d]">Trading in: {tradeInPhone}</p>
             </div>
-            <div className="flex items-center justify-between gap-5 border-t border-[#e7e2eb] py-3 text-[#69717d]">
-              <span>Your trade-in estimate</span>
-              <span className="shrink-0">− {money(upper)}</span>
-            </div>
-            <div className="flex items-center justify-between gap-5 border-t border-[#e7e2eb] pt-4 font-semibold text-[#192331]">
-              <span>You pay</span>
-              <span className="shrink-0">{money(lower)} – {money(upper)}</span>
-            </div>
-            <p className="mt-4 text-xs text-[#69717d]">Trading in: {tradeInPhone}</p>
           </div>
-        )}
+        </div>
       </div>
 
       <form onSubmit={submit} className="mt-9 border-t border-[#e7e2eb] px-5 py-7 sm:px-9 sm:py-8">

@@ -3,6 +3,65 @@
 @tailwind utilities;
 
 @layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-landing-intro] {
+      animation: landing-intro 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: var(--reveal-delay, 0ms);
+    }
+
+    .landing-reveal-pending {
+      opacity: 0;
+      transform: translate3d(0, 20px, 0);
+    }
+
+    .landing-reveal-visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+        transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .landing-reveal-pending .step-one-callout-line,
+    .landing-reveal-visible .step-one-callout-line {
+      stroke-dasharray: 1;
+    }
+
+    .landing-reveal-pending .step-one-callout-line {
+      stroke-dashoffset: 1;
+    }
+
+    .landing-reveal-visible .step-one-callout-line {
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 800ms cubic-bezier(0.22, 1, 0.36, 1)
+        calc(var(--callout-delay, 0ms) + 250ms);
+    }
+
+    .landing-reveal-pending .step-one-callout-label {
+      opacity: 0;
+      transform: translate3d(0, 6px, 0);
+    }
+
+    .landing-reveal-visible .step-one-callout-label {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      transition: opacity 450ms ease-out, transform 450ms ease-out;
+      transition-delay: calc(var(--callout-delay, 0ms) + 650ms);
+    }
+  }
+
+  @keyframes landing-intro {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 20px, 0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
   .button-primary,
   .button-secondary {
     @apply inline-flex text-sm items-center justify-center rounded-md px-6 py-2.5 transition-colors;

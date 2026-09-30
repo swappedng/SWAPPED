@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { StepCard } from './StepCard';
-import { OptionCardList } from './OptionCardList';
-import { PillSelector } from './PillSelector';
+import { type ReactNode, useMemo, useState } from "react";
+import { StepCard } from "./StepCard";
+import { OptionCardList } from "./OptionCardList";
+import { PillSelector } from "./PillSelector";
 
 export interface PhoneOption {
   value: string;
@@ -24,7 +24,35 @@ const modelNumber = (name: string) => {
 const modelGroup = (name: string) =>
   name.match(/iPhone\s+(\d+)/i)?.[1] ||
   name.match(/iPhone\s+(XS|XR|X)/i)?.[1] ||
-  '';
+  "";
+
+function ExpandingSection({
+  isOpen,
+  children,
+}: {
+  isOpen: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+        isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+      }`}
+    >
+      <section
+        aria-hidden={!isOpen}
+        inert={!isOpen}
+        className={`min-h-0 overflow-hidden transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
+          isOpen
+            ? "translate-y-0 opacity-100 delay-100"
+            : "-translate-y-2 opacity-0"
+        }`}
+      >
+        {children}
+      </section>
+    </div>
+  );
+}
 
 export function PhoneQuestionStep({
   options,
@@ -38,41 +66,52 @@ export function PhoneQuestionStep({
   const selectedOption = options.find((option) => option.value === value);
   const groups = useMemo(
     () =>
-      [...new Set(options.map((option) => modelGroup(option.model)).filter(Boolean))].sort(
-        (first, second) => modelNumber(`iPhone ${second}`) - modelNumber(`iPhone ${first}`)
+      [
+        ...new Set(
+          options.map((option) => modelGroup(option.model)).filter(Boolean),
+        ),
+      ].sort(
+        (first, second) =>
+          modelNumber(`iPhone ${second}`) - modelNumber(`iPhone ${first}`),
       ),
-    [options]
+    [options],
   );
   const [selectedGroup, setSelectedGroup] = useState(
-    selectedOption ? modelGroup(selectedOption.model) : ''
+    selectedOption ? modelGroup(selectedOption.model) : "",
   );
-  const [selectedModel, setSelectedModel] = useState(selectedOption?.model || '');
-  const [selectedStorage, setSelectedStorage] = useState(selectedOption?.storage || '');
+  const [selectedModel, setSelectedModel] = useState(
+    selectedOption?.model || "",
+  );
+  const [selectedStorage, setSelectedStorage] = useState(
+    selectedOption?.storage || "",
+  );
 
   const versions = useMemo(
     () => [
       ...new Set(
         options
           .filter((option) => modelGroup(option.model) === selectedGroup)
-          .map((option) => option.model)
+          .map((option) => option.model),
       ),
     ],
-    [options, selectedGroup]
+    [options, selectedGroup],
   );
   const storageOptions = useMemo(
     () => options.filter((option) => option.model === selectedModel),
-    [options, selectedModel]
+    [options, selectedModel],
   );
   const canContinue = !!selectedModel && !!selectedStorage;
 
   function chooseGroup(group: string) {
     setSelectedGroup(group);
-    setSelectedModel('');
-    setSelectedStorage('');
+    setSelectedModel("");
+    setSelectedStorage("");
   }
 
   function continueToNextStep() {
-    const option = storageOptions.find((item) => item.storage === selectedStorage);
+    const option = storageOptions.find(
+      (item) => item.storage === selectedStorage,
+    );
     if (option) onSelect(option);
   }
 
@@ -82,7 +121,8 @@ export function PhoneQuestionStep({
       noticeTitle="Not sure?"
       notice={
         <>
-          Open Settings → General → About. Model Name shows the full name, and Capacity shows the storage.
+          Open Settings → General → About. Model Name shows the full name, and
+          Capacity shows the storage.
         </>
       }
       onContinue={continueToNextStep}
@@ -99,8 +139,8 @@ export function PhoneQuestionStep({
         />
       </section>
 
-      {selectedGroup && (
-        <section className="mt-6">
+      <ExpandingSection isOpen={Boolean(selectedGroup)}>
+        <div className="mt-6">
           <h2 className="mb-2.5 text-sm font-semibold text-[#69717d]">
             Which model exactly?
           </h2>
@@ -109,14 +149,14 @@ export function PhoneQuestionStep({
             value={selectedModel}
             onChange={(model) => {
               setSelectedModel(model);
-              setSelectedStorage('');
+              setSelectedStorage("");
             }}
           />
-        </section>
-      )}
+        </div>
+      </ExpandingSection>
 
-      {selectedModel && (
-        <section className="mt-6">
+      <ExpandingSection isOpen={Boolean(selectedModel)}>
+        <div className="mt-6">
           <h2 className="mb-2.5 text-sm font-semibold text-[#69717d]">
             Storage Capacity
           </h2>
@@ -128,8 +168,8 @@ export function PhoneQuestionStep({
             value={selectedStorage}
             onChange={setSelectedStorage}
           />
-        </section>
-      )}
+        </div>
+      </ExpandingSection>
     </StepCard>
   );
 }

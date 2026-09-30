@@ -28,15 +28,16 @@ export function SwapIllustration() {
 
   return (
     <figure
-      className="relative mx-auto mt-7 grid max-w-[720px] items-end sm:mt-5"
+      data-landing-reveal
+      className="relative mx-auto mt-5 grid max-w-[720px] items-end sm:mt-4"
       aria-label="iPhone shown from the front and back. Devices shown are illustrative."
     >
       <div className="relative flex min-w-0 flex-col items-center">
-        <div className="relative flex h-[210px] w-full items-end justify-center sm:h-[280px] [perspective:900px]">
+        <div className="relative flex h-[168px] w-full items-end justify-center sm:h-[224px] [perspective:900px]">
           <div
             onPointerMove={handlePointerMove}
             onPointerLeave={handlePointerLeave}
-            className="group relative aspect-[542/668] h-[210px] w-auto max-w-full cursor-default sm:h-[280px] motion-reduce:!transform-none motion-reduce:!transition-none"
+            className="group relative aspect-[542/668] h-[168px] w-auto max-w-full cursor-default sm:h-[224px] motion-reduce:!transform-none motion-reduce:!transition-none"
             style={{
               transform: "rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg))",
               transition: "transform 220ms ease-out",
@@ -48,7 +49,7 @@ export function SwapIllustration() {
               alt=""
               width={542}
               height={668}
-              sizes="(max-width: 639px) 170px, 227px"
+              sizes="(max-width: 639px) 136px, 182px"
               priority
               draggable={false}
               className="relative h-full w-auto max-w-full select-none object-contain mix-blend-multiply"
