@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
+import { StepOneIllustration } from "./steps/StepOneIllustration";
+import { StepTwoPhoneStack } from "./steps/StepTwoPhoneStack";
+import { StepThreeIllustration } from "./steps/StepThreeIllustration";
 
 type ProcessStep = {
   number: string;
@@ -14,19 +17,19 @@ const steps: ProcessStep[] = [
     number: "01",
     title: "Tell us about your iPhone",
     copy: "Pick your model and answer a few quick questions about its condition. That's all we need for your estimate.",
-    image: null,
+    image: "/steps-illustrations/step-1.svg",
   },
   {
     number: "02",
     title: "Choose your next iPhone",
     copy: "See your estimated top-up upfront, then get the full breakdown by email so you can decide in your own time.",
-    image: null,
+    image: "/phones/phone_1.png",
   },
   {
     number: "03",
     title: "Swap it your way",
     copy: "Choose pickup or a store visit. We'll inspect your device, confirm its value, and complete your swap.",
-    image: null,
+    image: "/steps-illustrations/step-3.png",
   },
 ];
 
@@ -154,7 +157,13 @@ export function ProcessSection() {
                 hidden={!step.image}
                 className="min-h-0 min-w-0 self-stretch bg-background opacity-[calc(1-var(--p)*0.9)] max-[759px]:h-auto max-[759px]:min-h-[100px] motion-reduce:opacity-100"
               >
-                {step.image ? (
+                {step.number === "01" ? (
+                  <StepOneIllustration />
+                ) : step.number === "02" ? (
+                  <StepTwoPhoneStack />
+                ) : step.number === "03" ? (
+                  <StepThreeIllustration />
+                ) : step.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={step.image}

@@ -10,20 +10,12 @@ export function LandingFooter() {
           className="group flex items-center justify-center gap-3 text-[#192331] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-[#4c00bd] focus-visible:outline-offset-[8px] min-[701px]:gap-6"
           aria-label="Swapped home"
         >
-          {/* <Image
-            src="/swapped-logo.png"
-            alt=""
-            width={160}
-            height={160}
-            className="size-[clamp(66px,10vw,150px)] shrink-0 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105 motion-reduce:transition-none"
-          /> */}
-          <span className="text-[clamp(64px,14.5vw,218px)] font-bold leading-none tracking-wider [mask-image:linear-gradient(to_bottom,#000_0%,rgba(0,0,0,0.22)_100%)] [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,rgba(0,0,0,0.22)_100%)]">
+          <span className="text-[clamp(64px,14.5vw,218px)] font-bold leading-none tracking-wider opacity-10 transition-opacity group-hover:opacity-20 duration-200 min-[701px]:text-[clamp(64px,10vw,218px)]">
             swapped<span className="text-[#4c00bd]">.</span>
           </span>
         </Link>
         <div className="mt-10 flex items-center justify-between border-t border-[#4c00bd]/15 pt-4 text-[10px] font-medium tracking-[0.04em] min-[701px]:mt-14">
           <span>© {new Date().getFullYear()} Swapped</span>
-          {/* <span>Trade in. Move forward.</span> */}
         </div>
       </div>
     </footer>
