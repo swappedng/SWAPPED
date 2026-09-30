@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowUpRight, Search } from "lucide-react";
@@ -9,7 +9,7 @@ import { AdminSwap, day, money, requestContact, requestEmail, requestPhone, shor
 type Filter = "all" | "awaiting" | "booked";
 const filters: { key: Filter; label: string }[] = [{ key: "all", label: "All requests" }, { key: "awaiting", label: "Awaiting booking" }, { key: "booked", label: "Booked" }];
 
-export default function SwapsPage() {
+function SwapsPageContent() {
   const params = useSearchParams();
   const [swaps, setSwaps] = useState<AdminSwap[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,3 +40,11 @@ export default function SwapsPage() {
 }
 
 function Summary({ label, count, loading }: { label: string; count: number; loading: boolean }) { return <div className="rounded-xl border border-stone-200 bg-white p-5"><p className="text-xs font-medium text-slate-500">{label}</p><p className="mt-2 text-3xl font-semibold tabular-nums text-slate-950">{loading ? "—" : count}</p></div>; }
+
+export default function SwapsPage() {
+  return (
+    <Suspense fallback={<div className="space-y-7"><header className="border-b border-stone-200 pb-7"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Operations / Requests</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Customer requests</h1></header><div className="p-8 text-sm text-slate-500">Loading requests…</div></div>}>
+      <SwapsPageContent />
+    </Suspense>
+  );
+}

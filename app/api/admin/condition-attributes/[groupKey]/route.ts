@@ -4,10 +4,10 @@ import { prisma } from '@/app/lib/prisma';
 // GET group by key
 export async function GET(
   request: NextRequest,
-  { params }: { params: { groupKey: string } }
+  { params }: { params: Promise<{ groupKey: string }> }
 ) {
   try {
-    const { groupKey } = params;
+    const { groupKey } = await params;
 
     const group = await prisma.conditionAttributeGroup.findUnique({
       where: { key: groupKey },
@@ -33,10 +33,10 @@ export async function GET(
 // UPDATE group by key
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { groupKey: string } }
+  { params }: { params: Promise<{ groupKey: string }> }
 ) {
   try {
-    const { groupKey } = params;
+    const { groupKey } = await params;
     const body = await request.json();
 
     const existingGroup = await prisma.conditionAttributeGroup.findUnique({
@@ -64,10 +64,10 @@ export async function PATCH(
 // DELETE group by key
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { groupKey: string } }
+  { params }: { params: Promise<{ groupKey: string }> }
 ) {
   try {
-    const { groupKey } = params;
+    const { groupKey } = await params;
 
     const existingGroup = await prisma.conditionAttributeGroup.findUnique({
       where: { key: groupKey }

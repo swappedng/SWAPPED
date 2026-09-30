@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const option = await prisma.conditionAttributeOption.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { group: true },
     });
 
@@ -19,13 +20,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body = await request.json();
+    const { id } = await params;
     const { value, label, description, priceModifier, order, isActive } = body;
 
     const updated = await prisma.conditionAttributeOption.update({
-      where: { id: params.id },
+      where: { id },
       data: { value, label, description, priceModifier, order, isActive },
     });
 
@@ -39,9 +41,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // Alias PATCH to PUT for compatibility
 export const PATCH = PUT;
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await prisma.conditionAttributeOption.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.conditionAttributeOption.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Failed to delete option:', error);
