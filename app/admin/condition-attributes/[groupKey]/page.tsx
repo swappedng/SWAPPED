@@ -117,16 +117,16 @@ export default function EditConditionAttributeGroupPage({
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
           <Link href="/admin" className="hover:text-gray-900">Admin</Link>
           <span>/</span>
-          <Link href="/admin/condition-attributes" className="hover:text-gray-900">Condition Attributes</Link>
+          <Link href="/admin/condition-attributes" className="hover:text-gray-900">Inspection Checklist</Link>
           <span>/</span>
           <span className="text-gray-900">{isNew ? 'New Group' : formData.label}</span>
         </div>
         
         <h1 className="text-2xl font-bold text-gray-900">
-          {isNew ? 'New Condition Attribute Group' : `Edit ${formData.label}`}
+          {isNew ? 'New Inspection Group' : `Edit ${formData.label}`}
         </h1>
         <p className="text-gray-600 mt-2">
-          {isNew ? 'Create a new condition attribute group' : 'Modify condition attribute group settings'}
+          {isNew ? 'Create a new inspection checklist group' : 'Modify inspection checklist group settings'}
         </p>
       </div>
 

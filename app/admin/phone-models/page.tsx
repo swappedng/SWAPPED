@@ -1,410 +1,423 @@
 'use client';
-
-import { useState, useEffect, useMemo, Fragment } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { ChevronDown, Package, Plus, Save, Search, Smartphone, Trash2, X, Check } from 'lucide-react';
+import ConfirmationModal from '@/components/admin/ConfirmationModal';
 import {
-  Smartphone,
-  Plus,
-  Search,
-  Filter,
-  Pencil,
-  Trash2,
-  Check,
-  X,
-  Info,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-} from 'lucide-react';
-import { getPhoneModels, updatePhoneModel, createPhoneModel, deletePhoneModel, type PhoneModel } from '@/lib/api/endpoints/admin/phone-models';
+  getPhoneModels,
+  createPhoneModel,
+  updatePhoneModel,
+  deletePhoneModel,
+  type PhoneModel,
+} from '@/lib/api/endpoints/admin/phone-models';
 
 const PAGE_SIZE = 10;
-const emptyModel = { label: '', model: '', storage: '', buyingPrice: '', isActive: true };
+
+const iphoneRank = (model: string) => {
+  const normalized = model.toLowerCase();
+  const generation = Number(normalized.match(/iphone\s+(\d+)/)?.[1] || 0);
+  const legacy = normalized.includes('xs max')
+    ? 43
+    : normalized.includes('xs')
+    ? 42
+    : normalized.includes('xr')
+    ? 41
+    : normalized.match(/iphone\s+x\b/)
+    ? 40
+    : 0;
+  const tier = normalized.includes('pro max')
+    ? 3
+    : normalized.includes(' pro')
+    ? 2
+    : normalized.includes('plus')
+    ? 1
+    : normalized.includes('mini')
+    ? -1
+    : 0;
+  return generation ? generation * 10 + tier : legacy;
+};
+
+const storageRank = (storage: string) => Number(storage.match(/\d+/)?.[0] || 0);
 
 export default function PhoneModelsPage() {
   const [models, setModels] = useState<PhoneModel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [draft, setDraft] = useState<Partial<PhoneModel>>({});
-  const [isAdding, setIsAdding] = useState(false);
-  const [newModel, setNewModel] = useState<any>(emptyModel);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [statusDrafts, setStatusDrafts] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [isAdding, setIsAdding] = useState(false);
+  const [newModel, setNewModel] = useState({ model: '', storage: '', buyingPrice: '' });
+  const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const toggleGroup = (name: string) => {
-    setExpandedGroups((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
-
-  useEffect(() => {
-    fetchModels();
-  }, []);
-
-  const fetchModels = async () => {
-    setLoading(true);
+  const load = async () => {
     try {
       const data = await getPhoneModels(true);
       setModels(data);
+      setDrafts(Object.fromEntries(data.map((m) => [m.id, String(m.buyingPrice ?? '')])));
+      setStatusDrafts(Object.fromEntries(data.map((m) => [m.id, m.isActive])));
     } catch (error) {
-      console.error('Failed to fetch models:', error);
-    }
-    setLoading(false);
-  };
-
-  const startEdit = (model: PhoneModel) => {
-    setEditing(model.id);
-    setDraft({ ...model });
-  };
-
-  const saveEdit = async () => {
-    if (!editing) return;
-    try {
-      await updatePhoneModel(editing, { ...draft, buyingPrice: Number(draft.buyingPrice) });
-      setEditing(null);
-      fetchModels();
-    } catch (error) {
-      console.error('Failed to save:', error);
+      console.error('Failed to load phone models:', error);
     }
   };
 
-  const createModel = async () => {
-    if (!newModel.label || !newModel.model || !newModel.storage || newModel.buyingPrice === '') return;
-    try {
-      await createPhoneModel({ ...newModel, buyingPrice: Number(newModel.buyingPrice) });
-      setNewModel(emptyModel);
-      setIsAdding(false);
-      setPage(1);
-      fetchModels();
-    } catch (error) {
-      console.error('Failed to create:', error);
-    }
-  };
+  useEffect(() => {
+    load();
+  }, []);
 
-  const deleteModel = async (id: string) => {
-    if (!confirm('Delete this phone model? This will prevent trade-in quotes for this device.')) return;
-    try {
-      await deletePhoneModel(id);
-      fetchModels();
-    } catch (error) {
-      console.error('Failed to delete:', error);
-    }
-  };
+  const sortedRows = useMemo(() => {
+    return [...models]
+      .filter((phone) => `${phone.model} ${phone.storage}`.toLowerCase().includes(search.toLowerCase()))
+      .sort(
+        (a, b) =>
+          iphoneRank(b.model) - iphoneRank(a.model) ||
+          a.model.localeCompare(b.model) ||
+          storageRank(a.storage) - storageRank(b.storage)
+      );
+  }, [models, search]);
 
-  const filteredModels = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return models.filter((model) => {
-      const matchesSearch =
-        !query || [model.label, model.model, model.storage].some((value) => value?.toLowerCase().includes(query));
-      const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? model.isActive : !model.isActive);
-      return matchesSearch && matchesStatus;
-    });
-  }, [models, search, statusFilter]);
-
-  const groupedModels = useMemo(() => {
-    const groups: Record<string, any[]> = {};
-    filteredModels.forEach((m) => {
-      if (!groups[m.model]) groups[m.model] = [];
-      groups[m.model].push(m);
-    });
-    return Object.entries(groups).map(([name, items]) => ({ name, items }));
-  }, [filteredModels]);
-
-  const pageCount = Math.max(1, Math.ceil(groupedModels.length / PAGE_SIZE));
+  const pageCount = Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
-  const visibleGroups = groupedModels.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginatedRows = sortedRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const updateFilters = (nextSearch: string, nextStatus = statusFilter) => {
-    setSearch(nextSearch);
-    setStatusFilter(nextStatus);
-    setPage(1);
+  const hasChanges = useMemo(() => {
+    return models.some((phone) => {
+      const draftPrice = drafts[phone.id];
+      const draftActive = statusDrafts[phone.id];
+      const priceChanged =
+        draftPrice !== undefined && draftPrice !== '' && Number(draftPrice) !== phone.buyingPrice;
+      const statusChanged = draftActive !== undefined && draftActive !== phone.isActive;
+      return priceChanged || statusChanged;
+    });
+  }, [models, drafts, statusDrafts]);
+
+  const saveChanges = async () => {
+    setSaving(true);
+    const requests: Promise<any>[] = [];
+
+    models.forEach((phone) => {
+      const draftPrice = drafts[phone.id];
+      const draftActive = statusDrafts[phone.id] ?? phone.isActive;
+      const priceNum = draftPrice !== undefined && draftPrice !== '' ? Number(draftPrice) : phone.buyingPrice;
+      const priceChanged = draftPrice !== undefined && draftPrice !== '' && Number(draftPrice) !== phone.buyingPrice;
+      const statusChanged = draftActive !== phone.isActive;
+
+      if (priceChanged || statusChanged) {
+        requests.push(
+          updatePhoneModel(phone.id, {
+            ...(priceChanged ? { buyingPrice: priceNum } : {}),
+            ...(statusChanged ? { isActive: draftActive } : {}),
+          })
+        );
+      }
+    });
+
+    try {
+      await Promise.all(requests);
+      await load();
+    } catch (err) {
+      console.error('Failed to save trade-in values:', err);
+      alert('Failed to save some changes. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCreateModel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newModel.model.trim() || !newModel.storage.trim() || newModel.buyingPrice === '') return;
+    setCreating(true);
+    try {
+      const label = `${newModel.model.trim()} ${newModel.storage.trim()}`;
+      await createPhoneModel({
+        label,
+        model: newModel.model.trim(),
+        storage: newModel.storage.trim(),
+        buyingPrice: Number(newModel.buyingPrice),
+        isActive: true,
+      });
+      setNewModel({ model: '', storage: '', buyingPrice: '' });
+      setIsAdding(false);
+      await load();
+    } catch (err) {
+      console.error('Failed to create model:', err);
+      alert('Failed to create phone model.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deletePhoneModel(deleteTarget.id);
+      await load();
+      setDeleteTarget(null);
+    } catch (err: any) {
+      console.error('Failed to delete model:', err);
+      setDeleteError(err?.message || 'Failed to delete phone model. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Page Header */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-         
-          <h1 className="text-2xl font-bold text-gray-950 mt-1 tracking-tight">Trade-in values</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Set the highest amount offered for each phone. Customer condition answers reduce this value.
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-gray-950">Buying prices</h1>
+          <p className="mt-2 text-gray-600">
+            Set the base buying price for each phone model in your catalogue. Inspection checklist deductions calculate off this amount.
           </p>
         </div>
         <button
-          onClick={() => {
-            setIsAdding(true);
-            setNewModel(emptyModel);
-          }}
-          className="inline-flex items-center justify-center gap-2 bg-gray-950 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors shadow-sm self-start sm:self-auto"
+          onClick={() => setIsAdding(!isAdding)}
+          className="inline-flex items-center gap-2 rounded-lg bg-gray-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 transition"
         >
-          <Plus className="w-4 h-4" />
-          <span>Add Phone Model</span>
+          <Plus size={16} /> Add phone model
         </button>
       </header>
 
-      {/* Explanatory Info Card */}
-      {/* <section className="bg-gradient-to-r from-violet-50 to-indigo-50/60 border border-violet-100 rounded-xl p-4 sm:p-5 flex gap-3 text-xs leading-relaxed text-violet-950">
-        <Info className="w-5 h-5 text-violet-600 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <span className="font-bold text-violet-900 block text-sm">What is a trade-in value?</span>
-          <p className="text-violet-800">
-            This is the <span className="font-semibold">maximum trade-in value</span> assigned to a phone in 100% mint condition with zero physical defects. When customers perform an assessment, selected condition attributes (e.g. cracked glass or depleted battery) deduct percentages from this baseline price.
-          </p>
-        </div>
-      </section> */}
-
-      {/* Main Table Container */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm space-y-0">
-        {/* Search & Filter Control Bar */}
-        <div className="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-            <input
-              value={search}
-              onChange={(e) => updateFilters(e.target.value)}
-              placeholder="Search by label (e.g. iPhone 15 Pro), model, or storage..."
-              className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-xs outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all text-gray-900 placeholder:text-gray-400"
-            />
+      {/* Add New Model Form Drawer */}
+      {isAdding && (
+        <form onSubmit={handleCreateModel} className="rounded-xl border border-violet-100 bg-violet-50/50 p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-gray-950">Add new a phone model</h2>
+              <p className="text-sm text-gray-600">Add a model and storage combination with its base buying price.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAdding(false)}
+              className="text-gray-400 hover:text-gray-600 p-1"
+            >
+              <X size={18} />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-gray-500" />
-            <select
-              value={statusFilter}
-              onChange={(e) => updateFilters(search, e.target.value)}
-              className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs font-medium text-gray-700 outline-none focus:border-violet-500"
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                Model Name
+              </label>
+              <input
+                required
+                placeholder="e.g. iPhone 16 Pro"
+                value={newModel.model}
+                onChange={(e) => setNewModel({ ...newModel, model: e.target.value })}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                Storage
+              </label>
+              <input
+                required
+                placeholder="e.g. 256GB"
+                value={newModel.storage}
+                onChange={(e) => setNewModel({ ...newModel, storage: e.target.value })}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                Buying Price (₦)
+              </label>
+              <div className="flex items-center rounded-lg border border-gray-300 bg-white px-3 py-1.5 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-100">
+                <span className="mr-1 text-sm text-gray-400">₦</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  required
+                  placeholder="0"
+                  value={newModel.buyingPrice}
+                  onChange={(e) => setNewModel({ ...newModel, buyingPrice: e.target.value })}
+                  className="w-full bg-transparent text-sm font-semibold text-gray-900 outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setIsAdding(false)}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              <option value="all">All Statuses</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
-            </select>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={creating}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
+            >
+              <Check size={16} /> {creating ? 'Adding…' : 'Add Model'}
+            </button>
+          </div>
+        </form>
+      )}
+      <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-gray-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="font-semibold text-gray-950">Phone catalogue</h2>
+          <div className="relative w-full sm:w-72">
+            <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search devices"
+              className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+            />
           </div>
         </div>
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead className="bg-gray-50/80 text-gray-500 uppercase tracking-wider text-[10px] border-b border-gray-200">
+          <table className="w-full min-w-[760px]">
+            <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <tr>
-                {/* <th className="px-6 py-3.5 text-left font-semibold">Display Label</th> */}
-                <th className="px-6 py-3.5 text-left font-semibold">Model Name</th>
-                <th className="px-6 py-3.5 text-left font-semibold">Storage</th>
-                <th className="px-6 py-3.5 text-left font-semibold">Pristine Base Price</th>
-                <th className="px-6 py-3.5 text-left font-semibold">Status</th>
-                <th className="px-6 py-3.5 text-right font-semibold">Actions</th>
+                <th className="px-6 py-3 text-left font-semibold">Phone Model</th>
+                <th className="px-6 py-3 text-left font-semibold">Storage</th>
+                <th className="px-6 py-3 text-right font-semibold">Base Buying Price</th>
+                <th className="px-6 py-3 text-center font-semibold">Availability</th>
+                <th className="px-6 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {/* New Row Input Mode */}
-              {isAdding && (
-                <tr className="bg-violet-50/60 border-b border-violet-100">
-                  {/* <td className="px-6 py-3">
-                    <input
-                      autoFocus
-                      className="w-full bg-white border border-violet-300 rounded px-2.5 py-1 text-xs"
-                      placeholder="iPhone 16 Pro Max 256GB"
-                      value={newModel.label}
-                      onChange={(e) => setNewModel({ ...newModel, label: e.target.value })}
-                    />
-                  </td> */}
-                  <td className="px-6 py-3">
-                    <input
-                      className="w-full bg-white border border-violet-300 rounded px-2.5 py-1 text-xs"
-                      placeholder="iPhone 16 Pro Max"
-                      value={newModel.model}
-                      onChange={(e) => setNewModel({ ...newModel, model: e.target.value })}
-                    />
-                  </td>
-                  <td className="px-6 py-3">
-                    <input
-                      className="w-24 bg-white border border-violet-300 rounded px-2.5 py-1 text-xs"
-                      placeholder="256GB"
-                      value={newModel.storage}
-                      onChange={(e) => setNewModel({ ...newModel, storage: e.target.value })}
-                    />
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center gap-1 bg-white border border-violet-300 rounded px-2 py-1">
-                      <span className="text-gray-400 font-semibold">₦</span>
-                      <input
-                        type="number"
-                        className="w-28 bg-transparent text-xs outline-none font-semibold"
-                        placeholder="0"
-                        value={newModel.buyingPrice}
-                        onChange={(e) => setNewModel({ ...newModel, buyingPrice: e.target.value })}
-                      />
-                    </div>
-                  </td>
-                  <td className="px-6 py-3">
-                    <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                      Active
-                    </span>
-                  </td>
-                  <td className="px-6 py-3 text-right space-x-2">
-                    <button
-                      onClick={createModel}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-violet-700 text-white rounded text-xs font-semibold hover:bg-violet-800"
-                    >
-                      <Check className="w-3 h-3" /> Save
-                    </button>
-                    <button
-                      onClick={() => setIsAdding(false)}
-                      className="px-2.5 py-1 text-gray-600 hover:text-gray-900 text-xs font-medium"
-                    >
-                      Cancel
-                    </button>
+              {paginatedRows.map((phone) => {
+                const priceValue = drafts[phone.id] ?? (phone.buyingPrice !== undefined ? String(phone.buyingPrice) : '');
+                const isActive = statusDrafts[phone.id] ?? phone.isActive;
+
+                return (
+                  <tr key={phone.id} className="hover:bg-gray-50/70 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{phone.model}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{phone.storage}</td>
+                    <td className="px-6 py-3 text-right">
+                      <label className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-100">
+                        <span className="mr-1 text-sm text-gray-400">₦</span>
+                        <input
+                          type="number"
+                          value={priceValue}
+                          onChange={(e) => setDrafts({ ...drafts, [phone.id]: e.target.value })}
+                          placeholder="—"
+                          className="w-28 bg-transparent text-right text-sm font-semibold text-gray-900 outline-none placeholder:text-gray-300"
+                        />
+                      </label>
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setStatusDrafts({ ...statusDrafts, [phone.id]: !isActive })}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition ${
+                          isActive
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                            : 'bg-gray-100 text-gray-500 border border-gray-200 hover:bg-gray-200'
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-600' : 'bg-gray-400'}`} />
+                        {isActive ? 'Active' : 'Disabled'}
+                      </button>
+                    </td>
+                    <td className="px-6 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeleteError(null);
+                          setDeleteTarget({ id: phone.id, name: `${phone.model} ${phone.storage}` });
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-rose-600 transition"
+                        title="Delete device"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {sortedRows.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-14 text-center text-sm text-gray-500">
+                    No devices match this search.
                   </td>
                 </tr>
               )}
-
-              {/* Rows */}
-              {visibleGroups.map((group) => {
-                const isExpanded = expandedGroups[group.name];
-                return (
-                  <Fragment key={group.name}>
-                    <tr
-                      className="hover:bg-gray-50/70 transition-colors cursor-pointer bg-gray-50/30"
-                      onClick={() => toggleGroup(group.name)}
-                    >
-                      <td colSpan={5} className="px-6 py-3 border-b border-gray-100 text-gray-900 font-semibold text-sm">
-                        <div className="flex items-center gap-2">
-                          {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
-                          {group.name}
-                          <span className="text-gray-400 font-normal text-xs ml-2">({group.items.length} variants)</span>
-                        </div>
-                      </td>
-                    </tr>
-                    {isExpanded && group.items.map((model) => (
-                      <tr key={model.id} className="hover:bg-gray-50/70 transition-colors">
-                        <td className="px-6 py-4 pl-12 text-gray-950 font-semibold font-mono text-xs">
-                          {editing === model.id ? (
-                            <input
-                              className="w-full border rounded px-2 py-1 text-xs"
-                              value={draft.model}
-                              onChange={(e) => setDraft({ ...draft, model: e.target.value })}
-                            />
-                          ) : (
-                            model.model
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-gray-600">
-                          {editing === model.id ? (
-                            <input
-                              className="w-24 border rounded px-2 py-1 text-xs"
-                              value={draft.storage}
-                              onChange={(e) => setDraft({ ...draft, storage: e.target.value })}
-                            />
-                          ) : (
-                            model.storage
-                          )}
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-gray-950">
-                          {editing === model.id ? (
-                            <input
-                              type="number"
-                              className="w-32 border rounded px-2 py-1 text-xs"
-                              value={draft.buyingPrice}
-                              onChange={(e) => setDraft({ ...draft, buyingPrice: Number(e.target.value) })}
-                            />
-                          ) : (
-                            <>₦{model.buyingPrice?.toLocaleString()}</>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {editing === model.id ? (
-                            <label className="flex gap-1.5 items-center text-xs cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={draft.isActive}
-                                onChange={(e) => setDraft({ ...draft, isActive: e.target.checked })}
-                              />
-                              <span>Active</span>
-                            </label>
-                          ) : (
-                            <span
-                              className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                                model.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-600'
-                              }`}
-                            >
-                              {model.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-3">
-                          {editing === model.id ? (
-                            <>
-                              <button onClick={saveEdit} className="text-violet-700 font-semibold hover:underline">
-                                Save
-                              </button>
-                              <button onClick={() => setEditing(null)} className="text-gray-500 hover:underline">
-                                Cancel
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={() => startEdit(model)}
-                              className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-950 font-medium"
-                            >
-                              <Pencil className="w-3.5 h-3.5" /> Edit
-                            </button>
-                          )}
-                          <button
-                            onClick={() => deleteModel(model.id)}
-                            className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-medium"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" /> Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </Fragment>
-                );
-              })}
             </tbody>
           </table>
         </div>
 
-        {/* Empty State */}
-        {filteredModels.length === 0 && !loading && (
-          <div className="p-12 text-center text-gray-500 space-y-2">
-            <Smartphone className="w-8 h-8 text-gray-300 mx-auto" />
-            <p className="font-semibold text-gray-900 text-sm">
-              {models.length === 0 ? 'No phone models added yet' : 'No phone models match your search'}
+        {/* Footer with pagination and Save Changes */}
+        <footer className="flex flex-col gap-3 border-t border-gray-200 bg-gray-50/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-gray-500">
+              {hasChanges ? 'You have unsaved price or availability changes.' : 'All phone model values are saved.'}
             </p>
-            <p className="text-xs text-gray-400">Add a model to allow customers to receive trade-in quotes.</p>
+            {sortedRows.length > 0 && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <span>
+                  Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sortedRows.length)} of{' '}
+                  {sortedRows.length}
+                </span>
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setPage(currentPage - 1)}
+                  className="rounded border border-gray-300 bg-white px-2.5 py-1 disabled:opacity-40 hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {currentPage} of {pageCount}
+                </span>
+                <button
+                  disabled={currentPage === pageCount}
+                  onClick={() => setPage(currentPage + 1)}
+                  className="rounded border border-gray-300 bg-white px-2.5 py-1 disabled:opacity-40 hover:bg-gray-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Footer Pagination */}
-        {filteredModels.length > 0 && (
-          <div className="px-5 py-3 border-t border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-600 gap-3">
-            <span>
-              Showing <span className="font-semibold text-gray-900">{(currentPage - 1) * PAGE_SIZE + 1}</span>–
-              <span className="font-semibold text-gray-900">{Math.min(currentPage * PAGE_SIZE, filteredModels.length)}</span> of{' '}
-              <span className="font-semibold text-gray-900">{filteredModels.length}</span> device models
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setPage(currentPage - 1)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" /> Previous
-              </button>
-              <span className="px-2 font-medium text-gray-700">
-                Page {currentPage} of {pageCount}
-              </span>
-              <button
-                disabled={currentPage === pageCount}
-                onClick={() => setPage(currentPage + 1)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Next <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+          <button
+            onClick={saveChanges}
+            disabled={!hasChanges || saving}
+            className="inline-flex items-center gap-2 self-end rounded-lg bg-gray-950 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:self-auto hover:bg-gray-800 transition shadow-sm"
+          >
+            <Save size={15} /> {saving ? 'Saving…' : 'Save changes'}
+          </button>
+        </footer>
+      </section>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete phone model?"
+        subtitle={
+          deleteTarget ? (
+            <p>
+              Are you sure you want to delete <span className="font-semibold text-gray-900">{deleteTarget.name}</span>? Customers will no longer be able to select or trade in this phone configuration on the storefront.
+            </p>
+          ) : null
+        }
+        type="danger"
+        confirmText="Delete"
+        isLoading={deleting}
+        error={deleteError}
+      />
     </div>
   );
 }

@@ -27,7 +27,10 @@ async function queryTradeInCatalogue(): Promise<{ conditionGroups: ConditionGrou
         priceModifier: option.priceModifier,
       }))
     })),
-    phoneModels: phoneModels.map((phoneModel) => ({ ...phoneModel })),
+    phoneModels: phoneModels.map((phoneModel) => ({
+      ...phoneModel,
+      buyingPrice: Number(phoneModel.buyingPrice),
+    })),
     saleCategories: saleCategories.map((category) => ({
       id: category.id,
       label: category.label,
@@ -35,7 +38,13 @@ async function queryTradeInCatalogue(): Promise<{ conditionGroups: ConditionGrou
       imagePath: category.imagePath ?? undefined,
       prices: category.prices
         .filter((price) => price.phoneModel.isActive)
-        .map((price) => ({ phoneModelId: price.phoneModelId, model: price.phoneModel.model, storage: price.phoneModel.storage, price: price.price })),
+        .map((price) => ({
+          id: price.id,
+          phoneModelId: price.phoneModelId,
+          model: price.phoneModel.model,
+          storage: price.phoneModel.storage,
+          price: Number(price.price),
+        })),
     })),
   };
 }
@@ -68,6 +77,9 @@ export async function getTradeInConfirmation(swapId: string) {
 
   return {
     ...swap,
+    tradeInValue: Number(swap.tradeInValue),
+    upgradePrice: Number(swap.upgradePrice),
+    amountToPay: Number(swap.amountToPay),
     appointment: swap.appointment && {
       ...swap.appointment,
       swapMethod: swap.appointment.swapMethod as SwapMethod,

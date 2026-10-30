@@ -2,6 +2,11 @@ import { Resend } from 'resend';
 import { getSwapMethodLabel, SwapMethod } from '@/lib/api/types/enums';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const FROM = 'SWAPPED <noreply@swapped.com>';
+const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+
+// ─── Confirmation email (existing) ───────────────────────────────────────────
+
 
 export async function sendSwapConfirmationEmail({
   to,
@@ -263,4 +268,149 @@ function generateEmailHTML(swapDetails: {
 </body>
 </html>
   `;
+}
+
+// ─── Revised offer email ──────────────────────────────────────────────────────
+
+const fmt = (v: number) => `₦${Number(v).toLocaleString('en-NG')}`;
+
+export async function sendRevisedOfferEmail({
+  swap,
+  offer,
+  originalTradeInValue,
+  reason,
+}: {
+  swap: { contactEmail?: string | null; upgradeModel: string; upgradeStorage: string };
+  offer: {
+    id: string;
+    responseToken?: string | null;
+    tradeInValue: number;
+    upgradePrice: number;
+    amountToPay: number;
+  };
+  originalTradeInValue: number;
+  reason: string;
+}): Promise<{ success: boolean; error?: any }> {
+  if (!swap.contactEmail) return { success: false, error: 'No email address' };
+
+  const acceptUrl = `${APP_BASE_URL}/offer-response?token=${offer.responseToken}&action=accept`;
+  const rejectUrl = `${APP_BASE_URL}/offer-response?token=${offer.responseToken}&action=reject`;
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revised Swap Offer – SWAPPED</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #333; background: #f5f5f5; margin: 0; padding: 20px; }
+    .wrap { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    h1 { font-size: 22px; color: #000; margin-bottom: 6px; }
+    p { line-height: 1.6; }
+    .section { background: #f9f9f9; border-radius: 6px; padding: 20px; margin: 20px 0; }
+    .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
+    .row:last-child { border-bottom: none; }
+    .label { color: #666; }
+    .value { font-weight: 600; color: #000; }
+    .highlight { font-size: 28px; font-weight: bold; color: #000; }
+    .reason { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px; margin: 16px 0; }
+    .btn { display: inline-block; padding: 12px 28px; border-radius: 6px; font-weight: 700; font-size: 15px; text-decoration: none; margin: 8px 4px; }
+    .btn-accept { background: #16a34a; color: #fff !important; }
+    .btn-reject { background: #dc2626; color: #fff !important; }
+    .footer { text-align: center; margin-top: 32px; font-size: 13px; color: #999; }
+    .expiry { font-size: 12px; color: #999; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:24px;font-size:22px;font-weight:bold;">SWAPPED</div>
+    <h1>Your swap offer has been revised</h1>
+    <p>After inspecting your device, our team has prepared a revised offer for your swap. Please review the details below and let us know your decision.</p>
+
+    <div class="reason">
+      <strong>Reason for revision:</strong><br>${reason}
+    </div>
+
+    <div class="section">
+      <h2 style="margin-top:0;font-size:16px;">Offer comparison</h2>
+      <div class="row"><span class="label">Original trade-in value</span><span class="value">${fmt(originalTradeInValue)}</span></div>
+      <div class="row"><span class="label">Revised trade-in value</span><span class="value">${fmt(offer.tradeInValue)}</span></div>
+      <div class="row"><span class="label">Upgrade phone</span><span class="value">${swap.upgradeModel} ${swap.upgradeStorage}</span></div>
+      <div class="row"><span class="label">Upgrade price</span><span class="value">${fmt(offer.upgradePrice)}</span></div>
+    </div>
+
+    <div class="section" style="text-align:center;">
+      <p style="color:#666;margin-top:0;">Revised amount to pay</p>
+      <div class="highlight">${fmt(offer.amountToPay)}</div>
+    </div>
+
+    <p style="text-align:center;font-weight:600;">Do you accept this revised offer?</p>
+    <div style="text-align:center;margin:20px 0;">
+      <a href="${acceptUrl}" class="btn btn-accept">✓ Accept offer</a>
+      <a href="${rejectUrl}" class="btn btn-reject">✗ Decline offer</a>
+    </div>
+    <p class="expiry">These links expire in 72 hours. If you have questions, contact us at <strong>support@swapped.com</strong>.</p>
+
+    <div class="footer">SWAPPED · The easiest way to upgrade your iPhone</div>
+  </div>
+</body>
+</html>`;
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM,
+      to: [swap.contactEmail],
+      subject: 'Revised swap offer – action required',
+      html,
+    });
+    if (error) return { success: false, error };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err };
+  }
+}
+
+// ─── Admin rejection notification ─────────────────────────────────────────────
+
+export async function sendAdminRejectionNotification({
+  swap,
+  offer,
+}: {
+  swap: { id: string; contactName?: string | null; contactEmail?: string | null; tradeInModel?: { model: string; storage: string } };
+  offer: { tradeInValue: number; upgradePrice: number; amountToPay: number };
+}): Promise<{ success: boolean; error?: any }> {
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+  if (!adminEmail) return { success: false, error: 'No admin notification email configured' };
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Customer rejected revised offer</title></head>
+<body style="font-family:sans-serif;color:#333;padding:20px;">
+  <h2>Customer rejected a revised swap offer</h2>
+  <p>Swap ID: <strong>${swap.id}</strong></p>
+  <p>Customer: ${swap.contactName ?? 'Unknown'} (${swap.contactEmail ?? 'no email'})</p>
+  <p>Trade-in device: ${swap.tradeInModel?.model ?? ''} ${swap.tradeInModel?.storage ?? ''}</p>
+  <p>Revised offer details:</p>
+  <ul>
+    <li>Trade-in value: ${fmt(offer.tradeInValue)}</li>
+    <li>Upgrade price: ${fmt(offer.upgradePrice)}</li>
+    <li>Amount to pay: ${fmt(offer.amountToPay)}</li>
+  </ul>
+  <p>Please coordinate device return with the customer if it has already been collected.</p>
+  <p><a href="${APP_BASE_URL}/admin/swaps/${swap.id}">View swap in admin →</a></p>
+</body>
+</html>`;
+
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: [adminEmail],
+      subject: `Customer rejected revised offer – Swap ${swap.id.slice(-8).toUpperCase()}`,
+      html,
+    });
+    if (error) return { success: false, error };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err };
+  }
 }

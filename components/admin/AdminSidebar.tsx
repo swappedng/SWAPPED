@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeftRight, BadgePercent, CalendarDays, ChartNoAxesCombined, CircleHelp, ExternalLink, LayoutDashboard, Menu, Package, SlidersHorizontal, Smartphone, Store, Tag, X } from "lucide-react";
+import { ArrowLeftRight, CalendarDays, CircleHelp, ExternalLink, LayoutDashboard, Menu, SlidersHorizontal, Smartphone, Tag, X } from "lucide-react";
 
 const groups = [
   { label: "OPERATIONS", items: [
@@ -12,14 +12,10 @@ const groups = [
     { href: "/admin/appointments", label: "Appointments", icon: CalendarDays },
   ] },
   { label: "CATALOGUE & PRICING", items: [
-    { href: "/admin/phone-models", label: "Trade-in values", icon: Smartphone },
-    { href: "/admin/condition-attributes", label: "Condition questions", icon: SlidersHorizontal },
-    { href: "/admin/selling-prices", label: "Phones for sale", icon: Tag },
+    { href: "/admin/phone-models", label: "Buying Prices", icon: Smartphone },
+    { href: "/admin/selling-prices", label: "Selling Prices", icon: Tag },
+    { href: "/admin/condition-attributes", label: "Inspection Checklist", icon: SlidersHorizontal },
   ] },
-  // { label: "BUSINESS", items: [
-  //   { href: "/admin/inventory", label: "Inventory", icon: Package },
-  //   { href: "/admin/reports", label: "Reports", icon: ChartNoAxesCombined },
-  // ] },
 ];
 
 export default function AdminSidebar() {

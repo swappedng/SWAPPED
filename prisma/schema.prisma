@@ -30,25 +30,56 @@ enum PriceModifierType {
   PERCENTAGE
 }
 
+enum SwapStatus {
+  SUBMITTED
+  INSPECTION_SCHEDULED
+  UNDER_INSPECTION
+  AWAITING_CUSTOMER_APPROVAL
+  APPROVED
+  REJECTED
+  FULFILMENT_IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum SwapOfferStatus {
+  ORIGINAL
+  PENDING
+  ACCEPTED
+  REJECTED
+  SUPERSEDED
+}
+
 // ─── Core swap models ─────────────────────────────────────────────────────────
 
 model Swap {
-  id    String @id @default(cuid())
+  id     String     @id @default(cuid())
+  status SwapStatus @default(SUBMITTED)
 
   // Trade-in phone (FK to the catalogued model)
   tradeInModelId String
   tradeInModel   PhoneModel @relation(fields: [tradeInModelId], references: [id])
-  tradeInValue   Float
 
-  // Upgrade phone
+  // Buying price snapshot at time of swap submission (immutable after creation)
+  snapshotBuyingPrice Decimal @db.Decimal(12, 2)
+  // Calculated trade-in value at submission (immutable historical snapshot)
+  tradeInValue        Decimal @db.Decimal(12, 2)
+
+  // Upgrade phone — FK to the selling-price record chosen at submission
+  phoneSellingPriceId String
+  phoneSellingPrice   PhoneSellingPrice @relation(fields: [phoneSellingPriceId], references: [id])
+
+  // Upgrade phone category + device snapshots (immutable historical record)
   upgradeCategoryId String
   upgradeCategory   PhoneSaleCategory @relation(fields: [upgradeCategoryId], references: [id])
   upgradeModel      String
   upgradeStorage    String
-  upgradePrice      Float // price snapshot at time of swap
+  upgradePrice      Decimal @db.Decimal(12, 2) // price snapshot at time of swap submission
 
-  // Financials
-  amountToPay Float
+  // Current financial values (updated when revised offer is created/accepted)
+  currentTradeInValue Decimal @db.Decimal(12, 2)
+  currentUpgradePrice Decimal @db.Decimal(12, 2)
+  amountToPay         Decimal @db.Decimal(12, 2)
 
   // How the swap will be completed
   swapMethod SwapMethod
@@ -59,10 +90,13 @@ model Swap {
   contactPhone String?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   conditions  SwapCondition[]
   appointment Appointment?
+  offers      SwapOffer[]
+  auditLogs   SwapAuditLog[]
 }
 
 // One row per condition attribute answered during the trade-in flow
@@ -77,13 +111,13 @@ model SwapCondition {
 }
 
 model Appointment {
-  id              String           @id @default(cuid())
-  swapId          String           @unique
-  swap            Swap             @relation(fields: [swapId], references: [id])
-  swapMethod      SwapMethod
-  date            DateTime
-  time            String
-  createdAt       DateTime         @default(now())
+  id         String     @id @default(cuid())
+  swapId     String     @unique
+  swap       Swap       @relation(fields: [swapId], references: [id])
+  swapMethod SwapMethod
+  date       DateTime
+  time       String
+  createdAt  DateTime   @default(now())
   // Contact fields removed — they live on Swap
 }
 
@@ -94,7 +128,7 @@ model PhoneModel {
   label       String // e.g. "iPhone 15 Pro 256GB"
   model       String // e.g. "iPhone 15 Pro"
   storage     String // e.g. "256GB"
-  buyingPrice Float
+  buyingPrice Decimal  @db.Decimal(12, 2)
   isActive    Boolean  @default(true)
   order       Int      @default(0)
   createdAt   DateTime @default(now())
@@ -125,12 +159,54 @@ model PhoneSellingPrice {
   category     PhoneSaleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   phoneModelId String
   phoneModel   PhoneModel        @relation(fields: [phoneModelId], references: [id], onDelete: Cascade)
-  price        Float
+  price        Decimal           @db.Decimal(12, 2)
   isActive     Boolean           @default(true)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
+  swaps Swap[]
+
   @@unique([categoryId, phoneModelId])
+}
+
+// ─── Swap lifecycle ───────────────────────────────────────────────────────────
+
+model SwapOffer {
+  id     String @id @default(cuid())
+  swapId String
+  swap   Swap   @relation(fields: [swapId], references: [id], onDelete: Cascade)
+
+  tradeInValue Decimal @db.Decimal(12, 2)
+  upgradePrice Decimal @db.Decimal(12, 2)
+  amountToPay  Decimal @db.Decimal(12, 2)
+  reason       String?
+  status       SwapOfferStatus @default(ORIGINAL)
+
+  // Secure expiring token for customer email accept/reject links (null for ORIGINAL offers)
+  responseToken          String?   @unique
+  responseTokenExpiresAt DateTime?
+
+  sentAt      DateTime?
+  respondedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+// Append-only audit log — no updates or deletes permitted via the application layer
+model SwapAuditLog {
+  id     String @id @default(cuid())
+  swapId String
+  swap   Swap   @relation(fields: [swapId], references: [id], onDelete: Cascade)
+
+  // Null when the action is performed by the customer or the system
+  adminId  String?
+
+  action   String
+  field    String?
+  oldValue String?
+  newValue String?
+  reason   String?
+
+  createdAt DateTime @default(now())
 }
 
 // ─── Condition attribute system ───────────────────────────────────────────────
@@ -148,18 +224,18 @@ model ConditionAttributeGroup {
 }
 
 model ConditionAttributeOption {
-  id                 String                  @id @default(cuid())
-  groupId            String
-  group              ConditionAttributeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  label              String
-  description        String?
-  imagePath          String?
-  priceModifier      Float                   @default(1.0)
-  modifierType       PriceModifierType       @default(AMOUNT)
-  isActive           Boolean                 @default(true)
-  order              Int                     @default(0)
-  createdAt          DateTime                @default(now())
-  updatedAt          DateTime                @updatedAt
+  id            String                  @id @default(cuid())
+  groupId       String
+  group         ConditionAttributeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  label         String
+  description   String?
+  imagePath     String?
+  priceModifier Float                   @default(1.0)
+  modifierType  PriceModifierType       @default(AMOUNT)
+  isActive      Boolean                 @default(true)
+  order         Int                     @default(0)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
 
   @@unique([groupId, label])
 }

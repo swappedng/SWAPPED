@@ -34,9 +34,9 @@ export default function AdminDashboard() {
   const booked = swaps.filter((swap) => swap.appointment);
   const upcoming = booked.filter((swap) => new Date(swap.appointment!.date).getTime() >= new Date().setHours(0, 0, 0, 0)).sort((a, b) => new Date(a.appointment!.date).getTime() - new Date(b.appointment!.date).getTime());
   const setup = [
-    { label: "Trade-in values", detail: `${counts.models} devices configured`, href: "/admin/phone-models", ready: counts.models > 0, icon: Smartphone },
-    { label: "Condition questions", detail: `${counts.questions} question groups`, href: "/admin/condition-attributes", ready: counts.questions > 0, icon: SlidersHorizontal },
-    { label: "Phones for sale", detail: `${counts.prices} prices configured`, href: "/admin/selling-prices", ready: counts.prices > 0, icon: Tag },
+    { label: "Buying Prices", detail: `${counts.models} devices configured`, href: "/admin/phone-models", ready: counts.models > 0, icon: Smartphone },
+    { label: "Selling Prices", detail: `${counts.prices} prices configured`, href: "/admin/selling-prices", ready: counts.prices > 0, icon: Tag },
+    { label: "Inspection Checklist", detail: `${counts.questions} question groups`, href: "/admin/condition-attributes", ready: counts.questions > 0, icon: SlidersHorizontal },
   ];
 
   return <div className="space-y-8">

@@ -139,10 +139,10 @@ export default function ConditionAttributesPage() {
       {/* Top Header */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-       
-          <h1 className="text-2xl font-bold text-gray-950 mt-1 tracking-tight">Condition questions</h1>
+          <p className="text-sm font-semibold tracking-wide text-violet-600">Catalogue & pricing</p>
+          <h1 className="text-2xl font-bold text-gray-950 mt-1 tracking-tight">Inspection checklist</h1>
           <p className="text-sm text-gray-600 mt-1">
-            Manage the questions customers answer and how each answer changes their quote.
+            Manage the inspection checklist questions customers answer and how each answer adjusts their valuation.
           </p>
         </div>
         <Link
@@ -150,7 +150,7 @@ export default function ConditionAttributesPage() {
           className="inline-flex items-center justify-center gap-2 bg-gray-950 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors shadow-sm self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Add question group</span>
+          <span>Add checklist group</span>
         </Link>
       </header>
 
@@ -186,7 +186,7 @@ export default function ConditionAttributesPage() {
                        
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {group.options.length} {group.options.length === 1 ? 'option' : 'options'} configured
+                        {group.options?.length ?? 0} {(group.options?.length ?? 0) === 1 ? 'option' : 'options'} configured
                       </p>
                     </div>
                   </div>
@@ -244,13 +244,13 @@ export default function ConditionAttributesPage() {
                     </div>
 
                     <div className="grid gap-2.5">
-                      {group.options.length === 0 && !addingToGroup && (
+                      {(!group.options || group.options.length === 0) && !addingToGroup && (
                         <div className="p-4 text-center text-xs text-gray-500 bg-white rounded-lg border border-dashed border-gray-200">
                           No options added to this group yet. Click "+ Add Option" above.
                         </div>
                       )}
                       
-                      {group.options.map((option: any) => {
+                      {group.options?.map((option: any) => {
                         if (editingOption === option.id) {
                           return (
                             <div key={option.id} className="bg-white p-3.5 rounded-lg border border-violet-300 shadow-sm transition-colors gap-3 space-y-3">

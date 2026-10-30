@@ -31,6 +31,7 @@ export interface SaleCategory {
 }
 
 export interface PhoneSellingPrice {
+  id: string;
   phoneModelId: string;
   model: string;
   storage: string;

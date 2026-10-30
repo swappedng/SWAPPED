@@ -147,16 +147,18 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
     return Math.round(price * screenReplaced * batteryReplaced);
   }, [selectedTradeIn, visibleConditions, tradeIn]);
 
-  const newPhonePrice = useMemo(
+  const selectedSellingPrice = useMemo(
     () =>
       categories
         .find((category) => category.id === upgrade.category)
         ?.prices.find(
           (price) =>
             price.model === upgrade.model && price.storage === upgrade.storage,
-        )?.price || 0,
+        ),
     [categories, upgrade],
   );
+
+  const newPhonePrice = selectedSellingPrice?.price || 0;
 
   const availablePricesForCategory = useMemo(() => {
     const category = categories.find((item) => item.id === upgrade.category);
@@ -182,7 +184,9 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
       const swap = await createTradeInRequest({
         tradeInModelId: selectedTradeIn?.id || "",
         tradeInValue,
+        snapshotBuyingPrice: selectedTradeIn?.buyingPrice || 0,
         conditions,
+        phoneSellingPriceId: selectedSellingPrice?.id,
         upgradeCategoryId: upgrade.category,
         upgradeModel: upgrade.model,
         upgradeStorage: upgrade.storage,
