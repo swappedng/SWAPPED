@@ -5,14 +5,14 @@ import { prisma } from '@/app/lib/prisma';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { groupId, value, label, description, displayLabel, displayDescription, priceModifier = 1.0, modifierType = 'AMOUNT', order = 0, isActive = true } = body;
+    const { groupId, label, description, priceModifier = 1.0, modifierType = 'AMOUNT', order = 0, isActive = true } = body;
 
-    if (!groupId || !value || !label) {
-      return NextResponse.json({ error: 'groupId, value and label are required' }, { status: 400 });
+    if (!groupId || !label) {
+      return NextResponse.json({ error: 'groupId and label are required' }, { status: 400 });
     }
 
     const option = await prisma.conditionAttributeOption.create({
-      data: { groupId, value, label, description, displayLabel, displayDescription, priceModifier, modifierType, order, isActive },
+      data: { groupId, label, description, priceModifier, modifierType, order, isActive },
     });
 
     return NextResponse.json(option, { status: 201 });

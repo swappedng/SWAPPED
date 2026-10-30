@@ -17,9 +17,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { label, value, model, storage, basePrice } = body;
+    const { label, model, storage, buyingPrice } = body;
 
-    if (!label || !value || !model || !storage || basePrice === undefined) {
+    if (!label || !model || !storage || buyingPrice === undefined) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -29,10 +29,9 @@ export async function POST(request: NextRequest) {
     const phoneModel = await prisma.phoneModel.create({
       data: {
         label,
-        value,
         model,
         storage,
-        basePrice,
+        buyingPrice,
       },
     });
 

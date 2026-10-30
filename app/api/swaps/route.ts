@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { sendSwapConfirmationEmail } from '@/app/lib/email';
+import { SwapMethod } from '@/lib/api/types/enums';
+import { ConditionType } from '@/app/generated/prisma';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -92,7 +94,7 @@ export async function POST(req: Request) {
         contactPhone,
         conditions: {
           create: Array.isArray(conditions)
-            ? conditions.map(({ groupKey, value }: { groupKey: string; value: string }) => ({ groupKey, value }))
+            ? conditions.map(({ groupKey, value }: { groupKey: string; value: string }) => ({ groupKey: groupKey as ConditionType, value }))
             : [],
         },
       },
@@ -113,7 +115,7 @@ export async function POST(req: Request) {
             tradeInValue: swap.tradeInValue,
             newPhonePrice: swap.upgradePrice,
             amountToPay: swap.amountToPay,
-            swapMethod: swap.swapMethod,
+            swapMethod: swap.swapMethod as SwapMethod,
           },
         });
       } catch (emailError) {

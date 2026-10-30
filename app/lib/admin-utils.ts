@@ -7,9 +7,9 @@ export async function getPhoneModels() {
       orderBy: { order: 'asc' },
     });
     return models.map(model => ({
-      value: model.value,
+      id: model.id,
       label: model.label,
-      basePrice: model.basePrice,
+      buyingPrice: model.buyingPrice,
     }));
   } catch (error) {
     console.error('Failed to fetch phone models:', error);
@@ -36,7 +36,6 @@ export async function getConditionAttributeGroups() {
       label: g.label,
       description: g.description ?? undefined,
       options: g.options.map(o => ({
-        value: o.value,
         label: o.label,
         priceModifier: o.priceModifier,
       })),
@@ -48,10 +47,10 @@ export async function getConditionAttributeGroups() {
 }
 
 export function calculateMultiFactorPrice(
-  basePrice: number,
+  buyingPrice: number,
   attributeModifiers: number[] = []
 ): number {
   const combinedModifier = attributeModifiers.reduce((acc, m) => acc * (m ?? 1), 1);
-  const finalPrice = basePrice * combinedModifier;
+  const finalPrice = buyingPrice * combinedModifier;
   return Math.round(finalPrice * 100) / 100;
 }

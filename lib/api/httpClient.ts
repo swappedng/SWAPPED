@@ -21,4 +21,18 @@ export const httpClient = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   }),
+  put: <TResponse, TBody>(url: string, body: TBody) => request<TResponse>(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }),
+  patch: <TResponse, TBody>(url: string, body: TBody) => request<TResponse>(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }),
+  delete: <TResponse>(url: string) => request<TResponse>(url, {
+    method: 'DELETE',
+  }),
+  request,
 };

@@ -1,19 +1,24 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { SwapMethod } from '@/lib/api/types/enums';
 
 export async function POST(req: Request) {
   try {
     const data = await req.json();
-    const { swapId, appointmentType, date, time } = data;
+    const { swapId, swapMethod, date, time } = data;
 
-    if (!swapId || !appointmentType || !date || !time) {
+    if (!swapId || !swapMethod || !date || !time) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    if (!Object.values(SwapMethod).includes(swapMethod)) {
+      return NextResponse.json({ error: 'Invalid swap method' }, { status: 400 });
     }
 
     const appointment = await prisma.appointment.create({
       data: {
         swapId,
-        appointmentType,
+        swapMethod,
         date: new Date(date),
         time,
       },

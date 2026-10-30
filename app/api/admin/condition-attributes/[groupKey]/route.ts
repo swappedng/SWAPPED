@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { ConditionType } from '@/app/generated/prisma';
 
 // GET group by key
 export async function GET(
@@ -10,7 +11,7 @@ export async function GET(
     const { groupKey } = await params;
 
     const group = await prisma.conditionAttributeGroup.findUnique({
-      where: { key: groupKey },
+      where: { key: groupKey as ConditionType },
       include: {
         options: {
           where: { isActive: true },
@@ -40,17 +41,17 @@ export async function PATCH(
     const body = await request.json();
 
     const existingGroup = await prisma.conditionAttributeGroup.findUnique({
-      where: { key: groupKey }
+      where: { key: groupKey as ConditionType }
     });
 
     if (!existingGroup) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
-    const { key, label, description, order, isActive } = body;
+    const { label, description, order, isActive } = body;
     const updatedGroup = await prisma.conditionAttributeGroup.update({
       where: { id: existingGroup.id },
-      data: { key, label, description, order, isActive },
+      data: { label, description, order, isActive },
       include: { options: true }
     });
 
@@ -70,7 +71,7 @@ export async function DELETE(
     const { groupKey } = await params;
 
     const existingGroup = await prisma.conditionAttributeGroup.findUnique({
-      where: { key: groupKey }
+      where: { key: groupKey as ConditionType }
     });
 
     if (!existingGroup) {

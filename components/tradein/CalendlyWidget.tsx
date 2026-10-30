@@ -2,12 +2,13 @@
 
 import { useEffect } from 'react';
 import { InlineWidget, useCalendlyEventListener } from 'react-calendly';
+import { SwapMethod } from '@/lib/api/types/enums';
 
 interface CalendlyWidgetProps {
   isOpen: boolean;
   onClose: () => void;
   swapId: string;
-  swapMethod: string;
+  swapMethod: SwapMethod | '';
   email: string;
   onScheduled: () => void;
 }
@@ -46,14 +47,10 @@ export default function CalendlyWidget({ isOpen, onClose, swapId, swapMethod, em
           <div>
             <h2 className="apple-title text-gray-900">
               Schedule Your{" "}
-              {swapMethod
-                ? swapMethod === "online"
-                  ? "Pickup"
-                  : "Appointment"
-                : "Appointment"}
+              {swapMethod && swapMethod !== SwapMethod.WALK_IN ? "Pickup" : "Appointment"}
             </h2>
             <p className="apple-body text-gray-600 mt-1">
-              {swapMethod === "online"
+              {swapMethod !== SwapMethod.WALK_IN
                 ? "Choose a convenient time for our expert to pick up your device"
                 : "Choose a convenient time from our live business calendar"}
             </p>

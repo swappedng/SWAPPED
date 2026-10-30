@@ -17,7 +17,7 @@ export type AdminSwap = {
   conditions: { groupKey: string; value: string }[];
   appointment?: {
     id: string;
-    appointmentType: string;
+    swapMethod: string;
     date: string;
     time: string;
     createdAt: string;

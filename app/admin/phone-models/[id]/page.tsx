@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
+import { getPhoneModel, createPhoneModel, updatePhoneModel, type PhoneModel, type CreatePhoneModelRequest, type UpdatePhoneModelRequest } from '@/lib/api/endpoints/admin/phone-models';
 
 interface FormData {
   label: string;
-  value: string;
   model: string;
   storage: string;
-  basePrice: number;
+  buyingPrice: number;
   isActive: boolean;
   order: number;
 }
@@ -23,10 +23,9 @@ export default function EditPhoneModelPage() {
 
   const [formData, setFormData] = useState<FormData>({
     label: '',
-    value: '',
     model: '',
     storage: '',
-    basePrice: 0,
+    buyingPrice: 0,
     isActive: true,
     order: 0,
   });
@@ -35,9 +34,7 @@ export default function EditPhoneModelPage() {
     if (!isNew) {
       const fetchPhoneModel = async () => {
         try {
-          const response = await fetch(`/api/admin/phone-models/${id}`);
-          if (!response.ok) throw new Error('Failed to fetch');
-          const data = await response.json();
+          const data = await getPhoneModel(id);
           setFormData(data);
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Failed to load');
@@ -53,17 +50,11 @@ export default function EditPhoneModelPage() {
     setError('');
 
     try {
-      const method = isNew ? 'POST' : 'PATCH';
-      const url = isNew ? '/api/admin/phone-models' : `/api/admin/phone-models/${id}`;
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error('Failed to save');
-
+      if (isNew) {
+        await createPhoneModel(formData as CreatePhoneModelRequest);
+      } else {
+        await updatePhoneModel(id, formData as UpdatePhoneModelRequest);
+      }
       router.push('/admin/phone-models');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
@@ -103,19 +94,6 @@ export default function EditPhoneModelPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">
-              Value (e.g., "15pro-256")
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.value}
-              onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -147,14 +125,14 @@ export default function EditPhoneModelPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
-                Base Price (₦)
+                Buying Price (₦)
               </label>
               <input
                 type="number"
                 required
                 step="0.01"
-                value={formData.basePrice}
-                onChange={(e) => setFormData({ ...formData, basePrice: parseFloat(e.target.value) })}
+                value={formData.buyingPrice}
+                onChange={(e) => setFormData({ ...formData, buyingPrice: parseFloat(e.target.value) })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             </div>

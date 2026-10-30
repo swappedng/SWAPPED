@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { getSwapMethodLabel, SwapMethod } from '@/lib/api/types/enums';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,7 +14,7 @@ export async function sendSwapConfirmationEmail({
     tradeInValue: number;
     newPhonePrice: number;
     amountToPay: number;
-    swapMethod: string;
+    swapMethod: SwapMethod;
   };
 }) {
   const { tradeInPhone, newPhone, tradeInValue, newPhonePrice, amountToPay, swapMethod } = swapDetails;
@@ -44,9 +45,10 @@ function generateEmailHTML(swapDetails: {
   tradeInValue: number;
   newPhonePrice: number;
   amountToPay: number;
-  swapMethod: string;
+  swapMethod: SwapMethod;
 }) {
   const { tradeInPhone, newPhone, tradeInValue, newPhonePrice, amountToPay, swapMethod } = swapDetails;
+  const isPickup = swapMethod !== SwapMethod.WALK_IN;
 
   return `
 <!DOCTYPE html>
@@ -224,9 +226,9 @@ function generateEmailHTML(swapDetails: {
 
     <div class="next-steps">
       <h3>📋 Next Steps</h3>
-      <p><strong>Swap Method:</strong> ${swapMethod === 'online' ? 'Online Swap' : 'In-Store Visit'}</p>
+      <p><strong>Swap Method:</strong> ${getSwapMethodLabel(swapMethod)}</p>
       
-      ${swapMethod === 'online' ? `
+      ${isPickup ? `
         <ul>
           <li><strong>Step 1:</strong> Our team will contact you within 24 hours to confirm details</li>
           <li><strong>Step 2:</strong> We'll arrange a convenient pickup time for your trade-in device</li>

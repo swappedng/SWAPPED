@@ -24,11 +24,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const body = await request.json();
     const { id } = await params;
-    const { key, label, description, order, isActive } = body;
+    const { label, description, order, isActive } = body;
 
     const updated = await prisma.conditionAttributeGroup.update({
       where: { id },
-      data: { key, label, description, order, isActive },
+      data: { label, description, order, isActive },
     });
 
     return NextResponse.json(updated);

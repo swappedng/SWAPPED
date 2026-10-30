@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
-export interface OptionCardItem {
-  value: string;
+export interface OptionCardItem<T = string> {
+  value: T;
   label: string;
   description?: string;
   badge?: string;
@@ -12,21 +12,21 @@ export interface OptionCardItem {
   imageSize?: "standard" | "preview";
 }
 
-export interface OptionCardListProps {
-  options: OptionCardItem[];
-  value: string;
-  onChange: (value: string) => void;
+export interface OptionCardListProps<T = string> {
+  options: OptionCardItem<T>[];
+  value: T;
+  onChange: (value: T) => void;
   layout?: "list" | "grid";
   className?: string;
 }
 
-export function OptionCardList({
+export function OptionCardList<T = string>({
   options,
   value,
   onChange,
   layout = "list",
   className,
-}: OptionCardListProps) {
+}: OptionCardListProps<T>) {
   return (
     <div
       className={cn(
@@ -40,7 +40,7 @@ export function OptionCardList({
         const isSelected = option.value === value;
         return (
           <button
-            key={option.value}
+            key={String(option.value)}
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(

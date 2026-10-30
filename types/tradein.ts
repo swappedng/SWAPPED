@@ -1,26 +1,25 @@
+import { ConditionType, SwapMethod } from '@/lib/api/types/enums';
+
 export interface ConditionOption {
-  value: string;
   label: string;
   description?: string;
   priceModifier: number;
-  displayLabel?: string;
-  displayDescription?: string;
   imagePath?: string;
 }
 
 export interface ConditionGroup {
-  key: string;
+  key: ConditionType;
   label: string;
   description?: string;
   options: ConditionOption[];
 }
 
 export interface PhoneModel {
-  value: string;
+  id: string;
   label: string;
   model: string;
   storage: string;
-  basePrice: number;
+  buyingPrice: number;
 }
 
 export interface SaleCategory {
@@ -32,6 +31,7 @@ export interface SaleCategory {
 }
 
 export interface PhoneSellingPrice {
+  phoneModelId: string;
   model: string;
   storage: string;
   price: number;
@@ -59,3 +59,6 @@ export interface UpgradeSelection {
 export const emptyTradeInDetails: TradeInDetails = {
   model: '', storage: '', battery: '', batteryReplaced: '', faceid: '', backglass: '', screen: '', screenReplaced: '', body: '', sim: 'physical',
 };
+
+// Re-export enums for convenience
+export { ConditionType, SwapMethod };

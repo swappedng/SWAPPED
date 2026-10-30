@@ -20,11 +20,8 @@ export async function GET() {
       label: g.label,
       description: g.description ?? undefined,
       options: g.options.map(o => ({
-        value: o.value,
         label: o.label,
         description: o.description ?? undefined,
-        displayLabel: o.displayLabel ?? undefined,
-        displayDescription: o.displayDescription ?? undefined,
         imagePath: o.imagePath ?? undefined,
         priceModifier: o.priceModifier,
       })),

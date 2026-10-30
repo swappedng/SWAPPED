@@ -16,6 +16,20 @@ enum SwapMethod {
   COURIER
 }
 
+enum ConditionType {
+  BATTERY    @map("battery")
+  SCREEN     @map("screen")
+  FACE_ID    @map("faceid")
+  BACK_GLASS @map("backglass")
+  BODY       @map("body")
+  SIM        @map("sim")
+}
+
+enum PriceModifierType {
+  AMOUNT
+  PERCENTAGE
+}
+
 // ─── Core swap models ─────────────────────────────────────────────────────────
 
 model Swap {
@@ -56,36 +70,35 @@ model SwapCondition {
   id       String @id @default(cuid())
   swapId   String
   swap     Swap   @relation(fields: [swapId], references: [id], onDelete: Cascade)
-  groupKey String // e.g. "battery", "screen", "faceid"
+  groupKey ConditionType
   value    String // e.g. "80-89", "good", "not-working"
 
   @@unique([swapId, groupKey])
 }
 
 model Appointment {
-  id              String   @id @default(cuid())
-  swapId          String   @unique
-  swap            Swap     @relation(fields: [swapId], references: [id])
-  appointmentType String
+  id              String           @id @default(cuid())
+  swapId          String           @unique
+  swap            Swap             @relation(fields: [swapId], references: [id])
+  swapMethod      SwapMethod
   date            DateTime
   time            String
-  createdAt       DateTime @default(now())
+  createdAt       DateTime         @default(now())
   // Contact fields removed — they live on Swap
 }
 
 // ─── Phone catalogue ──────────────────────────────────────────────────────────
 
 model PhoneModel {
-  id        String   @id @default(cuid())
-  label     String // e.g. "iPhone 15 Pro 256GB"
-  value     String   @unique // e.g. "15pro-256" (slug used in trade-in flow)
-  model     String // e.g. "iPhone 15 Pro"
-  storage   String // e.g. "256GB"
-  basePrice Float
-  isActive  Boolean  @default(true)
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  label       String // e.g. "iPhone 15 Pro 256GB"
+  model       String // e.g. "iPhone 15 Pro"
+  storage     String // e.g. "256GB"
+  buyingPrice Float
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   swaps         Swap[]
   sellingPrices PhoneSellingPrice[]
@@ -111,22 +124,20 @@ model PhoneSellingPrice {
   categoryId   String
   category     PhoneSaleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   phoneModelId String
-  phoneModel   PhoneModel        @relation(fields: [phoneModelId], references: [id])
-  model        String // denormalised for catalogue display
-  storage      String
+  phoneModel   PhoneModel        @relation(fields: [phoneModelId], references: [id], onDelete: Cascade)
   price        Float
   isActive     Boolean           @default(true)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
-  @@unique([categoryId, model, storage])
+  @@unique([categoryId, phoneModelId])
 }
 
 // ─── Condition attribute system ───────────────────────────────────────────────
 
 model ConditionAttributeGroup {
   id          String                     @id @default(cuid())
-  key         String                     @unique // "battery", "screen", "faceid", "backglass", "sim"
+  key         ConditionType              @unique
   label       String
   description String?
   isActive    Boolean                    @default(true)
@@ -140,18 +151,15 @@ model ConditionAttributeOption {
   id                 String                  @id @default(cuid())
   groupId            String
   group              ConditionAttributeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  value              String
   label              String
   description        String?
-  displayLabel       String?
-  displayDescription String?
   imagePath          String?
   priceModifier      Float                   @default(1.0)
-  modifierType       String                  @default("AMOUNT") // Can be "AMOUNT" or "PERCENTAGE"
+  modifierType       PriceModifierType       @default(AMOUNT)
   isActive           Boolean                 @default(true)
   order              Int                     @default(0)
   createdAt          DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
 
-  @@unique([groupId, value])
+  @@unique([groupId, label])
 }

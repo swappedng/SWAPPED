@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createTradeInRequest } from "@/lib/api/endpoints/tradein";
+import { createTradeInRequest } from "@/lib/api/endpoints/customer/tradein";
 import { generation, rank } from "@/lib/phone-models";
+import { SwapMethod } from "@/lib/api/types/enums";
 import {
   emptyTradeInDetails,
   type ConditionGroup,
@@ -37,7 +38,7 @@ export function useTradeInFlow(catalogue: Catalogue) {
   });
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [swapMethod, setSwapMethod] = useState("");
+  const [swapMethod, setSwapMethod] = useState<SwapMethod | "">("");
   const [savedSwapId, setSavedSwapId] = useState("");
   const [showCalendly, setShowCalendly] = useState(false);
 
@@ -74,7 +75,7 @@ export function useTradeInFlow(catalogue: Catalogue) {
 function selectTradeInPhone(option: PhoneOption) {
   setTradeIn((current) => ({
     ...current,
-    model: option.value,
+    model: option.id,
     storage: option.storage,
   }));
 
@@ -89,7 +90,7 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
 }
 
   const selectedTradeIn = useMemo(
-    () => phoneModels.find((item) => item.value === tradeIn.model),
+    () => phoneModels.find((item) => item.id === tradeIn.model),
     [phoneModels, tradeIn.model],
   );
 
@@ -121,9 +122,9 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
         total *
         (group.options.find(
           (option) =>
-            option.value === tradeIn[group.key as keyof TradeInDetails],
+            option.label === tradeIn[group.key as keyof TradeInDetails],
         )?.priceModifier || 1),
-      selectedTradeIn.basePrice,
+      selectedTradeIn.buyingPrice,
     );
     const screenReplaced =
       tradeIn.screenReplaced === "yes"
@@ -131,8 +132,7 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
             .find((group) => group.key === "screen")
             ?.options.find(
               (option) =>
-                option.value.includes("changed") ||
-                option.label.toLowerCase().includes("changed"),
+            option.label.toLowerCase().includes("changed"),
             )?.priceModifier || 1
         : 1;
     const batteryReplaced =
@@ -141,8 +141,7 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
             .find((group) => group.key === "battery")
             ?.options.find(
               (option) =>
-                option.value.includes("changed") ||
-                option.label.toLowerCase().includes("changed"),
+            option.label.toLowerCase().includes("changed"),
             )?.priceModifier || 1
         : 1;
     return Math.round(price * screenReplaced * batteryReplaced);
@@ -181,7 +180,7 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
         .filter((c) => c.value !== "" && c.value !== undefined);
 
       const swap = await createTradeInRequest({
-        tradeInModelId: selectedTradeIn?.value || "",
+        tradeInModelId: selectedTradeIn?.id || "",
         tradeInValue,
         conditions,
         upgradeCategoryId: upgrade.category,

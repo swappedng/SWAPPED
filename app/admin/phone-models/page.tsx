@@ -15,15 +15,16 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react';
+import { getPhoneModels, updatePhoneModel, createPhoneModel, deletePhoneModel, type PhoneModel } from '@/lib/api/endpoints/admin/phone-models';
 
 const PAGE_SIZE = 10;
-const emptyModel = { label: '', model: '', storage: '', basePrice: '', isActive: true };
+const emptyModel = { label: '', model: '', storage: '', buyingPrice: '', isActive: true };
 
 export default function PhoneModelsPage() {
-  const [models, setModels] = useState<any[]>([]);
+  const [models, setModels] = useState<PhoneModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
-  const [draft, setDraft] = useState<any>({});
+  const [draft, setDraft] = useState<Partial<PhoneModel>>({});
   const [isAdding, setIsAdding] = useState(false);
   const [newModel, setNewModel] = useState<any>(emptyModel);
   const [search, setSearch] = useState('');
@@ -42,9 +43,7 @@ export default function PhoneModelsPage() {
   const fetchModels = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/phone-models?admin=1');
-      const data = await res.json();
-      if (!res.ok || !Array.isArray(data)) throw new Error(data?.error || 'Failed to fetch models');
+      const data = await getPhoneModels(true);
       setModels(data);
     } catch (error) {
       console.error('Failed to fetch models:', error);
@@ -52,44 +51,39 @@ export default function PhoneModelsPage() {
     setLoading(false);
   };
 
-  const startEdit = (model: any) => {
+  const startEdit = (model: PhoneModel) => {
     setEditing(model.id);
     setDraft({ ...model });
   };
 
   const saveEdit = async () => {
     if (!editing) return;
-    const res = await fetch(`/api/admin/phone-models/${editing}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...draft, basePrice: Number(draft.basePrice) }),
-    });
-    if (res.ok) {
+    try {
+      await updatePhoneModel(editing, { ...draft, buyingPrice: Number(draft.buyingPrice) });
       setEditing(null);
       fetchModels();
+    } catch (error) {
+      console.error('Failed to save:', error);
     }
   };
 
   const createModel = async () => {
-    if (!newModel.label || !newModel.model || !newModel.storage || newModel.basePrice === '') return;
-    const value = `${newModel.model}-${newModel.storage}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    const res = await fetch('/api/admin/phone-models', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...newModel, value, basePrice: Number(newModel.basePrice) }),
-    });
-    if (res.ok) {
+    if (!newModel.label || !newModel.model || !newModel.storage || newModel.buyingPrice === '') return;
+    try {
+      await createPhoneModel({ ...newModel, buyingPrice: Number(newModel.buyingPrice) });
       setNewModel(emptyModel);
       setIsAdding(false);
       setPage(1);
       fetchModels();
+    } catch (error) {
+      console.error('Failed to create:', error);
     }
   };
 
   const deleteModel = async (id: string) => {
     if (!confirm('Delete this phone model? This will prevent trade-in quotes for this device.')) return;
     try {
-      await fetch(`/api/admin/phone-models/${id}`, { method: 'DELETE' });
+      await deletePhoneModel(id);
       fetchModels();
     } catch (error) {
       console.error('Failed to delete:', error);
@@ -236,8 +230,8 @@ export default function PhoneModelsPage() {
                         type="number"
                         className="w-28 bg-transparent text-xs outline-none font-semibold"
                         placeholder="0"
-                        value={newModel.basePrice}
-                        onChange={(e) => setNewModel({ ...newModel, basePrice: e.target.value })}
+                        value={newModel.buyingPrice}
+                        onChange={(e) => setNewModel({ ...newModel, buyingPrice: e.target.value })}
                       />
                     </div>
                   </td>
@@ -309,11 +303,11 @@ export default function PhoneModelsPage() {
                             <input
                               type="number"
                               className="w-32 border rounded px-2 py-1 text-xs"
-                              value={draft.basePrice}
-                              onChange={(e) => setDraft({ ...draft, basePrice: e.target.value })}
+                              value={draft.buyingPrice}
+                              onChange={(e) => setDraft({ ...draft, buyingPrice: Number(e.target.value) })}
                             />
                           ) : (
-                            <>₦{model.basePrice?.toLocaleString()}</>
+                            <>₦{model.buyingPrice?.toLocaleString()}</>
                           )}
                         </td>
                         <td className="px-6 py-4">

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { ConditionType } from '@/app/generated/prisma';
 
-// GET option by group key and option value
+// GET option by group key and option label
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ groupKey: string; optionValue: string }> }
@@ -11,18 +12,18 @@ export async function GET(
 
     // First find the group by key
     const group = await prisma.conditionAttributeGroup.findUnique({
-      where: { key: groupKey }
+      where: { key: groupKey as ConditionType }
     });
 
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
-    // Then find the option by value within that group
+    // Then find the option by label within that group
     const option = await prisma.conditionAttributeOption.findFirst({
       where: {
         groupId: group.id,
-        value: optionValue
+        label: optionValue
       },
       include: {
         group: true
@@ -40,7 +41,7 @@ export async function GET(
   }
 }
 
-// UPDATE option by group key and option value
+// UPDATE option by group key and option label
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ groupKey: string; optionValue: string }> }
@@ -51,18 +52,18 @@ export async function PATCH(
 
     // First find the group by key
     const group = await prisma.conditionAttributeGroup.findUnique({
-      where: { key: groupKey }
+      where: { key: groupKey as ConditionType }
     });
 
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
-    // Then find the option by value within that group
+    // Then find the option by label within that group
     const existingOption = await prisma.conditionAttributeOption.findFirst({
       where: {
         groupId: group.id,
-        value: optionValue
+        label: optionValue
       }
     });
 
@@ -71,10 +72,10 @@ export async function PATCH(
     }
 
     // Update the option
-    const { value, label, description, displayLabel, displayDescription, priceModifier, modifierType, order, isActive } = body;
+    const { label, description, priceModifier, modifierType, order, isActive } = body;
     const updatedOption = await prisma.conditionAttributeOption.update({
       where: { id: existingOption.id },
-      data: { value, label, description, displayLabel, displayDescription, priceModifier, modifierType, order, isActive },
+      data: { label, description, priceModifier, modifierType, order, isActive },
       include: { group: true }
     });
 
@@ -85,7 +86,7 @@ export async function PATCH(
   }
 }
 
-// DELETE option by group key and option value
+// DELETE option by group key and option label
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ groupKey: string; optionValue: string }> }
@@ -95,7 +96,7 @@ export async function DELETE(
 
     // First find the group by key
     const group = await prisma.conditionAttributeGroup.findUnique({
-      where: { key: groupKey }
+      where: { key: groupKey as ConditionType }
     });
 
     if (!group) {
@@ -106,7 +107,7 @@ export async function DELETE(
     const existingOption = await prisma.conditionAttributeOption.findFirst({
       where: {
         groupId: group.id,
-        value: optionValue
+        label: optionValue
       }
     });
 

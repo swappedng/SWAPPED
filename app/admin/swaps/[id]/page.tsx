@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, ExternalLink, Mail, Phone } from "lucide-react";
 import { AdminSwap, dateTime, day, money, requestEmail, requestPhone, shortId } from "../../adminData";
+import { getSwap } from "@/lib/api/endpoints/admin/swaps";
 
 export default function RequestDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,11 +15,10 @@ export default function RequestDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/swaps/${encodeURIComponent(id)}`)
-      .then(async (response) => {
-        const data: unknown = await response.json();
-        if (!response.ok || !data || typeof data !== "object") throw new Error(response.status === 404 ? "Request not found" : "Could not load this request");
+    getSwap(id)
+      .then((data) => {
         setSwap(data as AdminSwap);
+        setLoading(false);
       })
       .catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load this request"))
       .finally(() => setLoading(false));
@@ -45,7 +45,7 @@ export default function RequestDetailPage() {
       </div>
       <div className="space-y-6"><section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6"><h2 className="text-base font-semibold text-slate-950">Quote breakdown</h2><p className="mt-1 text-xs text-slate-500">Estimate saved when the request was submitted</p><dl className="mt-5 space-y-3 text-sm"><div className="flex justify-between gap-3"><dt className="text-slate-500">Upgrade price</dt><dd className="font-medium tabular-nums text-slate-900">{money(swap.upgradePrice)}</dd></div><div className="flex justify-between gap-3"><dt className="text-slate-500">Trade-in estimate</dt><dd className="font-medium tabular-nums text-slate-900">− {money(swap.tradeInValue)}</dd></div><div className="flex justify-between gap-3 border-t border-stone-200 pt-4"><dt className="font-semibold text-slate-950">Amount to pay</dt><dd className="text-lg font-semibold tabular-nums text-slate-950">{money(swap.amountToPay)}</dd></div></dl><p className="mt-3 text-xs text-slate-500 capitalize">Method: {String(swap.swapMethod).replace(/_/g, " ").toLowerCase()}</p><p className="mt-3 rounded-lg bg-stone-50 p-3 text-xs leading-5 text-slate-600">Final price is confirmed after device inspection.</p></section>
         <section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6"><h2 className="text-base font-semibold text-slate-950">Contact</h2><div className="mt-4 space-y-3 text-sm">{email ? <a href={`mailto:${email}`} className="flex items-center gap-3 break-all text-slate-700 hover:text-slate-950"><Mail className="h-4 w-4 shrink-0 text-slate-400" />{email}<ExternalLink className="ml-auto h-3 w-3 shrink-0 text-slate-400" /></a> : <p className="text-slate-500">No email provided</p>}{phone ? <a href={`tel:${phone}`} className="flex items-center gap-3 text-slate-700 hover:text-slate-950"><Phone className="h-4 w-4 shrink-0 text-slate-400" />{phone}<ExternalLink className="ml-auto h-3 w-3 shrink-0 text-slate-400" /></a> : <p className="text-slate-500">No phone provided</p>}</div></section>
-        <section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-slate-500" /><h2 className="text-base font-semibold text-slate-950">Appointment</h2></div>{swap.appointment ? <div className="mt-4"><p className="text-sm font-semibold text-slate-950">{day(swap.appointment.date)} at {swap.appointment.time}</p><p className="mt-1 text-sm capitalize text-slate-500">{swap.appointment.appointmentType.replace(/[-_]/g, " ")}</p></div> : <p className="mt-4 text-sm text-slate-500">The customer has not booked an appointment yet.</p>}</section>
+        <section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-slate-500" /><h2 className="text-base font-semibold text-slate-950">Appointment</h2></div>{swap.appointment ? <div className="mt-4"><p className="text-sm font-semibold text-slate-950">{day(swap.appointment.date)} at {swap.appointment.time}</p><p className="mt-1 text-sm capitalize text-slate-500">{swap.appointment.swapMethod.replace(/[-_]/g, " ")}</p></div> : <p className="mt-4 text-sm text-slate-500">The customer has not booked an appointment yet.</p>}</section>
       </div>
     </div>
   </div>;

@@ -106,15 +106,10 @@ export default function SingleConditionQuestion({
       (isScreen || isBattery
         ? options.filter(
             (option) =>
-              !option.value.includes("changed") &&
               !option.label.toLowerCase().includes("changed"),
           )
         : options
       ).map((option) => {
-        const label = option.displayLabel || option.label;
-        const optionDescription =
-          option.displayDescription || option.description;
-
         const image = option.imagePath ? (
           isScreen ? (
             <ScreenPreview src={option.imagePath} />
@@ -124,9 +119,9 @@ export default function SingleConditionQuestion({
         ) : undefined;
 
         return {
-          value: option.value,
-          label,
-          description: optionDescription,
+          value: option.label,
+          label: option.label,
+          description: option.description,
           image,
           imageSize: isScreen || isBackGlass ? ("preview" as const) : undefined,
         };

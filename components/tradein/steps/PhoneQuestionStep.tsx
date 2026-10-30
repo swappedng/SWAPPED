@@ -7,7 +7,7 @@ import { PillSelector } from "../ui/PillSelector";
 import { modelNumber, modelGroup } from "@/lib/phone-models";
 
 export interface PhoneOption {
-  value: string;
+  id: string;
   label: string;
   model: string;
   storage: string;
@@ -50,7 +50,7 @@ export function PhoneQuestionStep({
   value: string;
   onSelect: (option: PhoneOption) => void;
 }) {
-  const selectedOption = options.find((option) => option.value === value);
+  const selectedOption = options.find((option) => option.id === value);
   const groups = useMemo(
     () =>
       [

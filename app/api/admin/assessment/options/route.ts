@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { groupId, label, value, priceModifier, order, isActive } = body;
+    const { groupId, label, priceModifier, order, isActive } = body;
 
-    if (!groupId || !label || !value) {
+    if (!groupId || !label) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
       data: {
         groupId,
         label,
-        value,
         priceModifier: priceModifier ?? 1.0,
         order: order || 0,
         isActive: isActive !== undefined ? isActive : true,

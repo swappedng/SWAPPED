@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, ChevronRight, Settings2, Trash2, GripVertical, Info } from "lucide-react";
+import { getAssessmentSteps, deleteAssessmentStep, type AssessmentStep } from '@/lib/api/endpoints/admin/assessment';
 
 export default function AssessmentBuilderPage() {
-  const [steps, setSteps] = useState<any[]>([]);
+  const [steps, setSteps] = useState<AssessmentStep[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/assessment")
-      .then((res) => res.json())
+    getAssessmentSteps()
       .then((data) => {
         setSteps(data);
         setLoading(false);
@@ -19,9 +19,11 @@ export default function AssessmentBuilderPage() {
 
   const deleteStep = async (id: string) => {
     if (!confirm("Delete this assessment step? All associated options will also be removed.")) return;
-    const res = await fetch(`/api/admin/assessment/${id}`, { method: "DELETE" });
-    if (res.ok) {
+    try {
+      await deleteAssessmentStep(id);
       setSteps(steps.filter((s) => s.id !== id));
+    } catch (error) {
+      console.error('Failed to delete:', error);
     }
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export interface TradeInFormData {
     model: string;
@@ -15,6 +15,7 @@ export interface TradeInFormData {
 interface PhoneConditionSelectorProps {
     formData: TradeInFormData;
     setFormData: (data: TradeInFormData) => void;
+    groups: ConditionAttributeGroup[];
     onFieldSelect?: () => void;
 }
 
@@ -22,32 +23,14 @@ interface ConditionAttributeGroup {
     key: string;
     label: string;
     description?: string;
-    options: { value: string; label: string; priceModifier: number }[];
+    options: { label: string; priceModifier: number }[];
 }
 
-export default function PhoneConditionSelector({ formData, setFormData, onFieldSelect }: PhoneConditionSelectorProps) {
+export default function PhoneConditionSelector({ formData, setFormData, groups, onFieldSelect }: PhoneConditionSelectorProps) {
     const [showBatteryTooltip, setShowBatteryTooltip] = useState(false);
-    const [groups, setGroups] = useState<ConditionAttributeGroup[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchGroups = async () => {
-            try {
-                const res = await fetch('/api/admin/condition-attributes/groups');
-                const data = await res.json();
-                setGroups(data);
-            } catch (error) {
-                console.error('Failed to fetch condition attribute groups:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchGroups();
-    }, []);
 
     const handleSelectChange = (field: string, option: any) => {
-        setFormData({ ...formData, [field]: option ? option.value : '' });
+        setFormData({ ...formData, [field]: option ? option.label : '' });
     };
 
     const getFieldValue = (key: string) => {
@@ -69,11 +52,7 @@ export default function PhoneConditionSelector({ formData, setFormData, onFieldS
             </div>
 
             <div className="space-y-12">
-                {loading && (
-                    <div className="text-center text-gray-500">Loading condition fields...</div>
-                )}
-
-                {!loading && groups.map((group) => (
+                {groups.map((group) => (
                     <fieldset key={group.key}>
                         <legend>
                             <div className="flex items-center mb-4">
@@ -101,18 +80,18 @@ export default function PhoneConditionSelector({ formData, setFormData, onFieldS
                         </legend>
                         <div className="space-y-3">
                             {group.options.map((option) => (
-                                <div key={option.value} className="relative">
+                                <div key={option.label} className="relative">
                                     <input
                                         type="radio"
-                                        id={`${group.key}-${option.value}`}
+                                        id={`${group.key}-${option.label}`}
                                         name={group.key}
-                                        value={option.value}
-                                        checked={getFieldValue(group.key) === option.value}
+                                        value={option.label}
+                                        checked={getFieldValue(group.key) === option.label}
                                         onChange={(e) => handleRadioChange(group.key, e.target.value)}
                                         className="sr-only peer"
                                     />
                                     <label
-                                        htmlFor={`${group.key}-${option.value}`}
+                                        htmlFor={`${group.key}-${option.label}`}
                                         className="flex flex-col w-full p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 peer-checked:border-black peer-checked:bg-gray-100 peer-checked:ring-2 peer-checked:ring-gray-300 transition-all"
                                     >
                                         <span className="font-medium text-gray-900">{option.label}</span>

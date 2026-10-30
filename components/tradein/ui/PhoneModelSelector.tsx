@@ -96,18 +96,16 @@ export default function PhoneModelSelector({ formData, setFormData, onSelect }: 
 
     const handleSelectChange = (field: string, option: any) => {
         if (field === 'model' && option) {
-            // Extract storage from model value (e.g., "15pro-256" -> "256")
-            const modelValue = option.value;
-            const parts = modelValue.split('-');
-            const storage = option.storage || (parts.length > 1 ? parts[parts.length - 1] : '');
+            const modelId = option.id;
+            const storage = option.storage || '';
             
             setFormData({ 
                 ...formData, 
-                model: modelValue,
+                model: modelId,
                 storage: storage
             });
         } else {
-            setFormData({ ...formData, [field]: option ? option.value : '' });
+            setFormData({ ...formData, [field]: option ? option.id : '' });
         }
         
         if (option && onSelect) {
@@ -131,7 +129,7 @@ export default function PhoneModelSelector({ formData, setFormData, onSelect }: 
                         <Select
                             instanceId="model-select"
                             options={modelOptions}
-                            value={modelOptions.find(option => option.value === formData.model)}
+                            value={modelOptions.find(option => option.id === formData.model)}
                             onChange={(option) => handleSelectChange('model', option)}
                             styles={customStyles}
                             placeholder="Select your iPhone model"

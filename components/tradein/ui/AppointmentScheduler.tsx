@@ -8,15 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { CalendarIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getSwapMethodLabel, SwapMethod } from "@/lib/api/types/enums";
 
 export interface AppointmentDetails {
-    appointmentType: { value: string; label: string; };
+    swapMethod: SwapMethod;
     date: Date | null;
     time: string | null;
 }
 
 export interface AppointmentFormData {
-    appointmentType: { value: string; label: string; };
+    swapMethod: SwapMethod;
     date: Date | null;
     time: string | null;
 }
@@ -32,11 +33,10 @@ export function AppointmentScheduler({
     onDataChange: (details: AppointmentDetails) => void; 
     onValidationChange: (isValid: boolean) => void; 
 }) {
-  const appointmentTypes = [
-    { value: 'house_call', label: 'Certified Expert House Call' },
-    { value: 'dispatch_pickup', label: 'Dispatch Pickup' },
-    { value: 'walk_in', label: 'Walk-in Customer' },
-  ];
+  const swapMethods = Object.values(SwapMethod).map((value) => ({
+    value,
+    label: getSwapMethodLabel(value),
+  }));
 
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -44,15 +44,15 @@ export function AppointmentScheduler({
     '15:00', '15:30', '16:00', '16:30', '17:00'
   ];
 
-  const { appointmentType, date, time } = formData;
+  const { swapMethod, date, time } = formData;
 
   useEffect(() => {
-    const isValid = !!appointmentType && !!date && !!time;
+    const isValid = !!swapMethod && !!date && !!time;
     onValidationChange(isValid);
     if (isValid) {
-        onDataChange({ appointmentType, date, time });
+        onDataChange({ swapMethod, date, time });
     }
-  }, [appointmentType, date, time, onValidationChange, onDataChange]);
+  }, [swapMethod, date, time, onValidationChange, onDataChange]);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     setFormData({
@@ -69,28 +69,27 @@ export function AppointmentScheduler({
   };
 
   const handleTypeSelect = (value: string) => {
-    const selectedType = appointmentTypes.find(type => type.value === value);
-    if (selectedType) {
+    if (Object.values(SwapMethod).includes(value as SwapMethod)) {
       setFormData({
         ...formData,
-        appointmentType: selectedType
+        swapMethod: value as SwapMethod,
       });
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Appointment Type */}
+      {/* Swap Method */}
       <div className="space-y-3">
         <label className="text-base font-semibold text-black">
-          Appointment Type
+          Swap Method
         </label>
-        <Select value={appointmentType?.value} onValueChange={handleTypeSelect}>
+        <Select value={swapMethod} onValueChange={handleTypeSelect}>
           <SelectTrigger className="w-full h-12 border-2 border-gray-200 rounded-xl bg-white hover:border-gray-300 focus:border-black transition-colors text-base">
-            <SelectValue placeholder="Select appointment type" />
+            <SelectValue placeholder="Select swap method" />
           </SelectTrigger>
           <SelectContent>
-            {appointmentTypes.map((type) => (
+            {swapMethods.map((type) => (
               <SelectItem key={type.value} value={type.value} className="text-base">
                 {type.label}
               </SelectItem>

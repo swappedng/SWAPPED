@@ -18,7 +18,12 @@ function SwapsPageContent() {
   const [filter, setFilter] = useState<Filter>(params.get("status") === "awaiting" ? "awaiting" : params.get("status") === "booked" ? "booked" : "all");
 
   useEffect(() => {
-    fetch("/api/swaps").then(async (response) => { const data: unknown = await response.json(); if (!response.ok || !Array.isArray(data)) throw new Error("Could not load customer requests"); setSwaps(data as AdminSwap[]); }).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load customer requests")).finally(() => setLoading(false));
+    import('@/lib/api/endpoints/admin/swaps').then(({ getSwaps }) => {
+      getSwaps().then((data) => {
+        setSwaps(data as AdminSwap[]);
+        setLoading(false);
+      }).catch((cause) => setError(cause instanceof Error ? cause.message : "Could not load customer requests"));
+    });
   }, []);
 
   const visible = useMemo(() => swaps.filter((swap) => {

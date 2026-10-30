@@ -6,7 +6,9 @@ import {
   AppointmentScheduler,
   AppointmentDetails,
   AppointmentFormData,
-} from "../../../../components/tradein/AppointmentScheduler";
+} from "@/components/tradein/ui/AppointmentScheduler";
+import { SwapMethod } from "@/lib/api/types/enums";
+import { createTradeInAppointment } from "@/lib/api/endpoints/customer/tradein";
 
 function SchedulePageContent() {
   const [isStepValid, setIsStepValid] = useState(false);
@@ -16,10 +18,7 @@ function SchedulePageContent() {
   const [error, setError] = useState("");
   const [appointmentFormData, setAppointmentFormData] =
     useState<AppointmentFormData>({
-      appointmentType: {
-        value: "house_call",
-        label: "Certified Expert House Call",
-      },
+      swapMethod: SwapMethod.HOME_PICKUP,
       date: null,
       time: null,
     });
@@ -34,34 +33,18 @@ function SchedulePageContent() {
       );
       return;
     }
-    if (!appointmentData) return;
+    if (!appointmentData?.date || !appointmentData.time) return;
 
     setIsSaving(true);
     setError("");
     try {
-      // Move this fetch call to a server action or API route to avoid exposing sensitive data in the client
-      const response = await fetch("/api/appointments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          swapId,
-          appointmentType: appointmentData.appointmentType.label,
-          date: appointmentData.date,
-          time: appointmentData.time,
-        }),
+      await createTradeInAppointment({
+        swapId,
+        swapMethod: appointmentData.swapMethod,
+        date: appointmentData.date.toISOString(),
+        time: appointmentData.time,
       });
-
-      if (response.ok) {
-        router.push(`/tradein/confirm?swapId=${encodeURIComponent(swapId)}`);
-      } else {
-        const result = await response.json().catch(() => null);
-        setError(
-          result?.error ||
-            "We could not save your appointment. Please try again.",
-        );
-      }
+      router.push(`/tradein/confirm?swapId=${encodeURIComponent(swapId)}`);
     } catch (error) {
       console.error("Error saving appointment:", error);
       setError("We could not save your appointment. Please try again.");

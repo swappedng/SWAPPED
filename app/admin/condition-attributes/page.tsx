@@ -13,24 +13,24 @@ import {
   Layers,
   Percent,
 } from 'lucide-react';
+import { getConditionAttributeGroups, deleteConditionAttributeGroup, deleteConditionAttributeOption, type ConditionAttributeGroup } from '@/lib/api/endpoints/admin/condition-attributes';
 
 export default function ConditionAttributesPage() {
-  const [groups, setGroups] = useState<any[]>([]);
+  const [groups, setGroups] = useState<ConditionAttributeGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
   const [editingOption, setEditingOption] = useState<string | null>(null);
   const [addingToGroup, setAddingToGroup] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
-    value: '',
     label: '',
     description: '',
     priceModifier: 0,
     modifierType: 'AMOUNT',
     isActive: true,
   });
-  
+
   const [savingOption, setSavingOption] = useState(false);
 
   useEffect(() => {
@@ -40,9 +40,7 @@ export default function ConditionAttributesPage() {
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/condition-attributes/groups');
-      const data = await res.json();
-      if (!res.ok || !Array.isArray(data)) throw new Error(data?.error || 'Failed to fetch question groups');
+      const data = await getConditionAttributeGroups();
       setGroups(data);
       // Auto expand first group if available
       if (data.length > 0 && !expandedGroup) {
@@ -57,7 +55,7 @@ export default function ConditionAttributesPage() {
   const deleteGroup = async (id: string) => {
     if (!confirm('Are you sure you want to delete this attribute group? This will affect valuation calculations.')) return;
     try {
-      await fetch(`/api/admin/condition-attributes/groups/${id}`, { method: 'DELETE' });
+      await deleteConditionAttributeGroup(id);
       fetchGroups();
     } catch (error) {
       console.error('Failed to delete:', error);
@@ -67,7 +65,7 @@ export default function ConditionAttributesPage() {
   const deleteOption = async (id: string) => {
     if (!confirm('Are you sure you want to delete this condition option?')) return;
     try {
-      await fetch(`/api/admin/condition-attributes/options/${id}`, { method: 'DELETE' });
+      await deleteConditionAttributeOption(id);
       fetchGroups();
     } catch (error) {
       console.error('Failed to delete:', error);
@@ -75,10 +73,9 @@ export default function ConditionAttributesPage() {
   };
 
   const startEditingOption = (option: any) => {
-    setEditingOption(option.value);
+    setEditingOption(option.id);
     setAddingToGroup(null);
     setFormData({
-      value: option.value,
       label: option.label,
       description: option.description || '',
       priceModifier: option.priceModifier || 0,
@@ -91,7 +88,6 @@ export default function ConditionAttributesPage() {
     setAddingToGroup(group.key);
     setEditingOption(null);
     setFormData({
-      value: '',
       label: '',
       description: '',
       priceModifier: 0,
@@ -105,12 +101,12 @@ export default function ConditionAttributesPage() {
     setAddingToGroup(null);
   };
 
-  const handleInlineSubmit = async (groupId: string, groupKey: string, isNew: boolean, existingValue?: string) => {
+  const handleInlineSubmit = async (groupId: string, isNew: boolean, existingOptionId?: string) => {
     setSavingOption(true);
     try {
       const url = isNew
         ? '/api/admin/condition-attributes/options'
-        : `/api/admin/condition-attributes/${groupKey}/option/${existingValue}`;
+        : `/api/admin/condition-attributes/options/${existingOptionId}`;
       
       const payload = {
         ...formData,
@@ -255,9 +251,9 @@ export default function ConditionAttributesPage() {
                       )}
                       
                       {group.options.map((option: any) => {
-                        if (editingOption === option.value) {
+                        if (editingOption === option.id) {
                           return (
-                            <div key={option.value} className="bg-white p-3.5 rounded-lg border border-violet-300 shadow-sm transition-colors gap-3 space-y-3">
+                            <div key={option.id} className="bg-white p-3.5 rounded-lg border border-violet-300 shadow-sm transition-colors gap-3 space-y-3">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                   <label className="block text-xs font-medium text-gray-700 mb-1">Display Label</label>
@@ -309,7 +305,7 @@ export default function ConditionAttributesPage() {
                                   Cancel
                                 </button>
                                 <button
-                                  onClick={() => handleInlineSubmit(group.id, group.key, false, option.value)}
+                                  onClick={() => handleInlineSubmit(group.id, false, option.id)}
                                   disabled={savingOption}
                                   className="px-3 py-1.5 text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 rounded-md transition-colors disabled:opacity-50"
                                 >
@@ -325,7 +321,7 @@ export default function ConditionAttributesPage() {
 
                         return (
                           <div
-                            key={option.value}
+                            key={option.id}
                             className="flex items-center justify-between bg-white p-3.5 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors gap-3"
                           >
                             <div className="min-w-0">
@@ -363,7 +359,7 @@ export default function ConditionAttributesPage() {
                                   <Pencil className="w-3.5 h-3.5" />
                                 </button>
                                 <button
-                                  onClick={() => deleteOption(option.value)}
+                                  onClick={() => deleteOption(option.id)}
                                   className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                   title="Delete Option"
                                 >
@@ -379,18 +375,7 @@ export default function ConditionAttributesPage() {
                         <div className="bg-white p-3.5 rounded-lg border border-violet-300 shadow-sm transition-colors gap-3 space-y-3 mt-2">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">Value (Key)</label>
-                              <input
-                                type="text"
-                                required
-                                value={formData.value}
-                                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                                className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
-                                placeholder="e.g. cracked"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">Display Label</label>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Label</label>
                               <input
                                 type="text"
                                 required
@@ -439,7 +424,7 @@ export default function ConditionAttributesPage() {
                               Cancel
                             </button>
                             <button
-                              onClick={() => handleInlineSubmit(group.id, group.key, true)}
+                              onClick={() => handleInlineSubmit(group.id, true)}
                               disabled={savingOption}
                               className="px-3 py-1.5 text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 rounded-md transition-colors disabled:opacity-50"
                             >
