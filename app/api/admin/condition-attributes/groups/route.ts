@@ -16,14 +16,20 @@ export async function GET() {
     });
 
     const result = groups.map(g => ({
+      id: g.id,
       key: g.key,
       label: g.label,
       description: g.description ?? undefined,
       options: g.options.map(o => ({
+        id: o.id,
+        groupId: o.groupId,
         label: o.label,
         description: o.description ?? undefined,
         imagePath: o.imagePath ?? undefined,
         priceModifier: o.priceModifier,
+        modifierType: o.modifierType,
+        isActive: o.isActive,
+        order: o.order,
       })),
     }));
 

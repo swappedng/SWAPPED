@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, Package, Plus, Save, Search, Smartphone, Trash2, X, Check } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronDown, Package, Plus, Save, Search, Smartphone, Trash2, X, Check, Sliders } from 'lucide-react';
 import ConfirmationModal from '@/components/admin/ConfirmationModal';
 import {
   getPhoneModels,
@@ -301,7 +302,16 @@ export default function PhoneModelsPage() {
 
                 return (
                   <tr key={phone.id} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{phone.model}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <Link
+                        href={`/admin/phone-models/${phone.id}/checklist`}
+                        className="group inline-flex items-center gap-2 font-semibold text-gray-900 hover:text-violet-600 transition-colors"
+                        title={`Configure inspection checklist for ${phone.model}`}
+                      >
+                        <span>{phone.model}</span>
+                        <Sliders className="w-3.5 h-3.5 text-gray-400 group-hover:text-violet-600 transition-colors" />
+                      </Link>
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{phone.storage}</td>
                     <td className="px-6 py-3 text-right">
                       <label className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-100">
@@ -330,17 +340,27 @@ export default function PhoneModelsPage() {
                       </button>
                     </td>
                     <td className="px-6 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDeleteError(null);
-                          setDeleteTarget({ id: phone.id, name: `${phone.model} ${phone.storage}` });
-                        }}
-                        className="p-1.5 text-gray-400 hover:text-rose-600 transition"
-                        title="Delete device"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/phone-models/${phone.id}/checklist`}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-lg transition"
+                          title={`Configure inspection checklist for ${phone.model}`}
+                        >
+                          <Sliders className="w-3 h-3" />
+                          Checklist
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteError(null);
+                            setDeleteTarget({ id: phone.id, name: `${phone.model} ${phone.storage}` });
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-rose-600 transition"
+                          title="Delete device"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

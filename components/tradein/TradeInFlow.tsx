@@ -79,42 +79,46 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
           />
         )}
 
-        {currentCondition && (
-          <SingleConditionQuestion
-            question={currentCondition.label}
-            description={currentCondition.description}
-            fieldKey={currentCondition.key}
-            options={currentCondition.options}
-            value={tradeIn[currentCondition.key as keyof typeof tradeIn] || ""}
-            onSelect={(value) =>
-              setTradeIn((current) => ({
-                ...current,
-                [currentCondition.key]: value,
-              }))
-            }
-            showBatteryInfo={currentCondition.key === "battery"}
-            onContinue={goToNextStep}
-            onBack={goToPreviousStep}
-            onScreenOriginChange={
-              currentCondition.key === "screen"
-                ? (origin) =>
-                    setTradeIn((current) => ({
-                      ...current,
-                      screenReplaced: origin === "replaced" ? "yes" : "no",
-                    }))
-                : undefined
-            }
-            onBatteryOriginChange={
-              currentCondition.key === "battery"
-                ? (origin) =>
-                    setTradeIn((current) => ({
-                      ...current,
-                      batteryReplaced: origin === "replaced" ? "yes" : "no",
-                    }))
-                : undefined
-            }
-          />
-        )}
+        {currentCondition && (() => {
+          const normKey = (currentCondition.key || "").toLowerCase().replace(/_/g, "");
+          return (
+            <SingleConditionQuestion
+              question={currentCondition.label}
+              description={currentCondition.description}
+              fieldKey={normKey}
+              options={currentCondition.options}
+              value={tradeIn[normKey as keyof typeof tradeIn] || tradeIn[currentCondition.key as keyof typeof tradeIn] || ""}
+              onSelect={(value) =>
+                setTradeIn((current) => ({
+                  ...current,
+                  [normKey]: value,
+                  [currentCondition.key]: value,
+                }))
+              }
+              showBatteryInfo={normKey === "battery"}
+              onContinue={goToNextStep}
+              onBack={goToPreviousStep}
+              onScreenOriginChange={
+                normKey === "screen"
+                  ? (origin) =>
+                      setTradeIn((current) => ({
+                        ...current,
+                        screenReplaced: origin === "replaced" ? "yes" : "no",
+                      }))
+                  : undefined
+              }
+              onBatteryOriginChange={
+                normKey === "battery"
+                  ? (origin) =>
+                      setTradeIn((current) => ({
+                        ...current,
+                        batteryReplaced: origin === "replaced" ? "yes" : "no",
+                      }))
+                  : undefined
+              }
+            />
+          );
+        })()}
 
         {isCategoryStep && (
           <UpgradeCategoryStep

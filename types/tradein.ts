@@ -58,7 +58,7 @@ export interface UpgradeSelection {
 }
 
 export const emptyTradeInDetails: TradeInDetails = {
-  model: '', storage: '', battery: '', batteryReplaced: '', faceid: '', backglass: '', screen: '', screenReplaced: '', body: '', sim: 'physical',
+  model: '', storage: '', battery: '', batteryReplaced: '', faceid: '', backglass: '', screen: '', screenReplaced: '', body: '', sim: '',
 };
 
 // Re-export enums for convenience

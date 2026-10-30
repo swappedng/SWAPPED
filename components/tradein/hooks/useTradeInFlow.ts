@@ -23,6 +23,7 @@ export type Catalogue = {
   conditionGroups: ConditionGroup[];
   phoneModels: PhoneModel[];
   saleCategories: SaleCategory[];
+  modelModifiers?: Record<string, Record<string, { priceModifier: number; modifierType: string }>>;
 };
 
 export function useTradeInFlow(catalogue: Catalogue) {
@@ -46,6 +47,7 @@ export function useTradeInFlow(catalogue: Catalogue) {
     conditionGroups,
     phoneModels,
     saleCategories: categories,
+    modelModifiers,
   } = catalogue;
 
   useEffect(() => {
@@ -73,10 +75,12 @@ export function useTradeInFlow(catalogue: Catalogue) {
   };
 
 function selectTradeInPhone(option: PhoneOption) {
+  const is13OrBelow = generation(option.label || "") <= 13;
   setTradeIn((current) => ({
     ...current,
     model: option.id,
     storage: option.storage,
+    sim: is13OrBelow && current.sim.toLowerCase().includes("esim only") ? "" : current.sim,
   }));
 
   goToNextStep();
@@ -95,14 +99,45 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
   );
 
   const visibleConditions = useMemo(
-    () =>
-      conditionGroups.filter(
-        (group) =>
-          group.key !== "body" &&
-          (group.key !== "sim" ||
-            generation(selectedTradeIn?.model || "") >= 14),
-      ),
-    [conditionGroups, selectedTradeIn],
+    () => {
+      const selectedModelName = selectedTradeIn?.model || "";
+      const modelCustomModifiers = modelModifiers?.[selectedModelName];
+
+      return conditionGroups
+        .filter((group) => {
+          const k = (group.key || "").toLowerCase().replace(/_/g, "");
+          return k !== "body";
+        })
+        .map((group) => {
+          const k = (group.key || "").toLowerCase().replace(/_/g, "");
+          let options = group.options.map((opt) => {
+            const override = modelCustomModifiers?.[opt.label];
+            if (override) {
+              return {
+                ...opt,
+                priceModifier: override.priceModifier,
+              };
+            }
+            return opt;
+          });
+
+          if (k === "sim") {
+            const phoneName = selectedTradeIn?.model || selectedTradeIn?.label || "";
+            const is13OrBelow = generation(phoneName) <= 13;
+            if (is13OrBelow) {
+              options = options.filter(
+                (opt) => !opt.label.toLowerCase().includes("esim only"),
+              );
+            }
+          }
+
+          return {
+            ...group,
+            options,
+          };
+        });
+    },
+    [conditionGroups, selectedTradeIn, modelModifiers],
   );
 
   const steps = useMemo(
@@ -118,18 +153,18 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
   const tradeInValue = useMemo(() => {
     if (!selectedTradeIn) return 0;
     const price = visibleConditions.reduce(
-      (total, group) =>
-        total *
-        (group.options.find(
-          (option) =>
-            option.label === tradeIn[group.key as keyof TradeInDetails],
-        )?.priceModifier || 1),
+      (total, group) => {
+        const k = (group.key || "").toLowerCase().replace(/_/g, "");
+        const answer = tradeIn[k as keyof TradeInDetails] || tradeIn[group.key as keyof TradeInDetails];
+        const option = group.options.find((opt) => opt.label === answer);
+        return total * (option?.priceModifier || 1);
+      },
       selectedTradeIn.buyingPrice,
     );
     const screenReplaced =
       tradeIn.screenReplaced === "yes"
         ? visibleConditions
-            .find((group) => group.key === "screen")
+            .find((group) => (group.key || "").toLowerCase().replace(/_/g, "") === "screen")
             ?.options.find(
               (option) =>
             option.label.toLowerCase().includes("changed"),
@@ -138,7 +173,7 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
     const batteryReplaced =
       tradeIn.batteryReplaced === "yes"
         ? visibleConditions
-            .find((group) => group.key === "battery")
+            .find((group) => (group.key || "").toLowerCase().replace(/_/g, "") === "battery")
             ?.options.find(
               (option) =>
             option.label.toLowerCase().includes("changed"),

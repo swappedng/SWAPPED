@@ -66,10 +66,12 @@ export default function SingleConditionQuestion({
   );
   const [batteryOrigin, setBatteryOrigin] = useState("");
 
-  const isScreen = fieldKey === "screen";
-  const isBattery = fieldKey === "battery" || showBatteryInfo;
-  const isFaceId = fieldKey === "faceid";
-  const isBackGlass = fieldKey === "backglass";
+  const normalizedKey = (fieldKey || "").toLowerCase().replace(/_/g, "");
+  const isScreen = normalizedKey === "screen";
+  const isBattery = normalizedKey === "battery" || showBatteryInfo;
+  const isFaceId = normalizedKey === "faceid";
+  const isBackGlass = normalizedKey === "backglass";
+  const isSim = normalizedKey === "sim";
 
   const title = showBatteryInfo
     ? "What’s your battery health?"
@@ -79,7 +81,9 @@ export default function SingleConditionQuestion({
         ? "How does your screen look?"
         : isBackGlass
           ? "How does the back of your phone look?"
-          : question;
+          : isSim
+            ? "What is your SIM status?"
+            : question;
 
   const helper = showBatteryInfo
     ? "Choose the range that matches your phone's maximum capacity."
@@ -87,7 +91,9 @@ export default function SingleConditionQuestion({
       ? "Choose the option that matches your phone right now."
       : isScreen || isBackGlass
         ? "Pick the closest match. Your inspector will confirm it."
-        : description;
+        : isSim
+          ? "Select your phone's SIM and network connectivity."
+          : description;
 
   const notice = showBatteryInfo ? (
     <>

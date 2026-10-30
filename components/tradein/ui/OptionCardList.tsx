@@ -44,7 +44,7 @@ export function OptionCardList<T = string>({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "group relative flex min-h-[60px] w-full items-center justify-between rounded-2xl border p-3.5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#4c00bd]/30 active:scale-[0.99]",
+              "group relative flex w-full items-start justify-between rounded-2xl border p-3.5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#4c00bd]/30 active:scale-[0.99]",
               isSelected
                 ? "border-[#4c00bd] bg-[#f3effa] text-[#192331]"
                 : "border-[#e7e2eb] bg-[#fffdfb] text-[#192331] hover:border-[#4c00bd]/35 hover:bg-[#f8f5fc]"
@@ -92,7 +92,7 @@ export function OptionCardList<T = string>({
 
             <span
               className={cn(
-                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all",
+                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all mt-0.5",
                 isSelected
                   ? "border-[#4c00bd] bg-[#4c00bd] text-white scale-100"
                   : "border-[#e7e2eb] bg-white text-transparent group-hover:border-[#4c00bd]/45"

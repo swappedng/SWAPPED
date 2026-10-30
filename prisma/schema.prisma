@@ -237,5 +237,21 @@ model ConditionAttributeOption {
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
 
+  modelModifiers ModelConditionModifier[]
+
   @@unique([groupId, label])
+}
+
+model ModelConditionModifier {
+  id            String                  @id @default(cuid())
+  model         String
+  optionId      String
+  option        ConditionAttributeOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  priceModifier Float                   @default(0.0)
+  modifierType  PriceModifierType       @default(AMOUNT)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@unique([model, optionId])
+  @@index([model])
 }
