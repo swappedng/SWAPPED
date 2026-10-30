@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Brand } from "@/components/landing/Brand";
+import { Brand } from "@/components/home/Brand";
 
 export interface TradeInHeaderProps {
   onBack: () => void;
@@ -23,7 +23,6 @@ export function TradeInHeader({ onBack, canGoBack }: TradeInHeaderProps) {
         <ArrowLeft className="h-4 w-4" />
         <span>Back</span>
       </Button>
-
     </header>
   );
 }

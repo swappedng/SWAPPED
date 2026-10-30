@@ -13,12 +13,26 @@ async function queryTradeInCatalogue(): Promise<{ conditionGroups: ConditionGrou
   ]);
 
   return {
-    conditionGroups: groups.map((group) => ({ key: group.key, label: group.label, description: group.description ?? undefined, options: group.options.map((option) => ({ value: option.value, label: option.label, description: option.description ?? undefined, priceModifier: option.priceModifier })) })),
+    conditionGroups: groups.map((group) => ({
+      key: group.key,
+      label: group.label,
+      description: group.description ?? undefined,
+      options: group.options.map((option) => ({
+        value: option.value,
+        label: option.label,
+        description: option.description ?? undefined,
+        displayLabel: option.displayLabel ?? undefined,
+        displayDescription: option.displayDescription ?? undefined,
+        imagePath: option.imagePath ?? undefined,
+        priceModifier: option.priceModifier,
+      }))
+    })),
     phoneModels,
     saleCategories: saleCategories.map((category) => ({
       id: category.id,
       label: category.label,
       description: category.description ?? undefined,
+      imagePath: category.imagePath ?? undefined,
       prices: category.prices.map((price) => ({ model: price.model, storage: price.storage, price: price.price })),
     })),
   };

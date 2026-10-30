@@ -2,26 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { StepCard } from './StepCard';
-import { PillSelector } from './PillSelector';
-import { OptionCardList } from './OptionCardList';
+import { StepCard } from '../ui/StepCard';
+import { PillSelector } from "../ui/PillSelector";
+import { OptionCardList } from "../ui/OptionCardList";
 import type { PhoneSellingPrice } from '@/types/tradein';
+import { modelNumber, modelGroup } from '@/lib/phone-models';
 
-type Option = { value: string; label: string };
-
-const modelNumber = (name: string) => {
-  const numeric = name.match(/iPhone\s+(\d+)/i)?.[1];
-  if (numeric) return Number(numeric);
-  if (/iPhone\s+XS/i.test(name)) return 10.2;
-  if (/iPhone\s+XR/i.test(name)) return 10.1;
-  if (/iPhone\s+X/i.test(name)) return 10;
-  return -1;
-};
-
-const modelGroup = (name: string) =>
-  name.match(/iPhone\s+(\d+)/i)?.[1] ||
-  name.match(/iPhone\s+(XS|XR|X)/i)?.[1] ||
-  '';
+type Option = { value: string; label: string; description?: string; imagePath?: string };
 
 export function UpgradeCategoryStep({
   options,
@@ -30,26 +17,12 @@ export function UpgradeCategoryStep({
   onContinue,
   onBack,
 }: {
-  options: (Option & { description?: string })[];
+  options: (Option & { description?: string; imagePath?: string })[];
   value: string;
   onSelect: (value: string) => void;
   onContinue: () => void;
   onBack: () => void;
 }) {
-  const fallbackDescription = (label: string) => {
-    const normalized = label.toLowerCase();
-    if (normalized.includes('used')) return 'Pre-owned, checked and in excellent working condition';
-    if (normalized.includes('sealed')) return 'Brand new in its original sealed packaging';
-    if (normalized.includes('opened')) return 'A new phone that’s been unboxed but never used';
-    return 'Choose the option that works best for you';
-  };
-
-  const getCategoryImage = (label: string) => {
-    const normalized = label.toLowerCase();
-    if (normalized.includes('sealed')) return '/condition/Sealed.png';
-    if (normalized.includes('opened')) return '/condition/Opened.png';
-    return '/condition/Used.png';
-  };
 
   return (
     <StepCard
@@ -63,17 +36,17 @@ export function UpgradeCategoryStep({
       <OptionCardList
         options={options.map((option) => ({
           ...option,
-          description: option.description || fallbackDescription(option.label),
-          image: (
+          description: option.description,
+          image: option.imagePath ? (
             <Image
-              src={getCategoryImage(option.label)}
+              src={option.imagePath}
               alt=""
               width={48}
               height={64}
               className="h-16 w-10 object-contain"
             />
-          ),
-          imageSize: 'preview' as const,
+          ) : undefined,
+          imageSize: option.imagePath ? ('preview' as const) : undefined,
         }))}
         value={value}
         onChange={onSelect}

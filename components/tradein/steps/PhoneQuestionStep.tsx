@@ -1,9 +1,10 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
-import { StepCard } from "./StepCard";
-import { OptionCardList } from "./OptionCardList";
-import { PillSelector } from "./PillSelector";
+import { StepCard } from "../ui/StepCard";
+import { OptionCardList } from "../ui/OptionCardList";
+import { PillSelector } from "../ui/PillSelector";
+import { modelNumber, modelGroup } from "@/lib/phone-models";
 
 export interface PhoneOption {
   value: string;
@@ -11,20 +12,6 @@ export interface PhoneOption {
   model: string;
   storage: string;
 }
-
-const modelNumber = (name: string) => {
-  const numeric = name.match(/iPhone\s+(\d+)/i)?.[1];
-  if (numeric) return Number(numeric);
-  if (/iPhone\s+XS/i.test(name)) return 10.2;
-  if (/iPhone\s+XR/i.test(name)) return 10.1;
-  if (/iPhone\s+X/i.test(name)) return 10;
-  return -1;
-};
-
-const modelGroup = (name: string) =>
-  name.match(/iPhone\s+(\d+)/i)?.[1] ||
-  name.match(/iPhone\s+(XS|XR|X)/i)?.[1] ||
-  "";
 
 function ExpandingSection({
   isOpen,

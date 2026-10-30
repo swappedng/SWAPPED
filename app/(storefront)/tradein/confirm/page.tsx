@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 interface Appointment {
     id: string;
@@ -131,7 +131,7 @@ function ConfirmPageContent() {
               </div>
           )}
 
-          <Link href="/tradein" legacyBehavior>
+          <Link href="/tradein">
             <a className="apple-button-primary inline-block">Start New Trade-in</a>
           </Link>
         </div>
@@ -142,6 +142,7 @@ function ConfirmPageContent() {
 
 export default function ConfirmPage() {
   return (
+    // I could add a loading.tsx so my fallback can be a skeleton loader instead of just "Loading..."
     <Suspense fallback={<div>Loading...</div>}>
       <ConfirmPageContent />
     </Suspense>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+// Get this options from the admin backend, for now hardcode them
 const swapOptions = [
   { value: 'premium_used', label: 'Premium Used Grade A iPhones' },
   { value: 'open_box', label: 'Open Box Brand New (Active)' },
@@ -20,7 +21,7 @@ export default function PickPhonePage() {
             </button>
           ))}
         </div>
-        <Link href="/tradein/swap-breakdown" legacyBehavior>
+        <Link href="/tradein/swap-breakdown">
           <a className="bg-neon-green hover:bg-purple-700 text-black font-bold py-2 px-6 rounded transition border-2 border-purple-700">Next: See Swap Breakdown</a>
         </Link>
       </div>

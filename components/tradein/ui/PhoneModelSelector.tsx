@@ -2,7 +2,7 @@
 
 import Select from 'react-select';
 import { useState, useEffect } from 'react';
-import { loadPhoneModels, type PhoneModelOption } from '../lib/phone-models';
+import { loadPhoneModels, type PhoneModelOption } from '../../../lib/phone-models';
 
 const customStyles = {
     control: (provided: any, state: any) => ({

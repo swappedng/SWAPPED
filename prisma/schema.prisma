@@ -96,6 +96,7 @@ model PhoneSaleCategory {
   key         String   @unique
   label       String
   description String?
+  imagePath   String?
   isActive    Boolean  @default(true)
   order       Int      @default(0)
   createdAt   DateTime @default(now())
@@ -136,17 +137,21 @@ model ConditionAttributeGroup {
 }
 
 model ConditionAttributeOption {
-  id            String                  @id @default(cuid())
-  groupId       String
-  group         ConditionAttributeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  value         String
-  label         String
-  description   String?
-  priceModifier Float                   @default(1.0)
-  isActive      Boolean                 @default(true)
-  order         Int                     @default(0)
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
+  id                 String                  @id @default(cuid())
+  groupId            String
+  group              ConditionAttributeGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  value              String
+  label              String
+  description        String?
+  displayLabel       String?
+  displayDescription String?
+  imagePath          String?
+  priceModifier      Float                   @default(1.0)
+  modifierType       String                  @default("AMOUNT") // Can be "AMOUNT" or "PERCENTAGE"
+  isActive           Boolean                 @default(true)
+  order              Int                     @default(0)
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
 
   @@unique([groupId, value])
 }

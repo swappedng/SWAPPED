@@ -1,10 +1,10 @@
-import { FaqSection } from "@/components/landing/FaqSection";
-import { HeroSection } from "@/components/landing/HeroSection";
-import { Footer } from "@/components/landing/Footer";
-import { LandingReveal } from "@/components/landing/LandingReveal";
-import { Header } from "@/components/landing/Header";
-import { ProcessSection } from "@/components/landing/ProcessSection";
-import { StoriesSection } from "@/components/landing/StoriesSection";
+import { FaqSection } from "@/components/home/FaqSection";
+import { HeroSection } from "@/components/home/HeroSection";
+import { Footer } from "@/components/home/Footer";
+import { LandingReveal } from "@/components/home/LandingReveal";
+import { Header } from "@/components/home/Header";
+import { ProcessSection } from "@/components/home/ProcessSection";
+import { StoriesSection } from "@/components/home/StoriesSection";
 
 export default function Home() {
   return (

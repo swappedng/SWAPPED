@@ -28,3 +28,32 @@ export function loadPhoneModels() {
 
   return phoneModelsRequest;
 }
+
+export const modelNumber = (name: string) => {
+  const numeric = name.match(/iPhone\s+(\d+)/i)?.[1];
+  if (numeric) return Number(numeric);
+  if (/iPhone\s+XS/i.test(name)) return 10.2;
+  if (/iPhone\s+XR/i.test(name)) return 10.1;
+  if (/iPhone\s+X/i.test(name)) return 10;
+  return -1;
+};
+
+export const modelGroup = (name: string) =>
+  name.match(/iPhone\s+(\d+)/i)?.[1] ||
+  name.match(/iPhone\s+(XS|XR|X)/i)?.[1] ||
+  '';
+
+export const generation = (name: string) =>
+  Number(name.match(/iPhone\s+(\d+)/i)?.[1] || 0);
+
+export const rank = (name: string) =>
+  generation(name) * 10 +
+  (name.includes("Pro Max")
+    ? 3
+    : name.includes(" Pro")
+      ? 2
+      : name.includes("Plus")
+        ? 1
+        : name.includes("mini")
+          ? -1
+          : 0);

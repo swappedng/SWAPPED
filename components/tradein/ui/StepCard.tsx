@@ -32,7 +32,7 @@ export function StepCard({
     <section
       className={cn(
         "rounded-[28px] border border-[#e7e2eb] bg-[#fffdfb] p-5 shadow-[0_20px_50px_rgba(25,35,49,0.05)] sm:p-7",
-        className
+        className,
       )}
     >
       <header className="mb-6">

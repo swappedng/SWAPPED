@@ -3,6 +3,9 @@ export interface ConditionOption {
   label: string;
   description?: string;
   priceModifier: number;
+  displayLabel?: string;
+  displayDescription?: string;
+  imagePath?: string;
 }
 
 export interface ConditionGroup {
@@ -24,6 +27,7 @@ export interface SaleCategory {
   id: string;
   label: string;
   description?: string;
+  imagePath?: string;
   prices: PhoneSellingPrice[];
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
-import { OptionCardList } from './OptionCardList';
-import { StepCard } from './StepCard';
+import { OptionCardList } from '../ui/OptionCardList';
+import { StepCard } from '../ui/StepCard';
 import { Truck, Store } from 'lucide-react';
 
 export function SwapMethodStep({

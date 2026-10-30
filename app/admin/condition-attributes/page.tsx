@@ -19,6 +19,20 @@ export default function ConditionAttributesPage() {
   const [loading, setLoading] = useState(true);
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
+  const [editingOption, setEditingOption] = useState<string | null>(null);
+  const [addingToGroup, setAddingToGroup] = useState<string | null>(null);
+  
+  const [formData, setFormData] = useState({
+    value: '',
+    label: '',
+    description: '',
+    priceModifier: 0,
+    modifierType: 'AMOUNT',
+    isActive: true,
+  });
+  
+  const [savingOption, setSavingOption] = useState(false);
+
   useEffect(() => {
     fetchGroups();
   }, []);
@@ -57,6 +71,70 @@ export default function ConditionAttributesPage() {
       fetchGroups();
     } catch (error) {
       console.error('Failed to delete:', error);
+    }
+  };
+
+  const startEditingOption = (option: any) => {
+    setEditingOption(option.value);
+    setAddingToGroup(null);
+    setFormData({
+      value: option.value,
+      label: option.label,
+      description: option.description || '',
+      priceModifier: option.priceModifier || 0,
+      modifierType: option.modifierType || 'AMOUNT',
+      isActive: option.isActive ?? true,
+    });
+  };
+
+  const startAddingOption = (group: any) => {
+    setAddingToGroup(group.key);
+    setEditingOption(null);
+    setFormData({
+      value: '',
+      label: '',
+      description: '',
+      priceModifier: 0,
+      modifierType: 'AMOUNT',
+      isActive: true,
+    });
+  };
+
+  const cancelInlineEdit = () => {
+    setEditingOption(null);
+    setAddingToGroup(null);
+  };
+
+  const handleInlineSubmit = async (groupId: string, groupKey: string, isNew: boolean, existingValue?: string) => {
+    setSavingOption(true);
+    try {
+      const url = isNew
+        ? '/api/admin/condition-attributes/options'
+        : `/api/admin/condition-attributes/${groupKey}/option/${existingValue}`;
+      
+      const payload = {
+        ...formData,
+        groupId,
+      };
+
+      const method = isNew ? 'POST' : 'PATCH';
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        cancelInlineEdit();
+        fetchGroups();
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to save option:', response.status, errorText);
+      }
+    } catch (error) {
+      console.error('Error saving option:', error);
+    } finally {
+      setSavingOption(false);
     }
   };
 
@@ -160,76 +238,215 @@ export default function ConditionAttributesPage() {
                         <Percent className="w-3.5 h-3.5 text-gray-500" />
                         <span>Configured Options & Deductions</span>
                       </div>
-                      <Link
-                        href={`/admin/condition-attributes/${group.key}/option/new`}
+                      <button
+                        onClick={() => startAddingOption(group)}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 hover:text-violet-900 bg-violet-100/80 px-2.5 py-1 rounded-md transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Add Option</span>
-                      </Link>
+                      </button>
                     </div>
 
                     <div className="grid gap-2.5">
-                      {group.options.length === 0 ? (
+                      {group.options.length === 0 && !addingToGroup && (
                         <div className="p-4 text-center text-xs text-gray-500 bg-white rounded-lg border border-dashed border-gray-200">
                           No options added to this group yet. Click "+ Add Option" above.
                         </div>
-                      ) : (
-                        group.options.map((option: any) => {
-                          const modifierPercent = Number(option.priceModifier) * 100;
-                          const isZero = modifierPercent === 0;
-
+                      )}
+                      
+                      {group.options.map((option: any) => {
+                        if (editingOption === option.value) {
                           return (
-                            <div
-                              key={option.value}
-                              className="flex items-center justify-between bg-white p-3.5 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors gap-3"
-                            >
-                              <div className="min-w-0">
-                                <div className="font-semibold text-gray-900 text-xs sm:text-sm">
-                                  {option.label}
+                            <div key={option.value} className="bg-white p-3.5 rounded-lg border border-violet-300 shadow-sm transition-colors gap-3 space-y-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">Display Label</label>
+                                  <input
+                                    type="text"
+                                    required
+                                    value={formData.label}
+                                    onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                                  />
                                 </div>
-                                <div className="text-xs text-gray-500 font-mono mt-0.5">
-                                  value: {option.value}
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">Deduction Type & Amount</label>
+                                  <div className="flex gap-2">
+                                    <select
+                                      value={formData.modifierType}
+                                      onChange={(e) => setFormData({ ...formData, modifierType: e.target.value })}
+                                      className="w-1/3 px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                                    >
+                                      <option value="AMOUNT">Flat Amount</option>
+                                      <option value="PERCENTAGE">Percentage %</option>
+                                    </select>
+                                    <input
+                                      type="number"
+                                      step="any"
+                                      required
+                                      value={formData.priceModifier}
+                                      onChange={(e) => setFormData({ ...formData, priceModifier: parseFloat(e.target.value) || 0 })}
+                                      className="w-2/3 px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                                      placeholder={formData.modifierType === 'PERCENTAGE' ? 'e.g. 15 for 15%' : 'e.g. 15000'}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="sm:col-span-2">
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">Description (Optional)</label>
+                                  <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    rows={2}
+                                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                                  />
                                 </div>
                               </div>
-
-                              <div className="flex items-center gap-4 shrink-0">
-                                {/* Modifier Badge */}
-                                <div
-                                  className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 ${
-                                    isZero
-                                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
-                                  }`}
+                              <div className="flex justify-end gap-2 mt-2">
+                                <button
+                                  onClick={cancelInlineEdit}
+                                  className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
                                 >
-                                  {isZero ? (
-                                    <span>0% deduction (Full Value)</span>
-                                  ) : (
-                                    <span>-{Math.abs(modifierPercent).toFixed(0)}% deduction</span>
-                                  )}
-                                </div>
-
-                                {/* Option Actions */}
-                                <div className="flex items-center gap-2">
-                                  <Link
-                                    href={`/admin/condition-attributes/${group.key}/option/${option.value}`}
-                                    className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                                    title="Edit Option"
-                                  >
-                                    <Pencil className="w-3.5 h-3.5" />
-                                  </Link>
-                                  <button
-                                    onClick={() => deleteOption(option.value)}
-                                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                    title="Delete Option"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => handleInlineSubmit(group.id, group.key, false, option.value)}
+                                  disabled={savingOption}
+                                  className="px-3 py-1.5 text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 rounded-md transition-colors disabled:opacity-50"
+                                >
+                                  {savingOption ? 'Saving...' : 'Save'}
+                                </button>
                               </div>
                             </div>
                           );
-                        })
+                        }
+
+                        const deductionValue = Number(option.priceModifier);
+                        const isZero = deductionValue === 0;
+
+                        return (
+                          <div
+                            key={option.value}
+                            className="flex items-center justify-between bg-white p-3.5 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors gap-3"
+                          >
+                            <div className="min-w-0">
+                              <div className="font-semibold text-gray-900 text-xs sm:text-sm">
+                                {option.label}
+                              </div>
+                              <div className="text-xs text-gray-500 font-mono mt-0.5">
+                                description: {option.description}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 shrink-0">
+                              {/* Modifier Badge */}
+                              <div
+                                className={`px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 ${
+                                  isZero
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                }`}
+                              >
+                                {isZero ? (
+                                  <span>No deduction (Full Value)</span>
+                                ) : (
+                                  <span>-{Math.abs(deductionValue).toLocaleString()}{option.modifierType === 'PERCENTAGE' ? '%' : ''} deduction</span>
+                                )}
+                              </div>
+
+                              {/* Option Actions */}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => startEditingOption(option)}
+                                  className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                                  title="Edit Option"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => deleteOption(option.value)}
+                                  className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  title="Delete Option"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {addingToGroup === group.key && (
+                        <div className="bg-white p-3.5 rounded-lg border border-violet-300 shadow-sm transition-colors gap-3 space-y-3 mt-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Value (Key)</label>
+                              <input
+                                type="text"
+                                required
+                                value={formData.value}
+                                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                                className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                                placeholder="e.g. cracked"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Display Label</label>
+                              <input
+                                type="text"
+                                required
+                                value={formData.label}
+                                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                                className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                              />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Deduction Type & Amount</label>
+                              <div className="flex gap-2">
+                                <select
+                                  value={formData.modifierType}
+                                  onChange={(e) => setFormData({ ...formData, modifierType: e.target.value })}
+                                  className="w-1/3 px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                                >
+                                  <option value="AMOUNT">Flat Amount</option>
+                                  <option value="PERCENTAGE">Percentage %</option>
+                                </select>
+                                <input
+                                  type="number"
+                                  step="any"
+                                  required
+                                  value={formData.priceModifier}
+                                  onChange={(e) => setFormData({ ...formData, priceModifier: parseFloat(e.target.value) || 0 })}
+                                  className="w-2/3 px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                                  placeholder={formData.modifierType === 'PERCENTAGE' ? 'e.g. 15 for 15%' : 'e.g. 15000'}
+                                />
+                              </div>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Description (Optional)</label>
+                              <textarea
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                rows={2}
+                                className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-violet-500 focus:border-violet-500"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-2 mt-2">
+                            <button
+                              onClick={cancelInlineEdit}
+                              className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleInlineSubmit(group.id, group.key, true)}
+                              disabled={savingOption}
+                              className="px-3 py-1.5 text-xs font-medium bg-gray-900 text-white hover:bg-gray-800 rounded-md transition-colors disabled:opacity-50"
+                            >
+                              {savingOption ? 'Saving...' : 'Create Option'}
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -256,6 +473,7 @@ export default function ConditionAttributesPage() {
           </Link>
         </div>
       )}
+
     </div>
   );
 }

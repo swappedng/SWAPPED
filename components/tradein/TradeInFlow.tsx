@@ -1,14 +1,17 @@
 "use client";
 
 import { useRef } from "react";
-import CalendlyWidget from "../CalendlyWidget";
-import SingleConditionQuestion from "../SingleConditionQuestion";
-import { ContactSummaryStep } from "./ContactSummaryStep";
-import { PhoneQuestionStep } from "./PhoneQuestionStep";
-import { SwapMethodStep } from "./SwapMethodStep";
-import { UpgradeCategoryStep, UpgradePhoneStep } from "./UpgradeQuestionSteps";
-import { Header } from "../landing/Header";
-import { TradeInProgressBar } from "./TradeInProgressBar";
+import CalendlyWidget from "./CalendlyWidget";
+import SingleConditionQuestion from "./ui/SingleConditionQuestion";
+import { ContactSummaryStep } from "./steps/ContactSummaryStep";
+import { PhoneQuestionStep } from "./steps/PhoneQuestionStep";
+import { SwapMethodStep } from "./steps/SwapMethodStep";
+import {
+  UpgradeCategoryStep,
+  UpgradePhoneStep,
+} from "./steps/UpgradeQuestionSteps";
+import { Header } from "../home/Header";
+import { TradeInProgressBar } from "./ui/TradeInProgressBar";
 import { Catalogue, useTradeInFlow } from "./hooks/useTradeInFlow";
 
 export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
@@ -17,13 +20,10 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
 
   const {
     step,
-    setStep,
-    prevStep,
+    goToNextStep,
+    goToPreviousStep,
+    currentStepPosition,
     totalSteps,
-    categoryStep,
-    upgradePhoneStep,
-    contactStep,
-    methodStep,
     saving,
     tradeIn,
     setTradeIn,
@@ -46,29 +46,36 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
     newPhonePrice,
     availablePricesForCategory,
     saveSwap,
+    selectTradeInPhone,
   } = flow;
+
+  const isPhoneSelectionStep = step.type === "phone-selection";
+
+  const isCategoryStep = step.type === "upgrade-category";
+
+  const isUpgradePhoneStep = step.type === "upgrade-phone";
+
+  const isContactStep = step.type === "contact-details";
+
+  const isMethodStep = step.type === "swap-method";
 
   return (
     <main
       ref={pageTop}
       className="min-h-screen bg-background px-4 py-6 text-[#192331] sm:px-6 sm:py-0"
     >
-        <Header />
+      <Header />
       <div className="mx-auto max-w-2xl pt-16">
-        <TradeInProgressBar currentStep={step} totalSteps={totalSteps} />
+        <TradeInProgressBar
+          currentStep={currentStepPosition + 1}
+          totalSteps={totalSteps}
+        />
 
-        {step === 1 && (
+        {isPhoneSelectionStep && (
           <PhoneQuestionStep
             options={phoneModels}
             value={tradeIn.model}
-            onSelect={(option) => {
-              setTradeIn((current) => ({
-                ...current,
-                model: option.value,
-                storage: option.storage,
-              }));
-              setStep(2);
-            }}
+            onSelect={selectTradeInPhone}
           />
         )}
 
@@ -86,8 +93,8 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
               }))
             }
             showBatteryInfo={currentCondition.key === "battery"}
-            onContinue={() => setStep(step + 1)}
-            onBack={prevStep}
+            onContinue={goToNextStep}
+            onBack={goToPreviousStep}
             onScreenOriginChange={
               currentCondition.key === "screen"
                 ? (origin) =>
@@ -109,23 +116,24 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
           />
         )}
 
-        {step === categoryStep && (
+        {isCategoryStep && (
           <UpgradeCategoryStep
             options={categories.map((category) => ({
               value: category.id,
               label: category.label,
               description: category.description,
+              imagePath: category.imagePath,
             }))}
             value={upgrade.category}
             onSelect={(category) =>
               setUpgrade({ category, model: "", storage: "" })
             }
-            onContinue={() => setStep(upgradePhoneStep)}
-            onBack={() => setStep(categoryStep - 1)}
+            onContinue={goToNextStep}
+            onBack={goToPreviousStep}
           />
         )}
 
-        {step === upgradePhoneStep && (
+        {isUpgradePhoneStep && (
           <UpgradePhoneStep
             availablePrices={availablePricesForCategory}
             value={upgrade}
@@ -135,12 +143,12 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
                 ...selection,
               }))
             }
-            onContinue={() => setStep(contactStep)}
-            onBack={() => setStep(categoryStep)}
+            onContinue={goToNextStep}
+            onBack={goToPreviousStep}
           />
         )}
 
-        {step === contactStep && (
+        {isContactStep && (
           <ContactSummaryStep
             amountToPay={newPhonePrice - tradeInValue}
             tradeInPhone={
@@ -156,17 +164,17 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
             phone={phone}
             onEmailChange={setEmail}
             onPhoneChange={setPhone}
-            onContinue={() => setStep(methodStep)}
+            onContinue={goToNextStep}
           />
         )}
 
-        {step === methodStep && (
+        {isMethodStep && (
           <SwapMethodStep
             value={swapMethod}
             onSelect={setSwapMethod}
             onComplete={saveSwap}
             isSaving={saving}
-            onBack={() => setStep(contactStep)}
+            onBack={goToPreviousStep}
           />
         )}
       </div>
