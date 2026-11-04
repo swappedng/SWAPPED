@@ -257,15 +257,7 @@ export default function PhoneModelChecklistPage({
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-              <Link href="/admin/phone-models" className="hover:text-gray-600 transition-colors">
-                Phone models
-              </Link>
-              <span>/</span>
-              <span className="text-gray-700 font-bold">{data.model}</span>
-              <span>/</span>
-              <span>Checklist</span>
-            </div>
+          
             <h1 className="text-2xl font-bold text-gray-950 tracking-tight mt-0.5">
               {data.model} — Inspection Checklist
             </h1>

@@ -173,7 +173,7 @@ export default function PhoneModelsPage() {
         <div>
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-gray-950">Buying prices</h1>
           <p className="mt-2 text-gray-600">
-            Set the base buying price for each phone model in your catalogue. Inspection checklist deductions calculate off this amount.
+            Set the base buying price for each phone model in your catalogue.
           </p>
         </div>
         <button
@@ -268,7 +268,10 @@ export default function PhoneModelsPage() {
       )}
       <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-gray-200 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="font-semibold text-gray-950">Phone catalogue</h2>
+      <div>
+            <h2 className="font-semibold text-gray-950">Phone Catalogue</h2>
+    <p className="text-xs text-gray-500">Click the row to view the inpection checklist</p>
+    </div>
           <div className="relative w-full sm:w-72">
             <Search size={16} className="absolute left-3 top-3 text-gray-400" />
             <input
