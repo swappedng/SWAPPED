@@ -118,6 +118,8 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
                 priceModifier: override.priceModifier,
               };
             }
+            // If no model-specific modifier exists, return option without priceModifier
+            // This will be handled in value calculation
             return opt;
           });
 
@@ -152,35 +154,55 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
 
   const tradeInValue = useMemo(() => {
     if (!selectedTradeIn) return 0;
-    const price = visibleConditions.reduce(
-      (total, group) => {
-        const k = (group.key || "").toLowerCase().replace(/_/g, "");
-        const answer = tradeIn[k as keyof TradeInDetails] || tradeIn[group.key as keyof TradeInDetails];
-        const option = group.options.find((opt) => opt.label === answer);
-        return total * (option?.priceModifier || 1);
-      },
-      selectedTradeIn.buyingPrice,
-    );
-    const screenReplaced =
-      tradeIn.screenReplaced === "yes"
-        ? visibleConditions
-            .find((group) => (group.key || "").toLowerCase().replace(/_/g, "") === "screen")
-            ?.options.find(
-              (option) =>
-            option.label.toLowerCase().includes("changed"),
-            )?.priceModifier || 1
-        : 1;
-    const batteryReplaced =
-      tradeIn.batteryReplaced === "yes"
-        ? visibleConditions
-            .find((group) => (group.key || "").toLowerCase().replace(/_/g, "") === "battery")
-            ?.options.find(
-              (option) =>
-            option.label.toLowerCase().includes("changed"),
-            )?.priceModifier || 1
-        : 1;
-    return Math.round(price * screenReplaced * batteryReplaced);
-  }, [selectedTradeIn, visibleConditions, tradeIn]);
+    const selectedModelName = selectedTradeIn?.model || "";
+    const modelCustomModifiers = modelModifiers?.[selectedModelName] || {};
+
+    let price = selectedTradeIn.buyingPrice;
+
+    // Apply condition-based deductions
+    visibleConditions.forEach((group) => {
+      const k = (group.key || "").toLowerCase().replace(/_/g, "");
+      const answer = tradeIn[k as keyof TradeInDetails] || tradeIn[group.key as keyof TradeInDetails];
+      const option = group.options.find((opt) => opt.label === answer);
+      const modifierData = modelCustomModifiers[option?.label || ""];
+
+      if (modifierData) {
+        if (modifierData.modifierType === "PERCENTAGE") {
+          // Apply as percentage multiplier (e.g., 0.9 for 10% off)
+          price = price * (1 - modifierData.priceModifier / 100);
+        } else {
+          // Apply as flat amount deduction
+          price = price - modifierData.priceModifier;
+        }
+      }
+    });
+
+    // Apply screen replacement deduction
+    if (tradeIn.screenReplaced === "yes") {
+      const screenModifier = modelCustomModifiers["Replaced screen"] || modelCustomModifiers["Changed"];
+      if (screenModifier) {
+        if (screenModifier.modifierType === "PERCENTAGE") {
+          price = price * (1 - screenModifier.priceModifier / 100);
+        } else {
+          price = price - screenModifier.priceModifier;
+        }
+      }
+    }
+
+    // Apply battery replacement deduction
+    if (tradeIn.batteryReplaced === "yes") {
+      const batteryModifier = modelCustomModifiers["Replaced battery"] || modelCustomModifiers["Changed"];
+      if (batteryModifier) {
+        if (batteryModifier.modifierType === "PERCENTAGE") {
+          price = price * (1 - batteryModifier.priceModifier / 100);
+        } else {
+          price = price - batteryModifier.priceModifier;
+        }
+      }
+    }
+
+    return Math.round(Math.max(0, price));
+  }, [selectedTradeIn, visibleConditions, tradeIn, modelModifiers]);
 
   const selectedSellingPrice = useMemo(
     () =>

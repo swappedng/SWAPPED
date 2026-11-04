@@ -63,7 +63,6 @@ async function queryTradeInCatalogue(): Promise<{
         label: option.label,
         description: option.description ?? undefined,
         imagePath: option.imagePath ?? undefined,
-        priceModifier: option.priceModifier,
       }))
     })),
     modelModifiers,

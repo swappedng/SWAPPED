@@ -10,11 +10,9 @@ interface OptionItem {
   groupId: string;
   label: string;
   description: string | null;
-  defaultPriceModifier: number;
-  defaultModifierType: 'AMOUNT' | 'PERCENTAGE';
   priceModifier: number;
   modifierType: 'AMOUNT' | 'PERCENTAGE';
-  isOverridden: boolean;
+  isCustom: boolean;
   order: number;
 }
 
@@ -75,7 +73,7 @@ export default function PhoneModelChecklistPage({
           initialEdits[opt.id] = {
             priceModifier: opt.priceModifier,
             modifierType: opt.modifierType,
-            isCustom: opt.isOverridden,
+            isCustom: opt.isCustom,
           };
         });
       });
@@ -103,7 +101,10 @@ export default function PhoneModelChecklistPage({
     for (const opt of allOptions) {
       const edit = edits[opt.id];
       if (!edit) continue;
-      if (edit.priceModifier !== opt.priceModifier || edit.modifierType !== opt.modifierType) {
+      if (edit.isCustom && (edit.priceModifier !== opt.priceModifier || edit.modifierType !== opt.modifierType)) {
+        return true;
+      }
+      if (!edit.isCustom && opt.isCustom) {
         return true;
       }
     }
@@ -141,13 +142,13 @@ export default function PhoneModelChecklistPage({
     setEdits((prev) => ({
       ...prev,
       [option.id]: {
-        priceModifier: option.defaultPriceModifier,
-        modifierType: option.defaultModifierType,
+        priceModifier: 0,
+        modifierType: 'AMOUNT',
         isCustom: false,
       },
     }));
 
-    if (option.isOverridden) {
+    if (option.isCustom) {
       setResetOptionIds((prev) => (prev.includes(option.id) ? prev : [...prev, option.id]));
     }
     setSaveSuccess(false);
@@ -163,11 +164,11 @@ export default function PhoneModelChecklistPage({
 
     allOptions.forEach((opt) => {
       resetMap[opt.id] = {
-        priceModifier: opt.defaultPriceModifier,
-        modifierType: opt.defaultModifierType,
+        priceModifier: 0,
+        modifierType: 'AMOUNT',
         isCustom: false,
       };
-      if (opt.isOverridden) {
+      if (opt.isCustom) {
         toReset.push(opt.id);
       }
     });
@@ -278,10 +279,10 @@ export default function PhoneModelChecklistPage({
               onClick={handleResetAll}
               disabled={saving}
               className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-600 hover:text-rose-600 hover:bg-rose-50 border border-gray-200 rounded-lg transition-colors"
-              title="Reset all options for this model back to global defaults"
+              title="Remove all custom modifiers for this model"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              Reset all to defaults
+              Clear all custom
             </button>
           )}
 
@@ -317,17 +318,17 @@ export default function PhoneModelChecklistPage({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-violet-600" />
               <span className="font-semibold text-gray-900 text-sm">
-                Custom deductions for {data.model}
+                Price deductions for {data.model}
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-violet-50 text-violet-700 border border-violet-200">
-                {customizedCount} customized {customizedCount === 1 ? 'option' : 'options'}
+              <span className="text-xs  font-medium ">
+                {customizedCount} {customizedCount === 1 ? 'option' : 'options'} set
               </span>
             </div>
             <p className="text-xs text-gray-500 max-w-2xl leading-relaxed">
               Deductions set here apply to all storage variants of <strong>{data.model}</strong> during trade-in valuation.
-              Options you have not customized automatically inherit SWAPPED's global defaults.
+              <br />
+              Each option must be set with a price modifier.
             </p>
           </div>
 
@@ -378,7 +379,7 @@ export default function PhoneModelChecklistPage({
                   const edit = edits[option.id] || {
                     priceModifier: option.priceModifier,
                     modifierType: option.modifierType,
-                    isCustom: option.isOverridden,
+                    isCustom: option.isCustom,
                   };
 
                   return (
@@ -402,8 +403,8 @@ export default function PhoneModelChecklistPage({
                                 Custom for {data.model}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200">
-                                Global default
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                Not set
                               </span>
                             )}
                           </div>
@@ -437,7 +438,7 @@ export default function PhoneModelChecklistPage({
                               e.target.value as 'AMOUNT' | 'PERCENTAGE'
                             )
                           }
-                          className="h-8 px-2 border border-gray-200 rounded-lg text-xs font-semibold bg-white text-gray-800 focus:ring-2 focus:ring-gray-900 outline-none shrink-0"
+                          className="h-8 px-4 border border-gray-200 rounded-lg text-xs font-semibold bg-white text-gray-800 focus:ring-2 focus:ring-gray-900 outline-none shrink-0"
                         >
                           <option value="AMOUNT">Flat ₦</option>
                           <option value="PERCENTAGE">%</option>
@@ -461,7 +462,9 @@ export default function PhoneModelChecklistPage({
                         </div>
 
                         <span className="text-[11px] text-gray-400 shrink-0">
-                          {edit.priceModifier === 0
+                          {!edit.isCustom
+                            ? 'Not set'
+                            : edit.priceModifier === 0
                             ? 'Full value'
                             : edit.modifierType === 'PERCENTAGE'
                             ? `-${edit.priceModifier}%`

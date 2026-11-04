@@ -26,8 +26,6 @@ export async function GET() {
         label: o.label,
         description: o.description ?? undefined,
         imagePath: o.imagePath ?? undefined,
-        priceModifier: o.priceModifier,
-        modifierType: o.modifierType,
         isActive: o.isActive,
         order: o.order,
       })),

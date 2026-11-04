@@ -72,10 +72,10 @@ export async function PATCH(
     }
 
     // Update the option
-    const { label, description, priceModifier, modifierType, order, isActive } = body;
+    const { label, description, order, isActive } = body;
     const updatedOption = await prisma.conditionAttributeOption.update({
       where: { id: existingOption.id },
-      data: { label, description, priceModifier, modifierType, order, isActive },
+      data: { label, description, order, isActive },
       include: { group: true }
     });
 

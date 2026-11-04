@@ -169,8 +169,6 @@ export function GroupCard({
                 edits={optionEdits[option.id] ?? {
                   label: option.label ?? '',
                   description: option.description ?? '',
-                  priceModifier: option.priceModifier ?? 0,
-                  modifierType: option.modifierType ?? 'AMOUNT',
                 }}
                 onChange={onOptionEditChange}
               />

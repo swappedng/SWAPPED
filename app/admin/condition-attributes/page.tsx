@@ -15,8 +15,6 @@ import { GroupCard } from './components/GroupCard';
 const EMPTY_FORM: OptionFormData = {
   label: '',
   description: '',
-  priceModifier: 0,
-  modifierType: 'AMOUNT',
   isActive: true,
 };
 
@@ -140,8 +138,6 @@ export default function ConditionAttributesPage() {
       edits[opt.id] = {
         label: opt.label ?? '',
         description: opt.description ?? '',
-        priceModifier: opt.priceModifier ?? 0,
-        modifierType: opt.modifierType ?? 'AMOUNT',
       };
     });
     setEditingGroupOptions(group.id);
@@ -194,7 +190,7 @@ export default function ConditionAttributesPage() {
           <p className="text-xs font-semibold tracking-widest uppercase text-gray-400">Catalogue &amp; pricing</p>
           <h1 className="text-2xl font-bold text-gray-950 mt-1.5 tracking-tight">Inspection Checklist</h1>
           <p className="text-sm text-gray-500 mt-1 max-w-lg">
-            Each group is a question customers answer during trade-in. Options set the value adjustment applied to their device.
+            Each group is a question customers answer during trade-in. Price adjustments are configured per phone model in the phone models section.
           </p>
         </div>
         {/* <button

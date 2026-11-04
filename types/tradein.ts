@@ -3,7 +3,6 @@ import { ConditionType, SwapMethod } from '@/lib/api/types/enums';
 export interface ConditionOption {
   label: string;
   description?: string;
-  priceModifier: number;
   imagePath?: string;
 }
 

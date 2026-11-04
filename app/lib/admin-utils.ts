@@ -37,7 +37,6 @@ export async function getConditionAttributeGroups() {
       description: g.description ?? undefined,
       options: g.options.map(o => ({
         label: o.label,
-        priceModifier: o.priceModifier,
       })),
     }));
   } catch (error) {

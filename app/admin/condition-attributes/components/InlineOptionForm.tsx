@@ -47,28 +47,6 @@ export function InlineOptionForm({
             className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-[11px] bg-white focus:ring-2 focus:ring-gray-900 outline-none resize-none"
           />
         </div>
-        <div>
-          <label className="block text-[11px] font-medium text-gray-500 mb-1">Deduction</label>
-          <div className="flex gap-2">
-            <select
-              value={formData.modifierType}
-              onChange={(e) => onChange({ ...formData, modifierType: e.target.value })}
-              className="w-2/5 px-2 py-1.5 border border-gray-200 rounded-lg text-[13px] bg-white focus:ring-2 focus:ring-gray-900 outline-none"
-            >
-              <option value="AMOUNT">Flat ₦</option>
-              <option value="PERCENTAGE">%</option>
-            </select>
-            <input
-              type="number"
-              step="any"
-              required
-              value={formData.priceModifier}
-              onChange={(e) => onChange({ ...formData, priceModifier: parseFloat(e.target.value) || 0 })}
-              className="w-3/5 px-2.5 py-1.5 border border-gray-200 rounded-lg text-[13px] bg-white focus:ring-2 focus:ring-gray-900 outline-none"
-              placeholder={formData.modifierType === 'PERCENTAGE' ? '15' : '15000'}
-            />
-          </div>
-        </div>
       </div>
       <div className="flex justify-end gap-2 pt-1">
         <button

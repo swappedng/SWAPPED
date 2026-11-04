@@ -341,14 +341,7 @@ export default function PhoneModelsPage() {
                     </td>
                     <td className="px-6 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/admin/phone-models/${phone.id}/checklist`}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-lg transition"
-                          title={`Configure inspection checklist for ${phone.model}`}
-                        >
-                          <Sliders className="w-3 h-3" />
-                          Checklist
-                        </Link>
+                     
                         <button
                           type="button"
                           onClick={() => {

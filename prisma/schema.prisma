@@ -230,8 +230,6 @@ model ConditionAttributeOption {
   label         String
   description   String?
   imagePath     String?
-  priceModifier Float                   @default(1.0)
-  modifierType  PriceModifierType       @default(AMOUNT)
   isActive      Boolean                 @default(true)
   order         Int                     @default(0)
   createdAt     DateTime                @default(now())
