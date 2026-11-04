@@ -87,7 +87,6 @@ function SwapsPageContent() {
   return (
     <div className="space-y-7">
       <header className="border-b border-stone-200 pb-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Operations / Requests</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Customer requests</h1>
         <p className="mt-2 text-sm text-slate-500">Review estimates, customer details, and swap lifecycle.</p>
         {pendingApproval > 0 && (

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeftRight, CalendarDays, CircleHelp, ExternalLink, LayoutDashboard, Menu, SlidersHorizontal, Smartphone, Tag, X } from "lucide-react";
+import { ArrowLeftRight, CalendarDays, CircleHelp, ExternalLink, LayoutDashboard, Menu, Smartphone, Tag, X } from "lucide-react";
 
 const groups = [
   { label: "OPERATIONS", items: [
@@ -14,7 +14,6 @@ const groups = [
   { label: "CATALOGUE & PRICING", items: [
     { href: "/admin/phone-models", label: "Buying Prices", icon: Smartphone },
     { href: "/admin/selling-prices", label: "Selling Prices", icon: Tag },
-    { href: "/admin/condition-attributes", label: "Inspection Checklist", icon: SlidersHorizontal },
   ] },
 ];
 
