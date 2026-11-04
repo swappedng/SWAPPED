@@ -142,10 +142,21 @@ export async function POST(req: Request) {
           status: 'SUBMITTED',
           conditions: {
             create: Array.isArray(conditions)
-              ? conditions.map(({ groupKey, value }: { groupKey: string; value: string }) => ({
-                  groupKey: groupKey as ConditionType,
-                  value,
-                }))
+              ? conditions.map(({ groupKey, value }: { groupKey: string; value: string }) => {
+                  // Map lowercase groupKey to ConditionType enum
+                  const keyMap: Record<string, ConditionType> = {
+                    battery: ConditionType.BATTERY,
+                    screen: ConditionType.SCREEN,
+                    faceid: ConditionType.FACE_ID,
+                    backglass: ConditionType.BACK_GLASS,
+                    body: ConditionType.BODY,
+                    sim: ConditionType.SIM,
+                  };
+                  return {
+                    groupKey: keyMap[groupKey.toLowerCase()] || ConditionType.BODY,
+                    value,
+                  };
+                })
               : [],
           },
         },
