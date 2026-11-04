@@ -41,7 +41,8 @@ export default function AdminDashboard() {
 
   return <div className="space-y-8">
     <header className="flex flex-col gap-5 border-b border-stone-200 pb-7 sm:flex-row sm:items-end sm:justify-between">
-      <div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Workspace / Overview</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[34px]">Good to have you here.</h1><p className="mt-2 text-sm text-slate-500">A clear view of requests, bookings, and quote setup.</p></div>
+      <div>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[34px]">Good to have you here.</h1><p className="mt-2 text-sm text-slate-500">A clear view of requests, bookings, and quote setup.</p></div>
       <button 
         onClick={async () => {
           setIsRefreshing(true);
