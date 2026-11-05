@@ -120,7 +120,7 @@ export function UpgradePhoneStep({
   return (
     <StepCard
       title="Which iPhone would you like next?"
-      description="Only compatible upgrades are shown."
+      description="Only higher and available upgrades are shown."
       showBackButton
       onBack={onBack}
       onContinue={handleContinue}

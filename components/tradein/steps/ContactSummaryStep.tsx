@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 
 const money = (value: number) => `₦${Math.max(0, value).toLocaleString()}`;
 
@@ -17,6 +17,7 @@ export interface ContactSummaryStepProps {
   phone: string;
   onEmailChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
+  onBack: () => void;
   onContinue: () => void;
 }
 
@@ -30,6 +31,7 @@ export function ContactSummaryStep({
   phone,
   onEmailChange,
   onPhoneChange,
+  onBack,
   onContinue,
 }: ContactSummaryStepProps) {
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -152,10 +154,24 @@ export function ContactSummaryStep({
           </div>
         </div>
 
-        <Button type="submit" variant="brand" disabled={!valid} className="mt-4 h-11 w-full font-medium">
-          Continue
-          <ArrowRight aria-hidden="true" />
-        </Button>
+        <div className="mt-4 flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="h-11 border-[#4c00bd]/20 px-6 text-sm font-semibold text-[#4c00bd] hover:bg-[#f3effa]"
+          >
+            Back
+          </Button>
+          <Button
+            type="submit"
+            variant="brand"
+            disabled={!valid}
+            className="h-11 flex-1 font-medium"
+          >
+            Continue
+          </Button>
+        </div>
         <p className="mt-2.5 text-center text-xs text-[#69717d]">
           Next, choose how you’d like to complete your swap.
         </p>

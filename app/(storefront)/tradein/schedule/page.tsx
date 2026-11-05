@@ -2,10 +2,8 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import {
   AppointmentScheduler,
-  AppointmentDetails,
   AppointmentFormData,
 } from "@/components/tradein/ui/AppointmentScheduler";
 
@@ -15,9 +13,6 @@ function SchedulePageContent() {
       date: null,
       time: null,
     });
-  const [appointmentData, setAppointmentData] =
-    useState<AppointmentDetails | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const swapId = searchParams.get("swapId");
@@ -27,7 +22,7 @@ function SchedulePageContent() {
   };
 
   const handleBack = () => {
-    router.back();
+    router.push('/tradein');
   };
 
   return (
@@ -38,22 +33,12 @@ function SchedulePageContent() {
           className=" "
         >
           <div className=" px-5 py-7 sm:px-9 sm:py-8">
-            <button
-              onClick={handleBack}
-              className="mb-6 flex items-center gap-2 text-sm text-[#69717d] hover:text-[#192331] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-
             <AppointmentScheduler
               formData={appointmentFormData}
               setFormData={setAppointmentFormData}
-              onDataChange={setAppointmentData}
-              onValidationChange={() => {}}
               swapId={swapId}
+              onBack={handleBack}
               onComplete={handleComplete}
-              isSaving={isSaving}
             />
           </div>
         </section>

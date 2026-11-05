@@ -41,9 +41,12 @@ export function useTradeInFlow(catalogue: Catalogue) {
   const [phone, setPhone] = useState("");
   const [swapMethod, setSwapMethod] = useState<SwapMethod | "">("");
   const [savedSwapId, setSavedSwapId] = useState("");
+  const [hasRestoredState, setHasRestoredState] = useState(false);
 
   // Persist state to localStorage whenever it changes
   useEffect(() => {
+    if (!hasRestoredState) return;
+
     const state = {
       step,
       tradeIn,
@@ -54,13 +57,13 @@ export function useTradeInFlow(catalogue: Catalogue) {
       savedSwapId,
     };
     localStorage.setItem('tradeInFlowState', JSON.stringify(state));
-  }, [step, tradeIn, upgrade, email, phone, swapMethod, savedSwapId]);
+  }, [hasRestoredState, step, tradeIn, upgrade, email, phone, swapMethod, savedSwapId]);
 
   // Restore state from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('tradeInFlowState');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem('tradeInFlowState');
+      if (saved) {
         const state = JSON.parse(saved);
         setStep(state.step || INITIAL_TRADE_IN_STEP);
         setTradeIn(state.tradeIn || emptyTradeInDetails);
@@ -69,9 +72,11 @@ export function useTradeInFlow(catalogue: Catalogue) {
         setPhone(state.phone || "");
         setSwapMethod(state.swapMethod || "");
         setSavedSwapId(state.savedSwapId || "");
-      } catch (e) {
-        console.error('Failed to restore trade-in flow state:', e);
       }
+    } catch (e) {
+      console.error('Failed to restore trade-in flow state:', e);
+    } finally {
+      setHasRestoredState(true);
     }
   }, []);
 

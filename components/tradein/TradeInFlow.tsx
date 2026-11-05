@@ -168,6 +168,7 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
             phone={phone}
             onEmailChange={setEmail}
             onPhoneChange={setPhone}
+            onBack={goToPreviousStep}
             onContinue={() => {
               saveSwap(); // Fire and forget
               goToNextStep();
