@@ -1,6 +1,5 @@
 import { FaqSection } from "@/components/home/FaqSection";
 import { HeroSection } from "@/components/home/HeroSection";
-import { Footer } from "@/components/home/Footer";
 import { LandingReveal } from "@/components/home/LandingReveal";
 import { Header } from "@/components/home/Header";
 import { ProcessSection } from "@/components/home/ProcessSection";
@@ -23,7 +22,6 @@ export default function Home() {
         <StoriesSection />
         <FaqSection />
       </main>
-      <Footer />
     </div>
   );
 }

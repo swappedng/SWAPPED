@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "./providers";
 import { Geist } from "next/font/google";
+import { Footer } from "@/components/home/Footer";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -24,6 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={geist.variable}>
+      <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" />
+      </head>
       <body className={geist.className}>
         <AuthProvider>
           {/* <header className="py-6 px-6 bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
@@ -48,6 +52,7 @@ export default function RootLayout({
           </div>
         </header> */}
           <main className="min-h-screen">{children}</main>
+          <Footer />
         </AuthProvider>
       </body>
     </html>
