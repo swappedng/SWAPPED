@@ -96,9 +96,6 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  margin-top: 8px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line);
   font-size: 14px;
 }
 .foot-bot a { color: inherit; text-decoration-color: var(--lav); }

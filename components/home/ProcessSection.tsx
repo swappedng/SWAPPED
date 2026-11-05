@@ -28,7 +28,7 @@ const steps: ProcessStep[] = [
   {
     number: "03",
     title: "Swap it your way",
-    copy: "Choose pickup or a store visit. We'll inspect your device, confirm its value, and complete your swap.",
+    copy: "Yours or mine? We'll inspect your device, confirm its value, and complete your swap wherever you want.",
     image: "/steps-illustrations/step-3.png",
   },
 ];
@@ -119,10 +119,7 @@ export function ProcessSection() {
             >
               Effortless Steps to Upgrade
             </h2>
-            <p data-landing-reveal className="m-0 max-w-[46ch] text-base leading-[1.45] text-[#69717d] [--reveal-delay:90ms] max-[759px]:text-[14px]">
-              Three steps, two ways to swap, and a clear breakdown before you
-              commit.
-            </p>
+      
           </header>
         </div>
         <div className="relative">
