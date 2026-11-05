@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { getAvailability } from "@/lib/api/endpoints/customer/availability";
 import { createTradeInAppointment } from "@/lib/api/endpoints/customer/tradein";
 import { AvailabilityBlock } from "@/lib/api/types/tradein";
@@ -235,36 +235,33 @@ export function AppointmentScheduler({
   };
 
   return (
-    <div className="w-full sm:w-fit max-w-full mx-auto overflow-hidden rounded-[28px] border border-[#e7e2eb] bg-[#fffdfb] shadow-[0_20px_50px_rgba(25,35,49,0.05)]">
+    <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-[#e7e2eb] bg-[#fffdfb] p-5 shadow-[0_20px_50px_rgba(25,35,49,0.05)] sm:p-7">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 py-5 border-b border-[#e7e2eb]">
+      <div className="mb-5 flex items-center gap-4">
         <button
           type="button"
           onClick={onBack}
-          className="flex shrink-0 items-center gap-2 text-sm text-[#69717d] transition-colors hover:text-[#192331]"
+          className="flex shrink-0 items-center gap-2 text-sm font-medium text-[#69717d] transition-colors hover:text-[#192331]"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
-        <div className="w-13 h-13 rounded-full border border-[#e7e2eb] flex items-center justify-center flex-shrink-0">
-          <Clock className="w-6 h-6 text-[#69717d]" />
-        </div>
-        <div>
-          <h1 className="text-base font-semibold text-[#192331]">
+        <div className="min-w-0">
+          <h1 className="text-lg font-semibold tracking-tight text-[#192331] sm:text-xl">
             Book an appointment
           </h1>
-          <p className="text-sm text-[#69717d]">
+          <p className="text-sm leading-relaxed text-[#69717d]">
             Pick a day, then choose a time.
           </p>
         </div>
       </div>
 
       {/* Body - Calendar and Time Panel */}
-      <div className="flex flex-col sm:flex-row">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_200px]">
         {/* Calendar Section - Fixed width */}
-        <div className="flex-none p-6 w-full sm:w-[340px]">
+        <div className="w-full max-w-[360px]">
           {/* Calendar header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-3 flex items-center justify-between">
             <button
               type="button"
               onClick={goToPreviousMonth}
@@ -289,9 +286,9 @@ export function AppointmentScheduler({
           </div>
 
           {/* Day names */}
-          <div className="grid grid-cols-7 gap-1 text-center mb-2">
+          <div className="mb-1 grid grid-cols-7 gap-1 text-center">
             {DAYS.map((day) => (
-              <div key={day} className="text-xs text-[#69717d] py-2">
+              <div key={day} className="py-1.5 text-xs text-[#69717d]">
                 {day.slice(0, 3)}
               </div>
             ))}
@@ -317,7 +314,7 @@ export function AppointmentScheduler({
                   onClick={() => handleDateClick(day)}
                   disabled={isUnavailable}
                   className={`
-                    aspect-square rounded-full flex items-center justify-center text-sm
+                    h-8 w-full rounded-full flex items-center justify-center text-sm
                     transition-colors relative
                     ${isUnavailable ? "text-[#b4b4be] cursor-default" : "hover:bg-[#f3f2f8] cursor-pointer"}
                     ${isOtherMonth ? "text-[#b4b4be]" : ""}
@@ -332,15 +329,9 @@ export function AppointmentScheduler({
           </div>
         </div>
 
-        {/* Time Panel - slides in from the right on desktop, from below on mobile */}
-        <div
-          className={`
-            flex-none transition-all duration-450 ease-out overflow-hidden
-            border-t sm:border-t-0 sm:border-l border-[#e7e2eb]
-            ${date ? "w-full sm:w-[240px] opacity-100 max-h-[500px]" : "w-full sm:w-0 opacity-0 max-h-0"}
-          `}
-        >
-          <div className="h-full p-6 flex flex-col">
+        {/* Time Panel */}
+        {date && (
+          <div className="min-w-0 border-t border-[#e7e2eb] pt-4 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
             <h3 className="text-sm font-semibold text-[#192331] mb-1">
               {selectedDayName}, {date?.getDate()}{" "}
               {date ? MONTHS[date.getMonth()].slice(0, 3) : ""}
@@ -348,12 +339,12 @@ export function AppointmentScheduler({
             <p className="text-xs text-[#69717d] mb-3">8:00 am – 5:00 pm</p>
 
             <div
-              className="flex-1 min-h-0 max-h-[330px] overflow-y-auto no-scf space-y-2 pr-2"
+              className="max-h-56 space-y-2 overflow-y-auto pr-2 no-scf"
               style={{
                 WebkitMaskImage:
-                  "linear-gradient(to bottom, #000 calc(100% - 28px), transparent)",
+                  "linear-gradient(to bottom, #000 calc(100% - 20px), transparent)",
                 maskImage:
-                  "linear-gradient(to bottom, #000 calc(100% - 28px), transparent)",
+                  "linear-gradient(to bottom, #000 calc(100% - 20px), transparent)",
               }}
             >
               {availableTimeSlots.map((slot) => (
@@ -363,7 +354,7 @@ export function AppointmentScheduler({
                   onClick={() => handleTimeClick(slot)}
                   disabled={slot.disabled}
                   className={`
-                    w-full h-11 rounded-xl border text-sm font-medium transition-all
+                    w-full h-10 rounded-xl border text-sm font-medium transition-all
                     ${
                       slot.disabled
                         ? "border-[#e7e2eb] text-[#b4b4be] bg-[#f3f2f8] cursor-default"
@@ -377,12 +368,12 @@ export function AppointmentScheduler({
               ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between gap-4 px-6 py-5 border-t border-[#e7e2eb] min-h-[77px]">
-        <p className="text-sm text-[#69717d]">
+      <div className="mt-4 flex flex-col gap-3 border-t border-[#e7e2eb] pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm leading-relaxed text-[#69717d]">
           {!date && "Select a date to see available times."}
           {date && !time && (
             <>
@@ -398,15 +389,12 @@ export function AppointmentScheduler({
             </>
           )}
         </p>
-      </div>
-
-      <div className="mt-6 flex justify-end">
         <Button
           type="button"
           onClick={handleNext}
           disabled={!date || !time || isSaving}
           variant="brand"
-          className="h-11 px-7 font-medium"
+          className="h-11 w-full font-medium sm:w-auto sm:px-7"
         >
           {isSaving ? "Saving..." : "Book Appointment"}
         </Button>

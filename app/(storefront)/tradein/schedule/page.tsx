@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Brand } from "@/components/home/Brand";
 import {
   AppointmentScheduler,
   AppointmentFormData,
@@ -26,23 +27,17 @@ function SchedulePageContent() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 text-[#192331] sm:px-6 sm:py-0">
-      <div className="mx-auto max-w-2xl pt-16">
-        <section
-          aria-labelledby="schedule-title"
-          className=" "
-        >
-          <div className=" px-5 py-7 sm:px-9 sm:py-8">
-            <AppointmentScheduler
-              formData={appointmentFormData}
-              setFormData={setAppointmentFormData}
-              swapId={swapId}
-              onBack={handleBack}
-              onComplete={handleComplete}
-            />
-          </div>
-        </section>
-      </div>
+    <main className="min-h-screen bg-background px-4 py-6 text-[#192331] sm:px-6">
+      <header className="mx-auto mb-8 flex h-16 max-w-[1640px] items-center justify-start px-1 sm:px-3">
+        <Brand />
+      </header>
+      <AppointmentScheduler
+        formData={appointmentFormData}
+        setFormData={setAppointmentFormData}
+        swapId={swapId}
+        onBack={handleBack}
+        onComplete={handleComplete}
+      />
     </main>
   );
 }
