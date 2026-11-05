@@ -9,8 +9,7 @@ import {
   UpgradeCategoryStep,
   UpgradePhoneStep,
 } from "./steps/UpgradeQuestionSteps";
-import { Header } from "../home/Header";
-import { TradeInProgressBar } from "./ui/TradeInProgressBar";
+import { TradeInHeader } from "./TradeInHeader";
 import { Catalogue, useTradeInFlow } from "./hooks/useTradeInFlow";
 
 export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
@@ -61,15 +60,13 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
   return (
     <main
       ref={pageTop}
-      className="min-h-screen bg-background px-4 py-6 text-[#192331] sm:px-6 sm:py-0"
+      className="min-h-screen bg-background text-[#192331]"
     >
-      <Header />
-      <div className="mx-auto max-w-2xl pt-8">
-        <TradeInProgressBar
-          currentStep={currentStepPosition + 1}
-          totalSteps={totalSteps}
-        />
-
+      <TradeInHeader
+        currentStep={currentStepPosition + 1}
+        totalSteps={totalSteps}
+      />
+      <div className="mx-auto max-w-2xl px-4 pt-8 sm:px-6">
         {isPhoneSelectionStep && (
           <PhoneQuestionStep
             options={phoneModels}
