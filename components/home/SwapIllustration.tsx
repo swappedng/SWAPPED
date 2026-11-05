@@ -347,10 +347,10 @@ export function SwapIllustration() {
   return (
     <figure
       data-landing-reveal
-      className="relative mx-auto mt-5 grid max-w-[720px] items-end sm:mt-4"
+      className="relative mx-auto mt-5 grid max-w-[800px] items-end sm:mt-4"
       aria-label="Illustrations of iPhones changing through the generations."
     >
-      <div className="relative flex h-[168px] w-full items-end justify-center sm:h-[224px]">
+      <div className="relative flex h-[200px] w-full items-end justify-center sm:h-[280px] lg:h-[320px]">
         <div
           ref={frameRef}
           className="relative aspect-[2.3/2.83] h-full"

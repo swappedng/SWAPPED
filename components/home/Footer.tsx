@@ -89,7 +89,7 @@ async function makeWordmark() {
 }
 
 export function Footer({
-  email = "hello@swapped.com",
+  email = "swapped.ng@gmail.com",
   designer = "Funmi Amusan",
   designerUrl = "https://funmiamusan.com",
   tagline = "Upgrade your iPhone without paying full price.",

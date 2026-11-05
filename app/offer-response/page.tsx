@@ -227,7 +227,7 @@ function OfferResponseContent() {
               : `This offer is currently ${offer.status.toLowerCase()}`}
           </p>
           <p className="text-xs text-slate-500 mt-1">
-            Please reach out to SWAPPED support at support@swapped.com if you need assistance.
+            Please reach out to SWAPPED support at swapped.ng@gmail.com if you need assistance.
           </p>
         </div>
       ) : (

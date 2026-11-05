@@ -45,26 +45,31 @@ export function HeroSection() {
         </div>
       </div>
 
-      <SwapIllustration />
+      <div className="relative mx-auto max-w-[1080px]">
+        <SwapIllustration />
 
-      <ul data-landing-reveal className="mx-auto mt-6 grid max-w-[960px] grid-cols-1 rounded-2xl border border-[#e7e2eb] bg-white/55 px-6 py-2 text-left [--reveal-delay:90ms] sm:grid-cols-3 sm:px-2 sm:py-6">
-        {proofPoints.map(({ value, label, detail }) => (
-          <li
-            key={label}
-            className="flex items-center gap-5 border-b border-[#e7e2eb] py-5 last:border-0 sm:justify-center sm:gap-3 sm:border-b-0 sm:border-r sm:px-4 sm:py-0 lg:gap-4"
-          >
-            <p className="min-w-8 text-[40px] font-medium leading-none tracking-[-0.06em] text-[#4c00bd] sm:text-[44px]">
-              {value}
-            </p>
-            <div>
-              <p className="text-sm font-medium text-[#293140]">{label}</p>
-              <p className="mt-1 text-[11px] leading-relaxed tracking-normal text-[#747b84]">
-                {detail}
+        <ul
+          data-landing-reveal
+          className="relative z-10 mx-auto -mt-6 grid max-w-[960px] grid-cols-1 rounded-2xl border border-[#e7e2eb]/90 bg-white/75 px-6 py-2 text-left shadow-[0_12px_36px_rgba(53,28,79,0.12)] backdrop-blur-md [--reveal-delay:90ms] sm:absolute sm:inset-x-0 sm:bottom-0 sm:mt-0 sm:grid-cols-3 sm:px-2 sm:py-6"
+        >
+          {proofPoints.map(({ value, label, detail }) => (
+            <li
+              key={label}
+              className="flex items-center gap-5 border-b border-[#e7e2eb] py-5 last:border-0 sm:justify-center sm:gap-3 sm:border-b-0 sm:border-r sm:px-4 sm:py-0 lg:gap-4"
+            >
+              <p className="min-w-8 text-[40px] font-medium leading-none tracking-[-0.06em] text-[#4c00bd] sm:text-[44px]">
+                {value}
               </p>
-            </div>
-          </li>
-        ))}
-      </ul>
+              <div>
+                <p className="text-sm font-medium text-[#293140]">{label}</p>
+                <p className="mt-1 text-[11px] leading-relaxed tracking-normal text-[#747b84]">
+                  {detail}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

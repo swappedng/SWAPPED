@@ -253,7 +253,7 @@ function generateEmailHTML(swapDetails: {
     <div style="text-align: center;">
       <p>Have questions? We're here to help!</p>
       <p style="font-size: 14px; color: #666;">
-        Contact us at <strong>support@swapped.com</strong><br>
+        Contact us at <strong>swapped.ng@gmail.com</strong><br>
         or call <strong>+234-XXX-XXX-XXXX</strong>
       </p>
     </div>
@@ -349,7 +349,7 @@ export async function sendRevisedOfferEmail({
       <a href="${acceptUrl}" class="btn btn-accept">✓ Accept offer</a>
       <a href="${rejectUrl}" class="btn btn-reject">✗ Decline offer</a>
     </div>
-    <p class="expiry">These links expire in 72 hours. If you have questions, contact us at <strong>support@swapped.com</strong>.</p>
+    <p class="expiry">These links expire in 72 hours. If you have questions, contact us at <strong>swapped.ng@gmail.com</strong>.</p>
 
     <div class="footer">SWAPPED · The easiest way to upgrade your iPhone</div>
   </div>
@@ -469,7 +469,7 @@ export async function sendAppointmentConfirmationEmail({
       <div class="row"><span class="label">Method</span><span class="value">${getSwapMethodLabel(swapMethod)}</span></div>
     </div>
 
-    <p>Please arrive on time for your appointment. If you need to reschedule, please contact us at <strong>support@swapped.com</strong>.</p>
+    <p>Please arrive on time for your appointment. If you need to reschedule, please contact us at <strong>swapped.ng@gmail.com</strong>.</p>
 
     <div class="footer">SWAPPED · The easiest way to upgrade your iPhone</div>
   </div>

@@ -7,18 +7,15 @@ export interface TradeInHeaderProps {
   totalSteps: number;
 }
 
-export function TradeInHeader({
-  currentStep,
-  totalSteps,
-}: TradeInHeaderProps) {
+export function TradeInHeader({ currentStep, totalSteps }: TradeInHeaderProps) {
   return (
     <header className="w-full bg-white">
       <div className="mx-auto flex h-16 max-w-[1640px] items-center justify-between gap-6 px-4 sm:px-9">
         <Brand />
         <a
-          href="mailto:support@swapped.com"
-          aria-label="Email us at support@swapped.com"
-          className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-[#4c00bd] text-white transition-colors hover:bg-[#5a0fcc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4c00bd]"
+          href="mailto:swapped.ng@gmail.com"
+          aria-label="Email us at swapped.ng@gmail.com"
+          className="group relative flex h-11 w-11 items-center justify-center  text-[#4c00bd] transition-colors  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4c00bd]"
         >
           <Mail className="h-5 w-5" aria-hidden="true" />
           <span
@@ -29,10 +26,7 @@ export function TradeInHeader({
           </span>
         </a>
       </div>
-      <TradeInProgressBar
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
+      <TradeInProgressBar currentStep={currentStep} totalSteps={totalSteps} />
     </header>
   );
 }
