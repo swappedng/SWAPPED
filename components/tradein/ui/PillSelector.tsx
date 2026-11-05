@@ -19,7 +19,7 @@ export function PillSelector({
   options,
   value,
   onChange,
-  size = "md",
+  size = "sm",
   className,
 }: PillSelectorProps) {
   const sizeClasses = {

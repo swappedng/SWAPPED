@@ -217,3 +217,24 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PATCH(req: Request) {
+  try {
+    const data = await req.json();
+    const { swapId, swapMethod } = data;
+
+    if (!swapId || !swapMethod) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const updatedSwap = await prisma.swap.update({
+      where: { id: swapId },
+      data: { swapMethod },
+    });
+
+    return NextResponse.json(updatedSwap, { status: 200 });
+  } catch (error) {
+    console.error('Error updating swap:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+

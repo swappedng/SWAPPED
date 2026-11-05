@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeftRight, CalendarDays, CircleHelp, ExternalLink, LayoutDashboard, Menu, Smartphone, Tag, X } from "lucide-react";
+import { ArrowLeftRight, Calendar, CalendarDays, CircleHelp, ExternalLink, LayoutDashboard, Menu, Smartphone, Tag, X } from "lucide-react";
 
 const groups = [
   { label: "OPERATIONS", items: [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/swaps", label: "Customer requests", icon: ArrowLeftRight },
     { href: "/admin/appointments", label: "Appointments", icon: CalendarDays },
+    { href: "/admin/availability", label: "Availability", icon: Calendar },
   ] },
   { label: "CATALOGUE & PRICING", items: [
     { href: "/admin/phone-models", label: "Buying Prices", icon: Smartphone },

@@ -18,6 +18,8 @@ export function SwapMethodStep({
   isSaving: boolean;
   onBack?: () => void;
 }) {
+  const canContinue = value && !isSaving;
+
   return (
     <StepCard
       title="How should we complete your swap?"
@@ -25,7 +27,7 @@ export function SwapMethodStep({
       showBackButton={Boolean(onBack)}
       onBack={onBack}
       onContinue={onComplete}
-      continueDisabled={!value || isSaving}
+      continueDisabled={!canContinue}
       continueLabel={isSaving ? 'Saving…' : 'Complete request'}
     >
       <OptionCardList

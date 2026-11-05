@@ -414,3 +414,128 @@ export async function sendAdminRejectionNotification({
     return { success: false, error: err };
   }
 }
+
+// ─── Appointment booking email ─────────────────────────────────────────────────
+
+export async function sendAppointmentConfirmationEmail({
+  to,
+  appointmentDetails,
+}: {
+  to: string;
+  appointmentDetails: {
+    date: string;
+    time: string;
+    swapMethod: SwapMethod;
+  };
+}): Promise<{ success: boolean; error?: any }> {
+  const { date, time, swapMethod } = appointmentDetails;
+  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment Confirmed – SWAPPED</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #333; background: #f5f5f5; margin: 0; padding: 20px; }
+    .wrap { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    h1 { font-size: 22px; color: #000; margin-bottom: 6px; }
+    p { line-height: 1.6; }
+    .section { background: #f9f9f9; border-radius: 6px; padding: 20px; margin: 20px 0; }
+    .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .row:last-child { border-bottom: none; }
+    .label { color: #666; }
+    .value { font-weight: 600; color: #000; }
+    .highlight { font-size: 20px; font-weight: bold; color: #000; }
+    .footer { text-align: center; margin-top: 32px; font-size: 13px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:24px;font-size:22px;font-weight:bold;">SWAPPED</div>
+    <h1>Appointment Confirmed</h1>
+    <p>Your appointment has been successfully scheduled. Here are the details:</p>
+
+    <div class="section">
+      <h2 style="margin-top:0;font-size:16px;">Appointment Details</h2>
+      <div class="row"><span class="label">Date</span><span class="value">${formattedDate}</span></div>
+      <div class="row"><span class="label">Time</span><span class="value">${time}</span></div>
+      <div class="row"><span class="label">Method</span><span class="value">${getSwapMethodLabel(swapMethod)}</span></div>
+    </div>
+
+    <p>Please arrive on time for your appointment. If you need to reschedule, please contact us at <strong>support@swapped.com</strong>.</p>
+
+    <div class="footer">SWAPPED · The easiest way to upgrade your iPhone</div>
+  </div>
+</body>
+</html>`;
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM,
+      to: [to],
+      subject: 'Appointment Confirmed – SWAPPED',
+      html,
+    });
+    if (error) return { success: false, error };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err };
+  }
+}
+
+export async function sendAdminAppointmentNotification({
+  swap,
+  appointment,
+}: {
+  swap: { id: string; contactName?: string | null; contactEmail?: string | null; contactPhone?: string | null };
+  appointment: { date: string; time: string; swapMethod: SwapMethod };
+}): Promise<{ success: boolean; error?: any }> {
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+  if (!adminEmail) return { success: false, error: 'No admin notification email configured' };
+
+  const formattedDate = new Date(appointment.date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>New appointment booked</title></head>
+<body style="font-family:sans-serif;color:#333;padding:20px;">
+  <h2>New appointment booked</h2>
+  <p>Swap ID: <strong>${swap.id}</strong></p>
+  <p>Customer: ${swap.contactName ?? 'Unknown'}</p>
+  <p>Email: ${swap.contactEmail ?? 'no email'}</p>
+  <p>Phone: ${swap.contactPhone ?? 'no phone'}</p>
+  <p>Appointment details:</p>
+  <ul>
+    <li>Date: ${formattedDate}</li>
+    <li>Time: ${appointment.time}</li>
+    <li>Method: ${getSwapMethodLabel(appointment.swapMethod)}</li>
+  </ul>
+  <p><a href="${APP_BASE_URL}/admin/swaps/${swap.id}">View swap in admin →</a></p>
+</body>
+</html>`;
+
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: [adminEmail],
+      subject: `New appointment booked – Swap ${swap.id.slice(-8).toUpperCase()}`,
+      html,
+    });
+    if (error) return { success: false, error };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err };
+  }
+}

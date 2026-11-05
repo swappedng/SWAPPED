@@ -44,13 +44,13 @@ export function OptionCardList<T = string>({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "group relative flex w-full items-start justify-between rounded-2xl border p-3.5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#4c00bd]/30 active:scale-[0.99]",
+              "group relative flex w-full items-start justify-between rounded-xl border p-3 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#4c00bd]/30 active:scale-[0.99]",
               isSelected
                 ? "border-[#4c00bd] bg-[#f3effa] text-[#192331]"
                 : "border-[#e7e2eb] bg-[#fffdfb] text-[#192331] hover:border-[#4c00bd]/35 hover:bg-[#f8f5fc]"
             )}
           >
-            <span className="flex items-center gap-3.5 pr-2">
+            <span className="flex items-center gap-3 pr-2">
               {option.image && (
                 <span
                   className={cn(
@@ -70,7 +70,7 @@ export function OptionCardList<T = string>({
               )}
               <span className="flex flex-col">
                 <span className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-[#192331]">
+                  <span className="text-[13px] font-semibold text-[#192331]">
                     {option.label}
                   </span>
                   {option.badge && (
@@ -83,7 +83,7 @@ export function OptionCardList<T = string>({
                   )}
                 </span>
                 {option.description && (
-                  <span className="mt-0.5 text-xs leading-relaxed text-[#69717d]">
+                  <span className="mt-0.5 text-xs leading-relaxed tracking-relaxed text-[#69717d]">
                     {option.description}
                   </span>
                 )}

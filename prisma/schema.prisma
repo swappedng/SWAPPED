@@ -253,3 +253,17 @@ model ModelConditionModifier {
   @@unique([model, optionId])
   @@index([model])
 }
+
+// ─── Availability ───────────────────────────────────────────────────────────────
+
+model AvailabilityBlock {
+  id                  String   @id @default(cuid())
+  date                String   // ISO date string (YYYY-MM-DD) - date with an exception (unavailable)
+  isUnavailable       Boolean  @default(true) // If true, entire day is unavailable. If false, use hour ranges for partial unavailability.
+  unavailableStartHour Int?     // 0-23 - Start hour of unavailable time range (when isUnavailable=false)
+  unavailableEndHour   Int?     // 0-23 - End hour of unavailable time range (when isUnavailable=false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([date])
+}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef } from "react";
-import CalendlyWidget from "./CalendlyWidget";
 import SingleConditionQuestion from "./ui/SingleConditionQuestion";
 import { ContactSummaryStep } from "./steps/ContactSummaryStep";
 import { PhoneQuestionStep } from "./steps/PhoneQuestionStep";
@@ -36,8 +35,6 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
     swapMethod,
     setSwapMethod,
     savedSwapId,
-    showCalendly,
-    handleCalendlyClose,
     phoneModels,
     categories,
     selectedTradeIn,
@@ -46,6 +43,8 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
     newPhonePrice,
     availablePricesForCategory,
     saveSwap,
+    updateSwapMethod,
+    goToSchedule,
     selectTradeInPhone,
   } = flow;
 
@@ -65,7 +64,7 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
       className="min-h-screen bg-background px-4 py-6 text-[#192331] sm:px-6 sm:py-0"
     >
       <Header />
-      <div className="mx-auto max-w-2xl pt-16">
+      <div className="mx-auto max-w-2xl pt-8">
         <TradeInProgressBar
           currentStep={currentStepPosition + 1}
           totalSteps={totalSteps}
@@ -160,6 +159,7 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
               `${selectedTradeIn?.model || ""} ${tradeIn.storage}`.trim()
             }
             nextPhone={`${upgrade.model} ${upgrade.storage}`.trim()}
+            nextPhonePrice={newPhonePrice}
             category={
               categories.find((category) => category.id === upgrade.category)
                 ?.label || ""
@@ -168,29 +168,26 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
             phone={phone}
             onEmailChange={setEmail}
             onPhoneChange={setPhone}
-            onContinue={goToNextStep}
+            onContinue={() => {
+              saveSwap(); // Fire and forget
+              goToNextStep();
+            }}
           />
         )}
 
         {isMethodStep && (
           <SwapMethodStep
             value={swapMethod}
-            onSelect={setSwapMethod}
-            onComplete={saveSwap}
+            onSelect={(method) => {
+              setSwapMethod(method);
+              updateSwapMethod(method);
+            }}
+            onComplete={goToSchedule}
             isSaving={saving}
             onBack={goToPreviousStep}
           />
         )}
       </div>
-
-      <CalendlyWidget
-        isOpen={showCalendly}
-        onClose={handleCalendlyClose}
-        onScheduled={handleCalendlyClose}
-        swapId={savedSwapId}
-        swapMethod={swapMethod}
-        email={email}
-      />
     </main>
   );
 }

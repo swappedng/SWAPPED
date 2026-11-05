@@ -1,26 +1,73 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { SwapMethod } from '@/lib/api/types/enums';
+import {
+  sendAppointmentConfirmationEmail,
+  sendAdminAppointmentNotification,
+} from '@/app/lib/email';
+
+// Helper to convert Prisma enum to API enum
+function toApiSwapMethod(prismaMethod: string): SwapMethod {
+  return prismaMethod as SwapMethod;
+}
 
 export async function POST(req: Request) {
   try {
     const data = await req.json();
-    const { swapId, swapMethod, date, time } = data;
+    const { swapId, date, time, swapMethod } = data;
 
-    if (!swapId || !swapMethod || !date || !time) {
+    if (!swapId || !date || !time) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    if (!Object.values(SwapMethod).includes(swapMethod)) {
-      return NextResponse.json({ error: 'Invalid swap method' }, { status: 400 });
+    // Fetch swap details for email notifications and to get swapMethod if not provided
+    const swap = await prisma.swap.findUnique({
+      where: { id: swapId },
+      select: {
+        id: true,
+        contactName: true,
+        contactEmail: true,
+        contactPhone: true,
+        swapMethod: true,
+      },
+    });
+
+    if (!swap) {
+      return NextResponse.json({ error: 'Swap not found' }, { status: 404 });
     }
 
     const appointment = await prisma.appointment.create({
       data: {
         swapId,
-        swapMethod,
+        swapMethod: swapMethod || swap.swapMethod,
         date: new Date(date),
         time,
+      },
+    });
+
+    // Send email notifications
+    if (swap.contactEmail) {
+      await sendAppointmentConfirmationEmail({
+        to: swap.contactEmail,
+        appointmentDetails: {
+          date,
+          time,
+          swapMethod: toApiSwapMethod(swapMethod || swap.swapMethod),
+        },
+      });
+    }
+
+    await sendAdminAppointmentNotification({
+      swap: {
+        id: swap.id,
+        contactName: swap.contactName,
+        contactEmail: swap.contactEmail,
+        contactPhone: swap.contactPhone,
+      },
+      appointment: {
+        date,
+        time,
+        swapMethod: toApiSwapMethod(swapMethod || swap.swapMethod),
       },
     });
 

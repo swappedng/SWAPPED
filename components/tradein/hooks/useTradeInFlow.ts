@@ -41,7 +41,39 @@ export function useTradeInFlow(catalogue: Catalogue) {
   const [phone, setPhone] = useState("");
   const [swapMethod, setSwapMethod] = useState<SwapMethod | "">("");
   const [savedSwapId, setSavedSwapId] = useState("");
-  const [showCalendly, setShowCalendly] = useState(false);
+
+  // Persist state to localStorage whenever it changes
+  useEffect(() => {
+    const state = {
+      step,
+      tradeIn,
+      upgrade,
+      email,
+      phone,
+      swapMethod,
+      savedSwapId,
+    };
+    localStorage.setItem('tradeInFlowState', JSON.stringify(state));
+  }, [step, tradeIn, upgrade, email, phone, swapMethod, savedSwapId]);
+
+  // Restore state from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('tradeInFlowState');
+    if (saved) {
+      try {
+        const state = JSON.parse(saved);
+        setStep(state.step || INITIAL_TRADE_IN_STEP);
+        setTradeIn(state.tradeIn || emptyTradeInDetails);
+        setUpgrade(state.upgrade || { category: "", model: "", storage: "" });
+        setEmail(state.email || "");
+        setPhone(state.phone || "");
+        setSwapMethod(state.swapMethod || "");
+        setSavedSwapId(state.savedSwapId || "");
+      } catch (e) {
+        console.error('Failed to restore trade-in flow state:', e);
+      }
+    }
+  }, []);
 
   const {
     conditionGroups,
@@ -221,13 +253,13 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
     const category = categories.find((item) => item.id === upgrade.category);
     return category
       ? category.prices.filter(
-          (item) => rank(item.model) >= rank(selectedTradeIn?.model || ""),
+          (item) => rank(item.model) > rank(selectedTradeIn?.model || ""),
         )
       : [];
   }, [categories, upgrade.category, selectedTradeIn]);
 
   async function saveSwap() {
-    if (!swapMethod || saving) return;
+    if (saving) return;
     setSaving(true);
     try {
       // Build conditions array from the form state, filtering out empty answers
@@ -249,12 +281,11 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
         upgradeStorage: upgrade.storage,
         upgradePrice: newPhonePrice,
         amountToPay: newPhonePrice - tradeInValue,
-        swapMethod,
+        swapMethod: SwapMethod.HOME_PICKUP, // Default, will be updated when user selects
         contactEmail: email,
         contactPhone: phone,
       });
       setSavedSwapId(swap.id);
-      setShowCalendly(true);
     } catch (error) {
       console.error("Failed to save trade-in swap:", error);
     } finally {
@@ -262,10 +293,34 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
     }
   }
 
-  const handleCalendlyClose = () => {
-    setShowCalendly(false);
-    router.push(`/tradein/confirm?swapId=${encodeURIComponent(savedSwapId)}`);
-  };
+  async function updateSwapMethod(method: SwapMethod) {
+    if (!savedSwapId) return;
+    try {
+      await fetch('/api/swaps', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ swapId: savedSwapId, swapMethod: method }),
+      });
+    } catch (error) {
+      console.error("Failed to update swap method:", error);
+    }
+  }
+
+  function goToSchedule() {
+    if (!savedSwapId) return;
+    router.push(`/tradein/schedule?swapId=${encodeURIComponent(savedSwapId)}`);
+  }
+
+  function clearState() {
+    localStorage.removeItem('tradeInFlowState');
+    setStep(INITIAL_TRADE_IN_STEP);
+    setTradeIn(emptyTradeInDetails);
+    setUpgrade({ category: "", model: "", storage: "" });
+    setEmail("");
+    setPhone("");
+    setSwapMethod("");
+    setSavedSwapId("");
+  }
 
   return {
     step,
@@ -286,9 +341,6 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
     swapMethod,
     setSwapMethod,
     savedSwapId,
-    showCalendly,
-    setShowCalendly,
-    handleCalendlyClose,
     phoneModels,
     categories,
     selectedTradeIn,
@@ -297,6 +349,9 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
     newPhonePrice,
     availablePricesForCategory,
     saveSwap,
-    selectTradeInPhone
+    updateSwapMethod,
+    goToSchedule,
+    selectTradeInPhone,
+    clearState
   };
 }

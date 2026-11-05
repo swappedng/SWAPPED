@@ -24,7 +24,6 @@ export interface CreatedTradeInRequest { id: string; }
 
 export interface CreateTradeInAppointmentRequest {
   swapId: string;
-  swapMethod: SwapMethod;
   date: string;
   time: string;
 }
@@ -72,5 +71,30 @@ export interface SwapAuditLogEntry {
   newValue?: string | null;
   reason?: string | null;
   createdAt: string;
+}
+
+// ─── Availability ───────────────────────────────────────────────────────────────
+
+export interface AvailabilityBlock {
+  id: string;
+  date: string; // ISO date string (YYYY-MM-DD)
+  isUnavailable: boolean;
+  unavailableStartHour?: number | null; // 0-23
+  unavailableEndHour?: number | null; // 0-23
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAvailabilityBlockRequest {
+  date: string;
+  isUnavailable: boolean;
+  unavailableStartHour?: number | null;
+  unavailableEndHour?: number | null;
+}
+
+export interface UpdateAvailabilityBlockRequest {
+  isUnavailable?: boolean;
+  unavailableStartHour?: number | null;
+  unavailableEndHour?: number | null;
 }
 

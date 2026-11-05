@@ -11,6 +11,7 @@ export interface ContactSummaryStepProps {
   amountToPay: number;
   tradeInPhone: string;
   nextPhone: string;
+  nextPhonePrice: number;
   category: string;
   email: string;
   phone: string;
@@ -23,6 +24,7 @@ export function ContactSummaryStep({
   amountToPay,
   tradeInPhone,
   nextPhone,
+  nextPhonePrice,
   category,
   email,
   phone,
@@ -49,9 +51,7 @@ export function ContactSummaryStep({
     >
       <div className="px-5 pt-9 sm:px-9 sm:pt-11">
         <div className="text-center">
-          {/* <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4c00bd]">
-            You pay only · Estimated top-up
-          </p> */}
+      
           <h1
             id="estimate-title"
             className="mt-4 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-3xl font-semibold text-[#192331] sm:gap-x-3"
@@ -60,7 +60,7 @@ export function ContactSummaryStep({
             <span className="font-normal text-[#4c00bd]/25">–</span>
             <span className="whitespace-nowrap">{money(upper)}</span>
           </h1>
-          <p className="mt-2 text-sm text-[#69717d] sm:text-base">
+          <p className="mt-2 text-xs text-[#69717d] opacity-70 sm:text-sm">
             Final amount confirmed after we inspect your device.
           </p>
         </div>
@@ -96,7 +96,7 @@ export function ContactSummaryStep({
             >
               <div className="flex items-center justify-between gap-5 py-3 text-[#69717d]">
                 <span>{nextPhone}{category && ` · ${category}`}</span>
-                <span className="shrink-0">Your next iPhone</span>
+                <span className="shrink-0">{money(nextPhonePrice)}</span>
               </div>
               <div className="flex items-center justify-between gap-5 border-t border-[#e7e2eb] py-3 text-[#69717d]">
                 <span>Your trade-in estimate</span>
@@ -114,7 +114,7 @@ export function ContactSummaryStep({
 
       <form onSubmit={submit} className="mt-9 border-t border-[#e7e2eb] px-5 py-7 sm:px-9 sm:py-8">
         <h2 className="mb-5 text-xl font-semibold tracking-[-0.03em] text-[#192331]">
-          Where should we send your estimate?
+          Where should we send your estimate breakdown?
         </h2>
 
         <div className="grid gap-3 sm:grid-cols-2">
