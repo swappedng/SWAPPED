@@ -56,6 +56,17 @@ module.exports = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			}
+  		},
+  		keyframes: {
+  			'swap-pop': {
+  				'from': { opacity: '0', transform: 'translateY(-4px) scale(0.98)' },
+  				'to': { opacity: '1', transform: 'none' }
+  			},
+  			'swap-nudge': {
+  				'0%, 100%': { transform: 'translateX(0)' },
+  				'25%': { transform: 'translateX(-6px)' },
+  				'75%': { transform: 'translateX(6px)' }
+  			}
   		}
   	}
   },
