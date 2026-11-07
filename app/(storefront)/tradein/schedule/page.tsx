@@ -18,12 +18,12 @@ function SchedulePageContent() {
   const searchParams = useSearchParams();
   const swapId = searchParams.get("swapId");
 
-  const handleComplete = () => {
-    router.push(`/tradein/confirm?swapId=${encodeURIComponent(swapId || "")}`);
-  };
-
   const handleBack = () => {
     router.push('/tradein');
+  };
+
+  const handleSuccess = () => {
+    router.push('/success');
   };
 
   return (
@@ -36,7 +36,7 @@ function SchedulePageContent() {
         setFormData={setAppointmentFormData}
         swapId={swapId}
         onBack={handleBack}
-        onComplete={handleComplete}
+        onSuccess={handleSuccess}
       />
     </main>
   );

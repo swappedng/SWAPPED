@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import { getSwapMethodLabel, SwapMethod } from '@/lib/api/types/enums';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = 'SWAPPED <noreply@swapped.com>';
+const FROM = 'SWAPPED <noreply@swapped.com.ng>';
 const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 // ─── Confirmation email (existing) ───────────────────────────────────────────
@@ -26,7 +26,7 @@ export async function sendSwapConfirmationEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'SWAPPED <noreply@swapped.com>',
+      from: FROM,
       to: [to],
       subject: 'Your iPhone Swap Quote - SWAPPED',
       html: generateEmailHTML(swapDetails),
@@ -464,9 +464,9 @@ export async function sendAppointmentConfirmationEmail({
 
     <div class="section">
       <h2 style="margin-top:0;font-size:16px;">Appointment Details</h2>
-      <div class="row"><span class="label">Date</span><span class="value">${formattedDate}</span></div>
-      <div class="row"><span class="label">Time</span><span class="value">${time}</span></div>
-      <div class="row"><span class="label">Method</span><span class="value">${getSwapMethodLabel(swapMethod)}</span></div>
+      <div class="row"><span class="label">Date: </span><span class="value">${formattedDate}</span></div>
+      <div class="row"><span class="label">Time: </span><span class="value">${time}</span></div>
+      <div class="row"><span class="label">Method: </span><span class="value">${getSwapMethodLabel(swapMethod)}</span></div>
     </div>
 
     <p>Please arrive on time for your appointment. If you need to reschedule, please contact us at <strong>swapped.ng@gmail.com</strong>.</p>
@@ -513,7 +513,6 @@ export async function sendAdminAppointmentNotification({
 <body style="font-family:sans-serif;color:#333;padding:20px;">
   <h2>New appointment booked</h2>
   <p>Swap ID: <strong>${swap.id}</strong></p>
-  <p>Customer: ${swap.contactName ?? 'Unknown'}</p>
   <p>Email: ${swap.contactEmail ?? 'no email'}</p>
   <p>Phone: ${swap.contactPhone ?? 'no phone'}</p>
   <p>Appointment details:</p>

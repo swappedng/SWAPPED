@@ -9,7 +9,7 @@ declare global {
 export const prisma =
   (global.prisma && 'modelConditionModifier' in global.prisma ? global.prisma : undefined) ||
   new PrismaClient({
-    log: ['query'],
+    log: ['error'],
   });
 
 if (process.env.NODE_ENV !== 'production') global.prisma = prisma;

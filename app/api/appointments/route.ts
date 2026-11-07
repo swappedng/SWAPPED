@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { SwapMethod } from '@/lib/api/types/enums';
 import {
@@ -36,42 +36,64 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Swap not found' }, { status: 404 });
     }
 
-    const appointment = await prisma.appointment.create({
-      data: {
+    const existingAppointment = await prisma.appointment.findUnique({
+      where: { swapId },
+      select: { id: true },
+    });
+
+    const appointment = await prisma.appointment.upsert({
+      where: { swapId },
+      create: {
         swapId,
+        swapMethod: swapMethod || swap.swapMethod,
+        date: new Date(date),
+        time,
+      },
+      update: {
         swapMethod: swapMethod || swap.swapMethod,
         date: new Date(date),
         time,
       },
     });
 
-    // Send email notifications
-    if (swap.contactEmail) {
-      await sendAppointmentConfirmationEmail({
-        to: swap.contactEmail,
-        appointmentDetails: {
-          date,
-          time,
-          swapMethod: toApiSwapMethod(swapMethod || swap.swapMethod),
-        },
+    if (!existingAppointment) {
+      after(async () => {
+        if (swap.contactEmail) {
+          const result = await sendAppointmentConfirmationEmail({
+            to: swap.contactEmail,
+            appointmentDetails: {
+              date,
+              time,
+              swapMethod: toApiSwapMethod(swapMethod || swap.swapMethod),
+            },
+          });
+          if (!result.success) {
+            console.error('Failed to send appointment confirmation email:', result.error);
+          }
+        }
+
+        const result = await sendAdminAppointmentNotification({
+          swap: {
+            id: swap.id,
+            contactName: swap.contactName,
+            contactEmail: swap.contactEmail,
+            contactPhone: swap.contactPhone,
+          },
+          appointment: {
+            date,
+            time,
+            swapMethod: toApiSwapMethod(swapMethod || swap.swapMethod),
+          },
+        });
+        if (!result.success) {
+          console.error('Failed to send admin appointment notification:', result.error);
+        }
       });
     }
 
-    await sendAdminAppointmentNotification({
-      swap: {
-        id: swap.id,
-        contactName: swap.contactName,
-        contactEmail: swap.contactEmail,
-        contactPhone: swap.contactPhone,
-      },
-      appointment: {
-        date,
-        time,
-        swapMethod: toApiSwapMethod(swapMethod || swap.swapMethod),
-      },
+    return NextResponse.json(appointment, {
+      status: existingAppointment ? 200 : 201,
     });
-
-    return NextResponse.json(appointment, { status: 201 });
   } catch (error) {
     console.error('Error creating appointment:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
