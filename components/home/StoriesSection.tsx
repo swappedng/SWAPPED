@@ -44,7 +44,7 @@ export function StoriesSection() {
         <div>
           <h2
             id="stories-title"
-            className="text-[clamp(32px,3.6vw,48px)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#192331]"
+            className="text-[clamp(32px,3.6vw,48px)] font-semibold leading-[1.08] tracking-[-0.05em] text-[#192331] pb-16"
           >
             Upgrade stories from people like you.
           </h2>

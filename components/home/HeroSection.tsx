@@ -24,31 +24,31 @@ export function HeroSection() {
   return (
     <section
       id="hero"
-      className="mx-auto max-w-[1200px] scroll-mt-8 px-5 pb-8 pt-10 text-center sm:px-8 sm:pt-14 lg:pt-16"
+      className="mx-auto max-w-[1200px] scroll-mt-8 px-5 pb-8 pt-10 text-center sm:px-8 "
       aria-labelledby="hero-title"
     >
-      <div className="mx-auto max-w-[800px]">
+      <div className="mx-auto max-w-[800px] ">
 
         <h1
           id="hero-title"
           data-landing-reveal
           data-landing-intro
-          className="text-[clamp(38px,5.2vw,56px)] capitalize font-medium leading-[1.03] tracking-[-0.055em] text-[#192331]"
+          className="text-[clamp(38px,5.2vw,56px)] capitalize font-medium leading-[1.03] tracking-[-0.055em] text-[#192331] "
         >
           Upgrade your iPhone
           <br />
           without paying full price
         </h1>
-        <p data-landing-reveal data-landing-intro className="mx-auto mt-5 max-w-[520px] text-sm leading-[1.7] tracking-[-0.01em] text-[#69717d] [--reveal-delay:90ms] sm:text-base">
+        <p data-landing-reveal data-landing-intro className="mx-auto mt-6 max-w-[520px] text-sm leading-[1.7] tracking-[-0.01em] text-[#69717d] [--reveal-delay:90ms] sm:text-base">
           Put the value of your current iPhone towards your next one. See your
           estimated top-up before you decide.
         </p>
-        <div data-landing-reveal data-landing-intro className="mt-8 [--reveal-delay:180ms]">
+        <div data-landing-reveal data-landing-intro className="mt-12 [--reveal-delay:180ms]">
           <SwapPicker onStart={handleStartSwap} />
         </div>
       </div>
 
-      <div className="relative mx-auto max-w-[1080px] mt-24 sm:mt-32">
+      <div className="relative mx-auto max-w-[1080px] mt-12 sm:mt-16">
         <SwapIllustration />
 
         <ul

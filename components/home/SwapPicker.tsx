@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 /* Edit this list to match the models you accept / sell */
 const MODELS = [
@@ -26,6 +26,16 @@ const MODELS = [
   "iPhone 11",
 ];
 
+const PREVIEW_MODELS = [
+  { have: "iPhone X", want: "iPhone 18" },
+  { have: "iPhone 11", want: "iPhone 17 Pro Max" },
+  { have: "iPhone 12", want: "iPhone 17 Pro" },
+  { have: "iPhone 13", want: "iPhone Air" },
+  { have: "iPhone 14", want: "iPhone 17" },
+  { have: "iPhone 15", want: "iPhone 16 Pro Max" },
+  { have: "iPhone 16", want: "iPhone 16 Pro" },
+];
+
 type Props = {
   /** Called when both phones are picked and the person taps "Start swap" */
   onStart?: (have: string, want: string) => void;
@@ -35,8 +45,19 @@ export default function SwapPicker({ onStart }: Props) {
   const [have, setHave] = useState<string | null>(null);
   const [want, setWant] = useState<string | null>(null);
   const [missing, setMissing] = useState<"have" | "want" | null>(null);
+  const [previewCycle, setPreviewCycle] = useState(0);
 
   const ready = Boolean(have && want);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const intervalId = window.setInterval(() => {
+      setPreviewCycle((cycle) => cycle + 1);
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   function start() {
     if (!have) return setMissing("have");
@@ -44,15 +65,19 @@ export default function SwapPicker({ onStart }: Props) {
     onStart?.(have, want);
   }
 
+  const preview = PREVIEW_MODELS[previewCycle % PREVIEW_MODELS.length];
+
   return (
     <div
-      className="relative mx-auto w-full max-w-[820px]"
+      className="relative mx-auto w-full max-w-[560px]"
       data-ready={ready}
     >
-      <div className="flex items-center gap-1.5 rounded-full border border-[#e9e6e8] bg-white p-1.5 shadow-[0_8px_24px_rgba(27,34,51,0.07)] transition-shadow data-[ready=true]:shadow-[0_12px_30px_rgba(27,34,51,0.12)] max-[680px]:flex-col max-[680px]:items-stretch max-[680px]:rounded-[24px] max-[680px]:p-2">
+      <div className="flex items-stretch gap-1.5 rounded-full border border-[#e7e2eb]/90 bg-white/75 p-1 text-left shadow-[0_12px_36px_rgba(53,28,79,0.02)] backdrop-blur-md transition-shadow data-[ready=true]:shadow-[0_16px_40px_rgba(53,28,79,0.16)] max-[680px]:flex-col max-[680px]:items-stretch max-[680px]:rounded-[24px] max-[680px]:p-0">
         <Picker
-          label="I have"
-          prompt="Choose your iPhone"
+          phrase="I have an"
+          previewModel={preview.have}
+          phraseDelay={0}
+          initialPreview={previewCycle === 0}
           value={have}
           options={MODELS}
           missing={missing === "have"}
@@ -67,8 +92,10 @@ export default function SwapPicker({ onStart }: Props) {
           aria-hidden="true"
         />
         <Picker
-          label="I want"
-          prompt="Choose your next iPhone"
+          phrase="I want an"
+          previewModel={preview.want}
+          phraseDelay={180}
+          initialPreview={previewCycle === 0}
           value={want}
           options={MODELS.filter((m) => m !== have)}
           missing={missing === "want"}
@@ -80,12 +107,11 @@ export default function SwapPicker({ onStart }: Props) {
         />
         <button
           type="button"
-          className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[#090909] px-7 text-sm font-semibold text-white transition-colors hover:bg-[#292929] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-3 max-[680px]:w-full motion-reduce:transition-none"
+          className="inline-flex self-stretch shrink-0 items-center justify-center gap-2 rounded-full bg-[#090909] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#292929] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-3 max-[680px]:w-full motion-reduce:transition-none"
           data-ready={ready}
           onClick={start}
         >
           Start swap
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -95,8 +121,10 @@ export default function SwapPicker({ onStart }: Props) {
 /* ---------- Picker (accessible listbox) ---------- */
 
 type PickerProps = {
-  label: string;
-  prompt: string;
+  phrase: string;
+  previewModel: string;
+  phraseDelay: number;
+  initialPreview: boolean;
   value: string | null;
   options: string[];
   missing: boolean;
@@ -105,8 +133,10 @@ type PickerProps = {
 };
 
 function Picker({
-  label,
-  prompt,
+  phrase,
+  previewModel,
+  phraseDelay,
+  initialPreview,
   value,
   options,
   missing,
@@ -132,6 +162,21 @@ function Picker({
     const i = value ? options.indexOf(value) : 0;
     setActive(Math.max(i, 0));
     setOpen(true);
+  }
+
+  const displayedModel = value ?? previewModel;
+  const accessiblePhrase = `${phrase} ${displayedModel}`;
+
+  function staggeredText(text: string, keyPrefix: string, delay = 0) {
+    return text.split("").map((character, index) => (
+      <span
+        key={`${keyPrefix}-${index}`}
+        className="inline-block animate-[swap-placeholder-in_550ms_cubic-bezier(0.34,1.56,0.64,1)_both] motion-reduce:animate-none"
+        style={{ animationDelay: `${delay + index * 30}ms` }}
+      >
+        {character === " " ? "\u00a0" : character}
+      </span>
+    ));
   }
 
   function choose(v: string) {
@@ -166,9 +211,9 @@ function Picker({
     <div className="relative min-w-0 flex-1" ref={root}>
       <button
         type="button"
-        className="grid w-full cursor-pointer grid-cols-[1fr_auto] items-center gap-x-3 rounded-full px-5 py-2 text-left transition-colors hover:bg-[#faf9fa] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-[-2px] data-[missing=true]:animate-[swap-nudge_0.4s_ease-in-out] motion-reduce:transition-none motion-reduce:animate-none max-[680px]:rounded-xl"
+        className="w-full min-h-[48px] cursor-pointer rounded-full px-5 py-3 text-left text-sm font-semibold text-[#192331] transition-colors hover:bg-[#faf9fa] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-[-2px] data-[missing=true]:animate-[swap-nudge_0.4s_ease-in-out] motion-reduce:transition-none motion-reduce:animate-none max-[680px]:rounded-xl"
         data-missing={missing}
-        aria-label={label}
+        aria-label={accessiblePhrase}
         onAnimationEnd={onAnimationEnd}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -177,19 +222,27 @@ function Picker({
         onClick={() => (open ? setOpen(false) : openList())}
         onKeyDown={onKeyDown}
       >
-        <span className="min-w-0">
-          <span className="block text-[10px] font-medium text-[#687181] sm:text-[11px]">
-            {label}
-          </span>
-          <span className="mt-0.5 block overflow-hidden text-ellipsis whitespace-nowrap text-xs font-semibold text-[#192331] sm:text-sm">
-            {value ?? prompt}
-          </span>
+        <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+          {!value && (
+            <span className="text-[#9aa0ad]" aria-hidden="true">
+              {staggeredText(phrase, `phrase-${phrase}`, phraseDelay)}
+              {"\u00a0"}
+            </span>
+          )}
+          {value ? (
+            <span className="font-semibold text-[#192331]" aria-hidden="true">
+              {value}
+            </span>
+          ) : (
+            <span className="font-medium text-[#9aa0ad]" aria-hidden="true">
+              {staggeredText(
+                previewModel,
+                `model-${previewModel}`,
+                initialPreview ? phraseDelay + phrase.length * 30 : 0,
+              )}
+            </span>
+          )}
         </span>
-        <ChevronDown
-          className="h-4 w-4 shrink-0 text-[#687181] transition-transform duration-200 aria-expanded:rotate-180"
-          aria-hidden="true"
-          aria-expanded={open}
-        />
       </button>
 
       {open && (
@@ -197,7 +250,7 @@ function Picker({
           className="absolute left-0 top-[calc(100%+10px)] z-20 m-0 max-h-[288px] min-w-[260px] list-none overflow-auto rounded-2xl border border-[#ececf1] bg-white p-1.5 text-left shadow-[0_20px_50px_-12px_rgba(27,34,51,0.25)] origin-top-left animate-[swap-pop_0.16s_ease-out] motion-reduce:animate-none"
           role="listbox"
           id={listId}
-          aria-label={label}
+          aria-label={phrase}
         >
           {options.map((m, i) => (
             <li

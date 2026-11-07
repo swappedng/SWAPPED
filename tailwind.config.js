@@ -58,6 +58,10 @@ module.exports = {
   			}
   		},
   		keyframes: {
+			'footer-wordmark-rise': {
+				'from': { opacity: '0', transform: 'translateY(36px)' },
+				'to': { opacity: '1', transform: 'translateY(0)' }
+			},
   			'swap-pop': {
   				'from': { opacity: '0', transform: 'translateY(-4px) scale(0.98)' },
   				'to': { opacity: '1', transform: 'none' }
@@ -67,6 +71,9 @@ module.exports = {
   				'25%': { transform: 'translateX(-6px)' },
   				'75%': { transform: 'translateX(6px)' }
   			}
+		},
+		animation: {
+			'footer-wordmark-rise': 'footer-wordmark-rise 1500ms cubic-bezier(0.22, 1, 0.36, 1) both'
   		}
   	}
   },

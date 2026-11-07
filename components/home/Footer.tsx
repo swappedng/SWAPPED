@@ -4,9 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import * as THREE from "three";
-import "./Footer.css";
 
-// Keep raw hex colours in the shader (newer three.js versions convert colours by default)
 THREE.ColorManagement.enabled = false;
 
 const VERTEX = /* glsl */ `
@@ -16,76 +14,69 @@ const VERTEX = /* glsl */ `
 
 const FRAGMENT = /* glsl */ `
   uniform sampler2D tex;
-  uniform vec2 m;                 // pointer position (0-1)
-  uniform float t, s, rev, asp;   // time, ripple strength, reveal progress, aspect ratio
+  uniform vec2 m;
+  uniform float t, s, rev, asp;
   uniform vec3 base, dotCol, vio, lime;
   varying vec2 vUv;
 
   void main(){
     vec2 uv = vUv;
-
-    // entrance: letters rise in one after another, left to right
     float rr = clamp(rev*1.7 - uv.x*.7, 0., 1.);
     float e = 1. - pow(1. - rr, 3.);
     uv.y += (1. - e) * .45;
 
-    // ripple radiating from the pointer
     vec2 d = uv - m; d.x *= asp;
     float dist = length(d);
     float w = sin(dist*34. - t*5.) * exp(-dist*5.) * s;
     vec2 dir = normalize(d + 1e-4); dir.x /= asp;
     uv += dir * w * .03;
-
-    // gentle ambient wobble
     uv.y += sin(uv.x*9. + t*1.2) * .004 * s;
     uv.x += sin(uv.y*7. + t) * .003 * s;
 
     vec4 c = texture2D(tex, uv);
-
-    // colour: grey letters, tinted violet near the pointer; dot turns lime
     float g = exp(-dist*4.) * s;
     vec3 letters = mix(base, vio, g*.55);
     vec3 dotc = mix(dotCol, lime, clamp(g*1.4, 0., 1.));
-
-    // red channel = letters, green channel = the full stop
     vec3 col = c.g > c.r ? dotc : letters;
     gl_FragColor = vec4(col, c.a * e);
   }
 `;
 
-// Draws "swapped." onto a 2D canvas (letters in red, the dot in green) to use as a texture
 async function makeWordmark() {
-  try {
-    await document.fonts.load('700 200px "Inter Tight"');
-  } catch {}
-  const W = 2048;
-  const c = document.createElement("canvas");
-  const x = c.getContext("2d");
-  if (!x) throw new Error("Could not get canvas context");
-  const fam = '"Inter Tight", system-ui, sans-serif';
+  await document.fonts.load('700 200px "Inter Tight"');
 
-  x.font = `700 200px ${fam}`;
-  const tw = x.measureText("swapped").width + x.measureText(".").width;
-  const fs = (200 * W * 0.97) / tw; // fit the word to the canvas width
-  const F = `700 ${fs}px ${fam}`;
-  x.font = F;
+  const width = 2048;
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Could not create footer wordmark canvas");
 
-  const m1 = x.measureText("swapped");
-  const m2 = x.measureText(".");
-  const asc = Math.max(m1.actualBoundingBoxAscent, m2.actualBoundingBoxAscent);
-  const des = m1.actualBoundingBoxDescent;
-  const H = Math.ceil((asc + des) * 1.2);
+  const fontFamily = '"Inter Tight", system-ui, sans-serif';
+  context.font = `700 200px ${fontFamily}`;
+  const wordWidth =
+    context.measureText("swapped").width + context.measureText(".").width;
+  const fontSize = (200 * width * 0.97) / wordWidth;
+  const font = `700 ${fontSize}px ${fontFamily}`;
+  context.font = font;
 
-  c.width = W;
-  c.height = H;
-  x.font = F; // resizing resets the context
-  const y = H / 2 + (asc - des) / 2;
-  const x0 = (W - m1.width - m2.width) / 2;
-  x.fillStyle = "#f00";
-  x.fillText("swapped", x0, y);
-  x.fillStyle = "#0f0";
-  x.fillText(".", x0 + m1.width, y);
-  return c;
+  const word = context.measureText("swapped");
+  const dot = context.measureText(".");
+  const ascent = Math.max(
+    word.actualBoundingBoxAscent,
+    dot.actualBoundingBoxAscent,
+  );
+  const descent = word.actualBoundingBoxDescent;
+  canvas.width = width;
+  canvas.height = Math.ceil((ascent + descent) * 1.2);
+  context.font = font;
+
+  const y = canvas.height / 2 + (ascent - descent) / 2;
+  const x = (width - word.width - dot.width) / 2;
+  context.fillStyle = "#f00";
+  context.fillText("swapped", x, y);
+  context.fillStyle = "#0f0";
+  context.fillText(".", x + word.width, y);
+
+  return canvas;
 }
 
 export function Footer({
@@ -99,28 +90,47 @@ export function Footer({
   designerUrl?: string;
   tagline?: string;
 }) {
-  const footRef = useRef<HTMLDivElement>(null);
+  return (
+    <FooterContent
+      email={email}
+      designer={designer}
+      designerUrl={designerUrl}
+      tagline={tagline}
+    />
+  );
+}
+
+function FooterContent({
+  email,
+  designer,
+  designerUrl,
+  tagline,
+}: {
+  email: string;
+  designer: string;
+  designerUrl: string;
+  tagline: string;
+}) {
+  const footerRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fallback, setFallback] = useState(false);
 
   useEffect(() => {
-    const box = footRef.current;
-    const cv = canvasRef.current;
-    if (!cv || !box) return;
+    const footer = footerRef.current;
+    const canvas = canvasRef.current;
+    if (!footer || !canvas) return;
 
-    const css = (n: string) =>
-      getComputedStyle(box).getPropertyValue(n).trim() || "#ccc";
-    let raf = 0,
-      cancelled = false,
-      renderer: THREE.WebGLRenderer | null = null,
-      texture: THREE.CanvasTexture | null = null,
-      material: THREE.ShaderMaterial | null = null,
-      observer: IntersectionObserver | null = null;
+    let frame = 0;
+    let cancelled = false;
+    let renderer: THREE.WebGLRenderer | null = null;
+    let texture: THREE.CanvasTexture | null = null;
+    let material: THREE.ShaderMaterial | null = null;
+    let observer: IntersectionObserver | null = null;
     const cleanups: (() => void)[] = [];
 
     try {
       renderer = new THREE.WebGLRenderer({
-        canvas: cv,
+        canvas,
         alpha: true,
         antialias: true,
         premultipliedAlpha: false,
@@ -129,104 +139,100 @@ export function Footer({
 
       const scene = new THREE.Scene();
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-      const U = {
+      const uniforms = {
         tex: { value: null },
         m: { value: new THREE.Vector2(0.5, 0.5) },
         t: { value: 0 },
         s: { value: 0 },
         rev: { value: 0 },
         asp: { value: 3 },
-        base: { value: new THREE.Color(css("--wm")) },
-        dotCol: { value: new THREE.Color(css("--wm-dot")) },
+        base: { value: new THREE.Color("#e3e4e0") },
+        dotCol: { value: new THREE.Color("#e6e1f5") },
         vio: { value: new THREE.Color("#7B4DFF") },
         lime: { value: new THREE.Color("#D4F55C") },
       };
+
       material = new THREE.ShaderMaterial({
-        uniforms: U,
+        uniforms,
         vertexShader: VERTEX,
         fragmentShader: FRAGMENT,
         transparent: true,
         blending: THREE.NoBlending,
       });
-      const geo = new THREE.PlaneGeometry(2, 2);
-      scene.add(new THREE.Mesh(geo, material));
-      cleanups.push(() => geo.dispose());
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      scene.add(new THREE.Mesh(geometry, material));
+      cleanups.push(() => geometry.dispose());
 
       makeWordmark()
-        .then((c) => {
+        .then((wordmark) => {
           if (cancelled) return;
-          texture = new THREE.CanvasTexture(c);
-          U.tex.value = texture;
-          U.asp.value = c.width / c.height;
-          cv.style.aspectRatio = `${c.width} / ${c.height}`;
+          texture = new THREE.CanvasTexture(wordmark);
+          uniforms.tex.value = texture;
+          uniforms.asp.value = wordmark.width / wordmark.height;
+          canvas.style.aspectRatio = `${wordmark.width} / ${wordmark.height}`;
 
-          const size = () =>
-            renderer?.setSize(cv.clientWidth, cv.clientHeight, false);
-          size();
-          window.addEventListener("resize", size);
-          cleanups.push(() => window.removeEventListener("resize", size));
+          const resize = () =>
+            renderer?.setSize(canvas.clientWidth, canvas.clientHeight, false);
+          resize();
+          window.addEventListener("resize", resize);
+          cleanups.push(() => window.removeEventListener("resize", resize));
 
-          // refresh colours when the OS theme changes
-          const mq = matchMedia("(prefers-color-scheme: dark)");
-          const onTheme = () =>
-            setTimeout(() => {
-              U.base.value.set(css("--wm"));
-              U.dotCol.value.set(css("--wm-dot"));
-            }, 50);
-          mq.addEventListener("change", onTheme);
-          cleanups.push(() => mq.removeEventListener("change", onTheme));
+          let visible = false;
+          let firstVisibleAt = 0;
+          let lastPointerMove = -Infinity;
+          const pointer = new THREE.Vector2(0.5, 0.5);
+          const reducedMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          ).matches;
 
-          const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-          let visible = false,
-            seen = 0,
-            lastMove = -1e9;
-          const target = new THREE.Vector2(0.5, 0.5);
-
-          // only animate while the footer is on screen
-          observer = new IntersectionObserver(([en]) => {
-            visible = en.isIntersecting;
-            if (visible && !seen) seen = performance.now();
+          observer = new IntersectionObserver(([entry]) => {
+            visible = entry.isIntersecting;
+            if (visible && !firstVisibleAt) firstVisibleAt = performance.now();
           });
-          observer.observe(cv);
+          observer.observe(canvas);
 
-          const onMove = (e: PointerEvent) => {
-            const b = cv.getBoundingClientRect();
-            target.set(
-              (e.clientX - b.left) / b.width,
-              1 - (e.clientY - b.top) / b.height,
+          const onPointerMove = (event: PointerEvent) => {
+            const bounds = canvas.getBoundingClientRect();
+            pointer.set(
+              (event.clientX - bounds.left) / bounds.width,
+              1 - (event.clientY - bounds.top) / bounds.height,
             );
-            lastMove = performance.now();
+            lastPointerMove = performance.now();
           };
-          box.addEventListener("pointermove", onMove);
-          cleanups.push(() => box.removeEventListener("pointermove", onMove));
+          footer.addEventListener("pointermove", onPointerMove);
+          cleanups.push(() =>
+            footer.removeEventListener("pointermove", onPointerMove),
+          );
 
-          const t0 = performance.now();
-          const loop = () => {
-            raf = requestAnimationFrame(loop);
+          const startTime = performance.now();
+          const render = () => {
+            frame = requestAnimationFrame(render);
             if (!visible) return;
-            const now = performance.now();
-            const t = (now - t0) / 1000;
-            U.t.value = t;
 
-            if (reduce) {
-              U.rev.value = 1;
-              U.s.value = 0;
+            const now = performance.now();
+            const time = (now - startTime) / 1000;
+            uniforms.t.value = time;
+
+            if (reducedMotion) {
+              uniforms.rev.value = 1;
+              uniforms.s.value = 0;
             } else {
-              U.rev.value = Math.min(1, (now - seen) / 1500);
-              const live = now - lastMove < 2000; // pointer recently moved?
-              const goal = live
-                ? target
+              uniforms.rev.value = Math.min(1, (now - firstVisibleAt) / 1500);
+              const pointerIsActive = now - lastPointerMove < 2000;
+              const target = pointerIsActive
+                ? pointer
                 : new THREE.Vector2(
-                    0.5 + 0.35 * Math.sin(t * 0.5),
-                    0.5 + 0.1 * Math.cos(t * 0.7),
-                  ); // idle drift
-              U.m.value.lerp(goal, 0.1);
-              U.s.value += ((live ? 1 : 0.3) - U.s.value) * 0.06;
+                    0.5 + 0.35 * Math.sin(time * 0.5),
+                    0.5 + 0.1 * Math.cos(time * 0.7),
+                  );
+              uniforms.m.value.lerp(target, 0.1);
+              uniforms.s.value +=
+                ((pointerIsActive ? 1 : 0.3) - uniforms.s.value) * 0.06;
             }
+
             renderer?.render(scene, camera);
           };
-          loop();
+          render();
         })
         .catch(() => setFallback(true));
     } catch {
@@ -235,9 +241,9 @@ export function Footer({
 
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(frame);
       observer?.disconnect();
-      cleanups.forEach((fn) => fn());
+      cleanups.forEach((cleanup) => cleanup());
       texture?.dispose();
       material?.dispose();
       renderer?.dispose();
@@ -245,29 +251,98 @@ export function Footer({
   }, []);
 
   return (
-    <footer className="foot" ref={footRef}>
-      <div className="foot-top">
-        <p className="foot-tag">{tagline}</p>
-        <Link className="foot-cta" href="/tradein">
-          Swap Your iPhone
-          <span aria-hidden="true">
-            <ArrowUpRight size={18} strokeWidth={2.5} />
-          </span>
-        </Link>
-      </div>
+    <footer
+      className="mx-auto box-border w-full max-w-[1440px] overflow-hidden  px-[clamp(24px,5.3vw,76px)] pt-16 text-[#192331] max-[700px]:pt-12"
+      ref={footerRef}
+    >
+      {/* <div className="grid min-h-[260px] grid-cols-[minmax(0,1fr)_minmax(240px,1fr)_minmax(140px,0.6fr)] items-start gap-[clamp(32px,6vw,88px)] max-[700px]:min-h-0 max-[700px]:grid-cols-2 max-[700px]:gap-x-6 max-[700px]:gap-y-10 max-[700px]:pb-12">
+        <div>
+          <p className="mb-[18px] text-xs font-semibold uppercase tracking-[0.08em] text-[#69717d]">
+            Get in touch
+          </p>
+          <a
+            className="text-[clamp(18px,2vw,24px)] font-medium tracking-[-0.035em] text-[#192331] no-underline transition-colors hover:text-[#4c00bd]"
+            href={`mailto:${email}`}
+          >
+            {email}
+          </a>
+          <p className="mt-5 text-sm leading-[1.65] text-[#69717d]">
+            Lagos, Nigeria
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center gap-5 pt-10 text-center max-[700px]:col-span-full max-[700px]:row-start-2 max-[700px]:items-start max-[700px]:pt-0 max-[700px]:text-left">
+          <Link
+            href="/tradein"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#090909] px-5 text-xs font-semibold text-white transition-colors hover:bg-[#292929] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-3 sm:h-11 sm:px-6 sm:text-sm"
+          >
+            Swap iPhone
+          </Link>
+        </div>
+
+        <nav
+          className="flex flex-col items-end gap-[14px] max-[700px]:items-end"
+          aria-label="Footer navigation"
+        >
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#69717d]">
+            Explore
+          </p>
+          <Link
+            className="text-sm text-[#192331] no-underline transition-colors hover:text-[#4c00bd]"
+            href="/#how-it-works"
+          >
+            How it works
+          </Link>
+          <Link
+            className="text-sm text-[#192331] no-underline transition-colors hover:text-[#4c00bd]"
+            href="/#stories"
+          >
+            Customer stories
+          </Link>
+          <Link
+            className="text-sm text-[#192331] no-underline transition-colors hover:text-[#4c00bd]"
+            href="/#faqs"
+          >
+            FAQs
+          </Link>
+          <Link
+            className="text-sm text-[#192331] no-underline transition-colors hover:text-[#4c00bd]"
+            href="/tradein"
+          >
+            Start a swap
+          </Link>
+        </nav>
+      </div> */}
 
       {fallback ? (
-        <div className="wm-fallback" role="img" aria-label="swapped">
-          swapped
+        <div
+          className="animate-footer-wordmark-rise w-full overflow-hidden whitespace-nowrap text-center text-[clamp(90px,22vw,300px)] font-bold leading-[0.78] tracking-[-0.085em] text-[#e3e4e0] motion-reduce:animate-none max-[700px]:text-[23vw]"
+          role="img"
+          aria-label="Swapped"
+        >
+          swapped<span className="text-[#e6e1f5]">.</span>
         </div>
       ) : (
-        <canvas id="wm" ref={canvasRef} role="img" aria-label="swapped" />
+        <canvas
+          id="wm"
+          className=" block aspect-[3/1] w-full touch-pan-y"
+          ref={canvasRef}
+          role="img"
+          aria-label="Swapped"
+        />
       )}
-
-      <div className="foot-bot">
-        <span>© {new Date().getFullYear()} Swapped</span>
+      <div className="flex flex-wrap justify-between gap-4 py-6 text-[13px] text-[#69717d] max-[700px]:flex-col max-[700px]:gap-2.5">
+        <span>© {new Date().getFullYear()} Swapped. All rights reserved.</span>
         <span>
-          Designed and built by <a href={designerUrl}>{designer}</a>
+          Designed and built by{" "}
+          <a
+            className="text-inherit underline decoration-[#c9b8ff] underline-offset-[3px] hover:text-[#4c00bd]"
+            href={designerUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {designer}
+          </a>
         </span>
       </div>
     </footer>

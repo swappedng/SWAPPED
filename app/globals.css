@@ -3,6 +3,18 @@
 @tailwind utilities;
 
 @layer components {
+  @keyframes swap-placeholder-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.65em);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     [data-landing-intro] {
       animation: landing-intro 700ms cubic-bezier(0.22, 1, 0.36, 1) both;

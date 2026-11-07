@@ -105,7 +105,7 @@ export function ProcessSection() {
       <div className="h-[120px] max-[759px]:h-16" aria-hidden="true" />
       <div
         ref={listRef}
-        className="relative mx-auto max-w-[1440px] px-24 max-[759px]:px-4"
+        className="relative mx-auto max-w-[1440px] px-24 pt-16 max-[759px]:px-4"
       >
         <div className="relative mb-[calc(var(--heading-height)-var(--heading-stage-height))] h-[var(--heading-stage-height)] [@media(max-height:700px)]:mb-0 [@media(max-height:700px)]:h-auto">
           <header
@@ -117,7 +117,7 @@ export function ProcessSection() {
               data-landing-reveal
               className="m-0 text-[clamp(28px,4vw,44px)] font-semibold leading-[1.1] tracking-[-0.035em] text-[#192331]"
             >
-              Effortless Steps to Upgrade
+              How It Works
             </h2>
       
           </header>
@@ -127,7 +127,7 @@ export function ProcessSection() {
             <section
               key={step.number}
               data-stack-card
-              className="sticky top-[calc(16px+env(safe-area-inset-top,0px)+var(--heading-height)+var(--i)*var(--peek))] z-[calc(1+var(--i))] bg-background mx-auto grid h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] w-full scroll-mt-[calc(16px+var(--heading-height)+var(--i)*var(--peek))] grid-cols-[1.06fr_1fr] grid-rows-[var(--peek)_minmax(0,1fr)] overflow-hidden border-y border-[#e7e2eb] [--p:0] max-[759px]:h-auto max-[759px]:min-h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] max-[759px]:grid-cols-1 max-[759px]:grid-rows-[var(--peek)_auto] max-[759px]:rounded-t-2xl [@media(max-height:700px)]:relative [@media(max-height:700px)]:top-auto [@media(max-height:700px)]:h-auto [@media(max-height:700px)]:min-h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] [@media(max-height:700px)]:mb-6"
+              className="sticky top-[calc(16px+env(safe-area-inset-top,0px)+var(--heading-height)+var(--i)*var(--peek))] z-[calc(1+var(--i))] bg-background mx-auto grid h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] w-full scroll-mt-[calc(16px+var(--heading-height)+var(--i)*var(--peek))] grid-cols-[1.06fr_1fr] grid-rows-[var(--peek)_minmax(0,1fr)] overflow-hidden border-y border-[#e7e2eb] first:border-t-0 last:border-b-0 [--p:0] max-[759px]:h-auto max-[759px]:min-h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] max-[759px]:grid-cols-1 max-[759px]:grid-rows-[var(--peek)_auto] max-[759px]:rounded-t-2xl [@media(max-height:700px)]:relative [@media(max-height:700px)]:top-auto [@media(max-height:700px)]:h-auto [@media(max-height:700px)]:min-h-[calc(var(--stack-height)-var(--heading-height)-var(--i)*var(--peek))] [@media(max-height:700px)]:mb-6"
               style={{ "--i": index } as CSSProperties}
               aria-labelledby={`process-step-${index + 1}-title`}
             >
