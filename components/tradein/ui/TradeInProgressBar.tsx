@@ -20,7 +20,7 @@ export function TradeInProgressBar({
         aria-valuenow={currentStep}
       >
         <div
-          className="h-full rounded-r-full bg-[#7c6ee6] transition-[width] duration-300 ease-out"
+          className="h-full rounded-r-full bg-[#4c00bd] transition-[width] duration-300 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>

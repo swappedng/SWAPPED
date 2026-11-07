@@ -18,6 +18,7 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
 
   const {
     step,
+    initialHaveModel,
     goToNextStep,
     goToPreviousStep,
     currentStepPosition,
@@ -71,6 +72,7 @@ export function TradeInFlow({ catalogue }: { catalogue: Catalogue }) {
           <PhoneQuestionStep
             options={phoneModels}
             value={tradeIn.model}
+            initialModel={initialHaveModel}
             onSelect={selectTradeInPhone}
           />
         )}

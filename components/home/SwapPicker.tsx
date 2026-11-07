@@ -37,14 +37,13 @@ const PREVIEW_MODELS = [
 ];
 
 type Props = {
-  /** Called when both phones are picked and the person taps "Start swap" */
-  onStart?: (have: string, want: string) => void;
+  /** Called when the person taps "Start swap" */
+  onStart?: (have: string | null) => void;
 };
 
 export default function SwapPicker({ onStart }: Props) {
   const [have, setHave] = useState<string | null>(null);
   const [want, setWant] = useState<string | null>(null);
-  const [missing, setMissing] = useState<"have" | "want" | null>(null);
   const [previewCycle, setPreviewCycle] = useState(0);
 
   const ready = Boolean(have && want);
@@ -60,9 +59,7 @@ export default function SwapPicker({ onStart }: Props) {
   }, []);
 
   function start() {
-    if (!have) return setMissing("have");
-    if (!want) return setMissing("want");
-    onStart?.(have, want);
+    onStart?.(have);
   }
 
   const preview = PREVIEW_MODELS[previewCycle % PREVIEW_MODELS.length];
@@ -79,13 +76,8 @@ export default function SwapPicker({ onStart }: Props) {
           phraseDelay={0}
           initialPreview={previewCycle === 0}
           value={have}
-          options={MODELS}
-          missing={missing === "have"}
-          onChange={(v) => {
-            setHave(v);
-            setMissing(null);
-          }}
-          onAnimationEnd={() => setMissing(null)}
+          options={[...MODELS].reverse()}
+          onChange={setHave}
         />
         <span
           className="h-10 w-px shrink-0 bg-[#e8e5e9] max-[680px]:h-px max-[680px]:w-full"
@@ -98,12 +90,7 @@ export default function SwapPicker({ onStart }: Props) {
           initialPreview={previewCycle === 0}
           value={want}
           options={MODELS.filter((m) => m !== have)}
-          missing={missing === "want"}
-          onChange={(v) => {
-            setWant(v);
-            setMissing(null);
-          }}
-          onAnimationEnd={() => setMissing(null)}
+          onChange={setWant}
         />
         <button
           type="button"
@@ -127,9 +114,7 @@ type PickerProps = {
   initialPreview: boolean;
   value: string | null;
   options: string[];
-  missing: boolean;
   onChange: (v: string) => void;
-  onAnimationEnd: () => void;
 };
 
 function Picker({
@@ -139,9 +124,7 @@ function Picker({
   initialPreview,
   value,
   options,
-  missing,
   onChange,
-  onAnimationEnd,
 }: PickerProps) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -211,10 +194,8 @@ function Picker({
     <div className="relative min-w-0 flex-1" ref={root}>
       <button
         type="button"
-        className="w-full min-h-[48px] cursor-pointer rounded-full px-5 py-3 text-left text-sm font-semibold text-[#192331] transition-colors hover:bg-[#faf9fa] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-[-2px] data-[missing=true]:animate-[swap-nudge_0.4s_ease-in-out] motion-reduce:transition-none motion-reduce:animate-none max-[680px]:rounded-xl"
-        data-missing={missing}
+        className="w-full min-h-[48px] cursor-pointer rounded-full px-5 py-3 text-left text-sm font-semibold text-[#192331] transition-colors hover:bg-[#faf9fa] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-[-2px] motion-reduce:transition-none motion-reduce:animate-none max-[680px]:rounded-xl"
         aria-label={accessiblePhrase}
-        onAnimationEnd={onAnimationEnd}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}

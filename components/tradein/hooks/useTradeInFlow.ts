@@ -32,6 +32,7 @@ export function useTradeInFlow(catalogue: Catalogue) {
   const [step, setStep] = useState<TradeInStep>(INITIAL_TRADE_IN_STEP);
   const [saving, setSaving] = useState(false);
   const [tradeIn, setTradeIn] = useState<TradeInDetails>(emptyTradeInDetails);
+  const [initialHaveModel, setInitialHaveModel] = useState("");
   const [upgrade, setUpgrade] = useState<UpgradeSelection>({
     category: "",
     model: "",
@@ -62,6 +63,8 @@ export function useTradeInFlow(catalogue: Catalogue) {
   // Restore state from localStorage on mount
   useEffect(() => {
     try {
+      const selectedHavePhone = localStorage.getItem("selectedHavePhone");
+      localStorage.removeItem("selectedHavePhone");
       const saved = localStorage.getItem('tradeInFlowState');
       if (saved) {
         const state = JSON.parse(saved);
@@ -72,6 +75,8 @@ export function useTradeInFlow(catalogue: Catalogue) {
         setPhone(state.phone || "");
         setSwapMethod(state.swapMethod || "");
         setSavedSwapId(state.savedSwapId || "");
+      } else if (selectedHavePhone) {
+        setInitialHaveModel(selectedHavePhone);
       }
     } catch (e) {
       console.error('Failed to restore trade-in flow state:', e);
@@ -329,6 +334,7 @@ const selectCondition = ( key: ConditionGroup['key'], value: string ) => {
 
   return {
     step,
+    initialHaveModel,
     setStep,
     goToNextStep,
     goToPreviousStep,

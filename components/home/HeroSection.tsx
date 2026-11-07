@@ -14,10 +14,14 @@ const proofPoints = [
 export function HeroSection() {
   const router = useRouter();
 
-  const handleStartSwap = (have: string, want: string) => {
-    // Store selected phones in localStorage or state to use in trade-in flow
-    localStorage.setItem('selectedHavePhone', have);
-    localStorage.setItem('selectedWantPhone', want);
+  const handleStartSwap = (have: string | null) => {
+    if (have) {
+      localStorage.setItem("selectedHavePhone", have);
+    } else {
+      localStorage.removeItem("selectedHavePhone");
+    }
+    localStorage.removeItem("selectedWantPhone");
+    localStorage.removeItem("tradeInFlowState");
     router.push('/tradein');
   };
 
@@ -43,7 +47,7 @@ export function HeroSection() {
           Put the value of your current iPhone towards your next one. See your
           estimated top-up before you decide.
         </p>
-        <div data-landing-reveal data-landing-intro className="mt-12 [--reveal-delay:180ms]">
+        <div data-landing-reveal data-landing-intro className="relative z-10 mt-12 [--reveal-delay:180ms]">
           <SwapPicker onStart={handleStartSwap} />
         </div>
       </div>

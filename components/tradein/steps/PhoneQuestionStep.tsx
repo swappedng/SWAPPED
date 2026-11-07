@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { StepCard } from "../ui/StepCard";
 import { OptionCardList } from "../ui/OptionCardList";
 import { PillSelector } from "../ui/PillSelector";
@@ -44,10 +44,12 @@ function ExpandingSection({
 export function PhoneQuestionStep({
   options,
   value,
+  initialModel,
   onSelect,
 }: {
   options: PhoneOption[];
   value: string;
+  initialModel?: string;
   onSelect: (option: PhoneOption) => void;
 }) {
   const selectedOption = options.find((option) => option.id === value);
@@ -72,6 +74,16 @@ export function PhoneQuestionStep({
   const [selectedStorage, setSelectedStorage] = useState(
     selectedOption?.storage || "",
   );
+
+  useEffect(() => {
+    if (!initialModel || selectedOption) return;
+
+    const option = options.find((item) => item.model === initialModel);
+    if (!option) return;
+
+    setSelectedGroup(modelGroup(option.model));
+    setSelectedModel(option.model);
+  }, [initialModel, options, selectedOption]);
 
   const versions = useMemo(
     () => [

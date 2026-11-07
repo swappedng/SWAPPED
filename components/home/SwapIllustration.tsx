@@ -347,7 +347,7 @@ export function SwapIllustration() {
   return (
     <figure
       data-landing-reveal
-      className="relative mx-auto mt-5 grid max-w-[800px] items-end sm:mt-4"
+      className="relative z-0 mx-auto mt-5 grid max-w-[800px] items-end sm:mt-4"
       aria-label="Illustrations of iPhones changing through the generations."
     >
       <div className="relative flex h-[200px] w-full items-end justify-center sm:h-[280px] lg:h-[320px]">
