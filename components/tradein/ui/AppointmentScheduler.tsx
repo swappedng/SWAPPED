@@ -235,7 +235,11 @@ export function AppointmentScheduler({
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-[#e7e2eb] bg-[#fffdfb] p-5 shadow-[0_20px_50px_rgba(25,35,49,0.05)] sm:p-7">
+    <div
+      className={`mx-auto w-full overflow-hidden rounded-2xl border border-[#e7e2eb] bg-[#fffdfb] p-5 shadow-[0_20px_50px_rgba(25,35,49,0.05)] transition-[max-width] duration-300 ease-out motion-reduce:transition-none sm:p-7 ${
+        date ? "max-w-2xl" : "max-w-[416px]"
+      }`}
+    >
       {/* Header */}
       <div className="mb-5 flex items-center gap-4">
         <button
@@ -257,8 +261,11 @@ export function AppointmentScheduler({
       </div>
 
       {/* Body - Calendar and Time Panel */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_200px]">
-        {/* Calendar Section - Fixed width */}
+      <div
+        className={`grid grid-cols-1 gap-4 ${
+          date ? "sm:grid-cols-[minmax(0,360px)_200px]" : ""
+        }`}
+      >
         <div className="w-full max-w-[360px]">
           {/* Calendar header */}
           <div className="mb-3 flex items-center justify-between">

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { StepCard } from '../ui/StepCard';
+import { ExpandingSection } from "../ui/ExpandingSection";
 import { PillSelector } from "../ui/PillSelector";
 import { OptionCardList } from "../ui/OptionCardList";
 import type { PhoneSellingPrice } from '@/types/tradein';
@@ -137,7 +138,7 @@ export function UpgradePhoneStep({
         />
       </section>
 
-      {selectedGroup && (
+      <ExpandingSection isOpen={Boolean(selectedGroup)}>
         <section className="mt-6">
           <h2 className="mb-2.5 text-sm font-semibold text-[#69717d]">
             Which model exactly?
@@ -152,9 +153,9 @@ export function UpgradePhoneStep({
             }}
           />
         </section>
-      )}
+      </ExpandingSection>
 
-      {selectedModel && (
+      <ExpandingSection isOpen={Boolean(selectedModel)}>
         <section className="mt-6">
           <h2 className="mb-2.5 text-sm font-semibold text-[#69717d]">
             Storage Capacity
@@ -168,7 +169,7 @@ export function UpgradePhoneStep({
             }}
           />
         </section>
-      )}
+      </ExpandingSection>
     </StepCard>
   );
 }

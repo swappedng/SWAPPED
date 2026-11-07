@@ -53,10 +53,12 @@ export function ContactSummaryStep({
     >
       <div className="px-5 pt-9 sm:px-9 sm:pt-11">
         <div className="text-center">
-      
+          <p className="text-sm font-medium text-[#69717d]">
+            Estimated amount you’ll pay
+          </p>
           <h1
             id="estimate-title"
-            className="mt-4 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-3xl font-semibold text-[#192331] sm:gap-x-3"
+            className="mt-2 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-3xl font-semibold text-[#192331] sm:gap-x-3"
           >
             <span className="whitespace-nowrap">{money(lower)}</span>
             <span className="font-normal text-[#4c00bd]/25">–</span>
@@ -67,21 +69,21 @@ export function ContactSummaryStep({
           </p>
         </div>
 
-        <button
+        {/* <button
           type="button"
           onClick={() => setShowBreakdown((current) => !current)}
           aria-expanded={showBreakdown}
           aria-controls="estimate-breakdown"
-          className="mx-auto mt-9 flex items-center gap-1 text-sm font-semibold text-[#4c00bd] transition-colors hover:text-[#3d0099] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#4c00bd]"
+          className="mx-auto mt-7 flex items-center gap-1 text-xs font-medium text-[#69717d] transition-colors hover:text-[#192331] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#4c00bd]"
         >
-          {showBreakdown ? "Hide breakdown" : "See breakdown"}
+          {showBreakdown ? "Hide price breakdown" : "See price breakdown"}
           <ChevronDown
-            className={`size-4 transition-transform ${showBreakdown ? "rotate-180" : ""}`}
+            className={`size-3.5 transition-transform ${showBreakdown ? "rotate-180" : ""}`}
             aria-hidden="true"
           />
-        </button>
+        </button> */}
 
-        <div
+        {/* <div
           className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
             showBreakdown ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
           }`}
@@ -111,17 +113,23 @@ export function ContactSummaryStep({
               <p className="mt-4 text-xs text-[#69717d]">Trading in: {tradeInPhone}</p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
-      <form onSubmit={submit} className="mt-9 border-t border-[#e7e2eb] px-5 py-7 sm:px-9 sm:py-8">
+      <form
+        onSubmit={submit}
+        className="mt-9 border-t border-[#e7e2eb] px-5 py-7 sm:px-9 sm:py-8"
+      >
         <h2 className="mb-5 text-xl font-semibold tracking-[-0.03em] text-[#192331]">
-          Where should we send your estimate breakdown?
+          Where should we send your estimate?
         </h2>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="estimate-email" className="mb-1.5 block text-xs font-medium text-[#192331]">
+            <label
+              htmlFor="estimate-email"
+              className="mb-1.5 block text-xs font-medium text-[#192331]"
+            >
               Email address
             </label>
             <Input
@@ -137,7 +145,10 @@ export function ContactSummaryStep({
             />
           </div>
           <div>
-            <label htmlFor="estimate-phone" className="mb-1.5 block text-xs font-medium text-[#192331]">
+            <label
+              htmlFor="estimate-phone"
+              className="mb-1.5 block text-xs font-medium text-[#192331]"
+            >
               Phone number
             </label>
             <Input
