@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Brand } from "./Brand";
@@ -9,7 +8,7 @@ export function Header() {
       <Brand />
       <Link
         href="/tradein"
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#090909] px-5 text-xs font-semibold text-white transition-colors hover:bg-[#292929] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-3 sm:h-11 sm:px-6 sm:text-sm"
+        className=" h-10 items-center justify-center gap-2 rounded-full bg-[#090909] px-5 text-xs font-semibold text-white transition-colors hover:bg-[#292929] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-3 sm:h-11 sm:px-6 sm:text-sm hidden sm:inline-flex"
       >
         Swap iPhone
       </Link>

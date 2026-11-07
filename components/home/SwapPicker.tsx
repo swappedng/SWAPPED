@@ -69,7 +69,7 @@ export default function SwapPicker({ onStart }: Props) {
       className="relative mx-auto w-full max-w-[560px]"
       data-ready={ready}
     >
-      <div className="flex items-stretch gap-1.5 rounded-full border border-[#e7e2eb]/90 bg-white/75 p-1 text-left shadow-[0_12px_36px_rgba(53,28,79,0.02)] backdrop-blur-md transition-shadow data-[ready=true]:shadow-[0_16px_40px_rgba(53,28,79,0.16)] max-[680px]:flex-col max-[680px]:items-stretch max-[680px]:rounded-[24px] max-[680px]:p-0">
+      <div className="flex items-stretch gap-1.5 rounded-full border border-[#e7e2eb]/90 bg-white/75 p-1 text-left shadow-[0_12px_36px_rgba(53,28,79,0.02)] backdrop-blur-md transition-shadow data-[ready=true]:shadow-[0_16px_40px_rgba(53,28,79,0.16)] max-[680px]:flex-col max-[680px]:items-stretch max-[680px]:gap-4 max-[680px]:rounded-none max-[680px]:border-0 max-[680px]:bg-transparent max-[680px]:p-0 max-[680px]:shadow-none">
         <Picker
           phrase="I have an"
           previewModel={preview.have}
@@ -80,7 +80,7 @@ export default function SwapPicker({ onStart }: Props) {
           onChange={setHave}
         />
         <span
-          className="h-10 w-px shrink-0 bg-[#e8e5e9] max-[680px]:h-px max-[680px]:w-full"
+          className="h-10 w-px shrink-0 bg-[#e8e5e9] max-[680px]:hidden"
           aria-hidden="true"
         />
         <Picker
@@ -94,7 +94,7 @@ export default function SwapPicker({ onStart }: Props) {
         />
         <button
           type="button"
-          className="inline-flex self-stretch shrink-0 items-center justify-center gap-2 rounded-full bg-[#090909] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#292929] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-3 max-[680px]:w-full motion-reduce:transition-none"
+          className="inline-flex self-stretch shrink-0 items-center justify-center gap-2 rounded-full bg-[#090909] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#292929] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-3 max-[680px]:min-h-12 max-[680px]:w-full motion-reduce:transition-none"
           data-ready={ready}
           onClick={start}
         >
@@ -194,7 +194,7 @@ function Picker({
     <div className="relative min-w-0 flex-1" ref={root}>
       <button
         type="button"
-        className="w-full min-h-[48px] cursor-pointer rounded-full px-5 py-3 text-left text-sm font-semibold text-[#192331] transition-colors hover:bg-[#faf9fa] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-[-2px] motion-reduce:transition-none motion-reduce:animate-none max-[680px]:rounded-xl"
+        className="w-full min-h-[48px] cursor-pointer rounded-full px-5 py-3 text-left text-sm font-semibold text-[#192331] transition-colors hover:bg-[#faf9fa] focus-visible:outline-2 focus-visible:outline-[#4a00bd] focus-visible:outline-offset-[-2px] motion-reduce:transition-none motion-reduce:animate-none max-[680px]:rounded-xl max-[680px]:border max-[680px]:border-[#e7e2eb]/90 max-[680px]:bg-white/75"
         aria-label={accessiblePhrase}
         aria-haspopup="listbox"
         aria-expanded={open}
