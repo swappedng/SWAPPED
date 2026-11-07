@@ -21,13 +21,16 @@ export default function AdminLoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
+        callbackUrl: new URLSearchParams(window.location.search).get('callbackUrl') ?? '/admin',
         redirect: false,
       });
 
       if (result?.error) {
-        setError(result.error);
+        setError('Invalid email or password.');
       } else if (result?.ok) {
-        router.push('/admin');
+        router.replace(result.url ?? '/admin');
+      } else {
+        setError('Unable to sign in. Please try again.');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');

@@ -140,7 +140,7 @@ function FooterContent({
       const scene = new THREE.Scene();
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
       const uniforms = {
-        tex: { value: null },
+        tex: { value: null as THREE.Texture | null },
         m: { value: new THREE.Vector2(0.5, 0.5) },
         t: { value: 0 },
         s: { value: 0 },

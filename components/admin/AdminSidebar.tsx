@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeftRight, Calendar, CalendarDays, CircleHelp, ExternalLink, LayoutDashboard, Menu, Smartphone, Tag, X } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { ArrowLeftRight, Calendar, CalendarDays, CircleHelp, ExternalLink, LayoutDashboard, LogOut, Menu, Smartphone, Tag, X } from "lucide-react";
 
 const groups = [
   { label: "OPERATIONS", items: [
@@ -47,6 +48,7 @@ export default function AdminSidebar() {
     <div className="space-y-1 border-t border-stone-200 px-3 py-4">
       <button onClick={() => setShowHelp(true)} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-slate-600 hover:bg-stone-200/70"><CircleHelp className="h-[17px] w-[17px] text-slate-400" /> How pricing works</button>
       <Link href="/" target="_blank" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-slate-600 hover:bg-stone-200/70"><ExternalLink className="h-[17px] w-[17px] text-slate-400" /> View website</Link>
+      <button onClick={() => signOut({ callbackUrl: "/admin/login" })} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-slate-600 hover:bg-stone-200/70"><LogOut className="h-[17px] w-[17px] text-slate-400" /> Sign out</button>
     </div>
   </aside>;
 
