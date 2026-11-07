@@ -195,8 +195,8 @@ function SwapsPageContent() {
             <table className="w-full min-w-[900px] text-left">
               <thead className="bg-stone-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th className="px-5 py-3.5">Customer / request</th>
-                  <th className="px-5 py-3.5">Trade-in → upgrade</th>
+                  <th className="px-5 py-3.5">Customer</th>
+                  <th className="px-5 py-3.5">Trade-in</th>
                   <th className="px-5 py-3.5">Amount to pay</th>
                   <th className="px-5 py-3.5">Status</th>
                   <th className="px-5 py-3.5"><span className="sr-only">Open</span></th>
@@ -209,7 +209,7 @@ function SwapsPageContent() {
                       <Link href={`/admin/swaps/${swap.id}`} className="block font-semibold text-slate-900 hover:underline">
                         {requestContact(swap)}
                       </Link>
-                      <p className="mt-1 text-xs text-slate-500">#{shortId(swap.id)} · {day(swap.createdAt)}</p>
+                      <p className="mt-1 text-xs text-slate-500"> {day(swap.createdAt)}</p>
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-700">
                       <p>{swap.tradeInModel?.model || "Unknown device"} {swap.tradeInModel?.storage || ""}</p>
