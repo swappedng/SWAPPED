@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "./providers";
 import { Geist } from "next/font/google";
-import { Footer } from "@/components/home/Footer";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -52,7 +51,6 @@ export default function RootLayout({
           </div>
         </header> */}
           <main className="min-h-screen">{children}</main>
-          <Footer />
         </AuthProvider>
       </body>
     </html>
